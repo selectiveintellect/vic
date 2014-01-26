@@ -4,6 +4,8 @@ use Pegex::Parser;
 use VIC::Grammar;
 use VIC::PIC;
 
+use XXX;
+
 sub compile {
     my ($input) = @_;
 
@@ -13,8 +15,6 @@ sub compile {
     );
 
     $parser->parse($input);
-
-    return $parser->receiver->data;
 }
 
 1;
