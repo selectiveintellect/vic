@@ -10,7 +10,7 @@ has ast => {}; # Mo
 
 sub got_uc_type {
     my ($self, $type) = @_;
-    $self->ast->{uc_type} = $type;
+    $self->ast->{uc_type} = lc $type;
     return;
 }
 

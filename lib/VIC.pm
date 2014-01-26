@@ -12,6 +12,7 @@ sub compile {
     my $parser = Pegex::Parser->new(
         grammar => VIC::Grammar->new,
         receiver => VIC::PIC->new,
+        debug => 1,
     );
 
     $parser->parse($input);

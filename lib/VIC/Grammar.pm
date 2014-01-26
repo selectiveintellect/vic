@@ -9,30 +9,32 @@ use constant text => <<'...';
 # uc-type is necessary.
 program: uc-type header* statement*
 
-header: uc-header | comment | blank-line
-uc-type: /PIC <BLANK>+ (<ALNUM>+) <SEMI>? <EOL>/
+header: uc-header | comment
+uc-type: /PIC <BLANK>+ (<uc-types>) <SEMI>? <EOL>/
+
+# P16F690X is fake just to show how to enumerate.
+uc-types: /(?i:P16F690 | P16F690X)/
 uc-header: /set <UNDER> (config|org) <ANY>* <SEMI>? <EOL>/
-comment: /<HASH> <ANY>* <EOL>/
+comment: /<HASH> <ANY>* <EOL>/ | blank-line
 blank-line: /<BLANK>* <EOL>/
 
 statement: comment | block | instruction | end-block
 
-#FIXME: Should <WORDS> be used here below ?
-block: /<ALPHA>[<UNDER><ALNUM>]* - <LCURLY>/
-end-block: /<RCURLY>/
+block: name /- <LCURLY> <BLANK>*<EOL>?/
+end-block: /<RCURLY><EOL>?/
 
 instruction: name value* SEMI?
 
-#FIXME: Should <WORDS> be used here below ?
-name: /<ALPHA> [<ALNUM><UNDER>]*/
+name: identifier
 value: string | number | variable COMMA?
 string: single-quoted-string | double-quoted-string
 # most microcontrollers cannot do floating point math so ignore real numbers
 number: integer | hexadecimal
-integer: <DIGIT>+
-hexadecimal: /0x<HEX>+/
-variable: name
+integer: /(<DIGIT>+)/
+hexadecimal: /(:0[xX])?(<HEX>+)/
+variable: <DOLLAR> name
 
+identifier: /(<ALPHA>[<WORDS>]+)/
 single_quoted_string:
     /(:
         <SINGLE>
