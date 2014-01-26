@@ -1,0 +1,7 @@
+#!/usr/bin/env perl
+
+use lib 'lib', '../pegex-pm/lib';
+
+use VIC;
+
+print VIC::compile(do {local $/; <>});
