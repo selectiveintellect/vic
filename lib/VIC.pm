@@ -1,4 +1,6 @@
 package VIC;
+use strict;
+use warnings;
 
 use Pegex::Parser;
 use VIC::Grammar;

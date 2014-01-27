@@ -1,5 +1,7 @@
-use strict;
 package VIC::PIC;
+use strict;
+use warnings;
+
 use Pegex::Base;
 extends 'Pegex::Tree';
 

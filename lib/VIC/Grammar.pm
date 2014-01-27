@@ -1,4 +1,7 @@
 package VIC::Grammar;
+use strict;
+use warnings;
+
 use base 'Pegex::Grammar';
 use XXX;
 
@@ -16,25 +19,32 @@ uc-type: /PIC <BLANK>+ (<uc-types>) <SEMI>? <EOL>/
 uc-types: /(?i:P16F690 | P16F690X)/
 uc-header: /set <UNDER> (config|org) <ANY>* <SEMI>? <EOL>/
 comment: /<HASH> <ANY>* <EOL>/ | blank-line
-blank-line: /<BLANK>* <EOL>/
+blank-line: whitespace* /<EOL>/
+whitespace: /<BLANK>+/
 
 statement: comment | block | instruction | end-block
 
-block: name /- <LCURLY> <BLANK>*<EOL>?/
-end-block: /<RCURLY><EOL>?/
+block: name /<BLANK>* <LCURLY> <BLANK>*<EOL>?/
+end-block: /<BLANK>* <RCURLY> <BLANK>* <EOL>?/
 
-instruction: name value* SEMI?
+instruction: name values* <SEMI>?
 
-name: identifier
-value: string | number | variable COMMA?
+name: whitespace* identifier whitespace*
+values: (value /<COMMA>/)* value
+value: whitespace* (string | number-units | number | variable) whitespace*
+
 string: single-quoted-string | double-quoted-string
+
 # most microcontrollers cannot do floating point math so ignore real numbers
+number-units: number whitespace* units
 number: integer | hexadecimal
 integer: /(<DIGIT>+)/
 hexadecimal: /(:0[xX])?(<HEX>+)/
-variable: <DOLLAR> name
+units: /s | ms | us/
 
-identifier: /(<ALPHA>[<WORDS>]+)/
+variable: <DOLLAR> identifier
+identifier: /(<ALPHA>[<WORDS>]*)/
+
 single_quoted_string:
     /(:
         <SINGLE>
