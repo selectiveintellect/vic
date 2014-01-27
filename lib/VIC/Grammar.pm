@@ -12,10 +12,10 @@ use constant text => <<'...';
 %version 0.0.1
 
 # uc-type is necessary.
-program: uc-type header* statement*
+program: uc-select header* statement*
 
 header: uc-header | comment
-uc-type: /PIC <BLANK>+ (<uc-types>) <SEMI>? <EOL>/
+uc-select: /PIC <BLANK>+ (<uc-types>) <SEMI>? <EOL>/
 
 # P16F690X is fake just to show how to enumerate.
 uc-types: /(?i:P16F690 | P16F690X)/
