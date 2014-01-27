@@ -5,6 +5,8 @@ use warnings;
 use base 'Pegex::Grammar';
 use XXX;
 
+# use constant creates a function text that returns the string
+# this is the same thing as needed by Pegex::Grammar
 use constant text => <<'...';
 %grammar vic
 %version 0.0.1
@@ -17,7 +19,7 @@ uc-type: /PIC <BLANK>+ (<uc-types>) <SEMI>? <EOL>/
 
 # P16F690X is fake just to show how to enumerate.
 uc-types: /(?i:P16F690 | P16F690X)/
-uc-header: /set <UNDER> (config|org) <ANY>* <SEMI>? <EOL>/
+uc-header: /set <UNDER> (config|org) <BLANK>* (<ANY>*) <SEMI>? <EOL>/
 comment: /<HASH> <ANY>* <EOL>/ | blank-line
 blank-line: whitespace* /<EOL>/
 whitespace: /<BLANK>+/

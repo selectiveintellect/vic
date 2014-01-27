@@ -16,11 +16,18 @@ sub got_uc_type {
     return;
 }
 
+sub got_uc_header {
+    my ($self, $list) = @_;
+    $self->ast->{uc_org} = shift @$list;
+    return;
+}
+
 sub final {
     my ($self) = @_;
     my $ast = $self->ast;
     my $pic = <<"...";
 #include <$ast->{uc_type}.inc>
+$ast->{uc_org};
 ...
     return $pic;
 }
