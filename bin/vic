@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use lib 'lib', '../pegex-pm/lib';
+use lib 'lib', 'pegex-pm/lib', '../pegex-pm/lib';
 
 use VIC;
 

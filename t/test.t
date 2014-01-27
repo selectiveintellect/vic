@@ -1,6 +1,6 @@
 use Test::More tests => 1;
 
-use lib '../pegex-pm/lib';
+use lib 'pegex-pm/lib', '../pegex-pm/lib';
 
 my $input = <<'...';
 PIC P16f690
