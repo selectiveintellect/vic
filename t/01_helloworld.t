@@ -1,4 +1,4 @@
-use Test::More tests => 1;
+use Test::More tests => 2;
 
 use lib 'pegex-pm/lib', '../pegex-pm/lib';
 
@@ -21,19 +21,27 @@ Main {
 ...
 
 my $output = <<'...';
-#include <p16F690.inc>
+#include <p16f690.inc>
 
-    __config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _BOR_OFF & _IESO_OFF & _FCMEN_OFF)
+__config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _BOR_OFF & _IESO_OFF & _FCMEN_OFF)
 
-     org 0
+org 0
 
-Start:
+_start:
+    ;; turn on PORTC's pin 0 as output
      banksel   TRISC
      bcf       TRISC, TRISC0
      banksel   PORTC
-     bsf       PORTC,0             ; turn on LED C0
-     goto      $                   ; hang
+     bsf       PORTC,0
+     goto      $
      end
 ...
 
-is VIC::compile($input), 'fake output'; # $output;
+my $compiled = VIC::compile($input);
+$compiled =~ s/\s+/ /g;
+$compiled =~ s/, /,/g;
+$output =~ s/;.*//g;
+$output =~ s/\s+/ /g;
+$output =~ s/, /,/g;
+
+is $compiled, $output;

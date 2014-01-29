@@ -52,7 +52,7 @@ sub got_block {
     $self->ast->{block_stack_top} = scalar @{$self->ast->{block_stack}};
     my $stack = [];
     if ($block eq 'Main') {
-        push @$stack, "_start:";
+        push @$stack, "_start:\n";
     }
     $self->ast->{$block} = $stack;
     return;
@@ -74,6 +74,16 @@ sub got_name {
 
 sub got_instruction {
     my ($self, $list) = @_;
+    my $name = shift @$list;
+    $self->flatten($list) if $list;
+    my @args = @$list if $list;
+    $self->throw_error("Unknown instruction $name") unless
+        $self->info->can($name);
+    my $code = $self->info->$name($name, @args);
+    my $top = $self->ast->{block_stack_top};
+    $top = $top - 1 if $top > 0;
+    my $block = $self->ast->{block_stack}->[$top];
+    push @{$self->ast->{$block}}, $code;
     return;
 }
 
