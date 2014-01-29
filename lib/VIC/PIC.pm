@@ -17,10 +17,10 @@ sub throw_error { shift->parser->throw_error(@_); }
 sub got_uc_select {
     my ($self, $type) = @_;
     $type = lc $type;
-    $self->ast->{uc_type} = $type;
     # assume supported type else return
     $self->info(VIC::PIC::Any->new($type));
     die "$type is not a supported chip" unless $self->info->type eq $type;
+    $self->ast->{include} = $self->info->include;
     # set the defaults in case the headers are not provided by the user
     $self->ast->{org} = $self->info->org;
     $self->ast->{config} = $self->info->config;
@@ -121,7 +121,7 @@ sub final {
     $self->throw_error("Missing '}'") if $self->ast->{block_stack_top} ne 0;
     $self->throw_error("Main not defined") unless defined $self->ast->{Main};
     my $pic = <<"...";
-#include <$ast->{uc_type}.inc>
+#include <$ast->{include}>
 
 $ast->{config}
 

@@ -5,6 +5,8 @@ use Pegex::Base; # use this instead of Mo
 
 has type => 'p16f690';
 
+has include => 'p16f690.inc';
+
 has org => 0;
 
 has config => <<'...';
@@ -15,12 +17,12 @@ __config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF &
 sub output_port {
     my ($self, $ins, $port, $pin) = @_;
     return undef unless $port =~ /^[A-C]$/;
-    my $ins = "clrf TRIS$port" if
+    my $code = "clrf TRIS$port" if
         (not defined $pin or $pin > 7);
-    $ins = "bcf TRIS$port, TRIS$port$pin" if (defined $pin and $pin < 7);
+    $code = "bcf TRIS$port, TRIS$port$pin" if (defined $pin and $pin < 7);
     return << "...";
 banksel TRIS$port
-$ins
+$code
 banksel PORT$port
 ...
 }
