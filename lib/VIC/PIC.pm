@@ -39,7 +39,7 @@ sub got_uc_header {
     } elsif ($hdr eq 'config') {
         ## TODO: add more options to the default
         $self->ast->{config} = $self->info->config;
-        chomp $self->ast->{config}
+        chomp $self->ast->{config};
     }
     return;
 }
@@ -55,6 +55,7 @@ sub got_block {
         push @$stack, "_start:";
     }
     $self->ast->{$block} = $stack;
+    return;
 }
 
 sub got_end_block {
@@ -62,7 +63,46 @@ sub got_end_block {
     # we are not capturing anything here
     my $block = pop @{$self->ast->{block_stack}};
     $self->ast->{block_stack_top} = scalar @{$self->ast->{block_stack}};
+    return;
 }
+
+sub got_name {
+    my ($self, $list) = @_;
+    $self->flatten($list);
+    return shift(@$list);
+}
+
+sub got_instruction {
+    my ($self, $list) = @_;
+    return;
+}
+
+sub got_variable {
+    my ($self, $list) = @_;
+    return;
+}
+
+sub got_number {
+    my ($self, $list) = @_;
+    # if it is a hexadecimal number we can just convert it to number using int()
+    # since hex is returned here as a string
+    return int($list);
+}
+
+# convert the number to appropriate units
+sub got_number_units {
+    my ($self, $list) = @_;
+    $self->flatten($list);
+    my $num = shift @$list;
+    my $units = shift @$list || 's';
+    $num *= 1 if $units eq 'us';
+    $num *= 1000 if $units eq 'ms';
+    $num *= 1e6 if $units eq 's';
+    return $num;
+}
+
+# remove the dumb stuff from the tree
+sub got_comment { return; }
 
 sub final {
     my ($self, $got) = @_;
@@ -72,12 +112,13 @@ sub final {
     my $pic = <<"...";
 #include <$ast->{uc_type}.inc>
 
-$ast->{config};
+$ast->{config}
 
-org $ast->{org};
+org $ast->{org}
 
-$ast->{Main};
-$ast->{Loop};
+@{$ast->{Main}}
+
+end
 ...
     return $pic;
 }

@@ -3,21 +3,21 @@ use Test::More tests => 1;
 use lib 'pegex-pm/lib', '../pegex-pm/lib';
 
 my $input = <<'...';
-PIC P16f690
+PIC P16f690;
 
-set_config
+set_config;
 
 # A Comment
 
-set_org 0
+set_org 0;
 
 Main {
-     output_port 'C', 0
+     output_port 'C', 0;
      Loop {
-         port_value 'C', 0x1
-         delay 1s
-         port_value 'C', 0
-         delay 1s
+         port_value 'C', 0x1;
+         delay 1s;
+         port_value 'C', 0;
+         delay 1s;
      }
 }
 ...

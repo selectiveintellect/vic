@@ -11,15 +11,15 @@ use constant text => <<'...';
 %grammar vic
 %version 0.0.1
 
-# uc-type is necessary.
+# uc-select is necessary.
 program: uc-select header* statement*
 
 header: uc-header | comment
-uc-select: /PIC <BLANK>+ (<uc-types>) <SEMI>? <EOL>/
+uc-select: /PIC <BLANK>+ (<uc-types>) <SEMI> <EOL>/
 
 # P16F690X is fake just to show how to enumerate.
 uc-types: /(?i:P16F690 | P16F690X)/
-uc-header: /set <UNDER> (config|org) <BLANK>* (<ANY>*) <SEMI>? <EOL>/
+uc-header: /set <UNDER> (config|org) <BLANK>* (<ANY>*) <SEMI> <EOL>/
 comment: /<HASH> <ANY>* <EOL>/ | blank-line
 blank-line: whitespace* /<EOL>/
 whitespace: /<BLANK>+/
@@ -29,20 +29,20 @@ statement: comment | block | instruction | end-block
 block: name /<BLANK>* <LCURLY> <BLANK>*<EOL>?/
 end-block: /<BLANK>* <RCURLY> <BLANK>* <EOL>?/
 
-instruction: name values* <SEMI>?
+instruction: name values* whitespace* <SEMI>
 
 name: whitespace* identifier whitespace*
-values: (value /<COMMA>/)* value
+values: value-comma* value
+value-comma: value /<COMMA>/
 value: whitespace* (string | number-units | number | variable) whitespace*
 
 string: single-quoted-string | double-quoted-string
 
 # most microcontrollers cannot do floating point math so ignore real numbers
 number-units: number whitespace* units
-number: integer | hexadecimal
-integer: /(<DIGIT>+)/
-hexadecimal: /(:0[xX])?(<HEX>+)/
-units: /s | ms | us/
+# number handles both hex and non-hex values for ease of use
+number: /(0x<HEX>+ | 0X<HEX>+ | <DIGIT>+)/
+units: /(s | ms | us)/
 
 variable: <DOLLAR> identifier
 identifier: /(<ALPHA>[<WORDS>]*)/
