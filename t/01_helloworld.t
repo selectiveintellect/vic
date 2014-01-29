@@ -15,7 +15,7 @@ set_org 0;
 
 Main {
      output_port 'C', 0;
-     port_value 'C', 1;
+     port_value 'C', 0, 1;
      hang;
 }
 ...
