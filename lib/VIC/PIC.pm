@@ -80,6 +80,7 @@ sub got_instruction {
     $self->throw_error("Unknown instruction $name") unless
         $self->info->can($name);
     my $code = $self->info->$name($name, @args);
+    $self->throw_error("Error in statement $name @args") unless $code;
     my $top = $self->ast->{block_stack_top};
     $top = $top - 1 if $top > 0;
     my $block = $self->ast->{block_stack}->[$top];
