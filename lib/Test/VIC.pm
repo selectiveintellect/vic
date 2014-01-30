@@ -8,7 +8,6 @@ use base qw(Exporter);
 our $VERSION = '0.01';
 our @EXPORT = qw(
     compiles_ok
-    done_testing
 );
 
 my $CLASS = __PACKAGE__;
@@ -42,10 +41,6 @@ sub compiles_ok {
     $output =~ s/\s+/ /g;
     $output =~ s/, /,/g;
     $Tester->is_eq($compiled, $output, $msg);
-}
-
-sub done_testing {
-    $Tester->done_testing;
 }
 
 1;
