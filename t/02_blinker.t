@@ -14,9 +14,9 @@ set_org 0;
 Main {
      output_port 'C', 0;
      Loop {
-         port_value 'C', 0x1;
+         port_value 'C', 0, 0x1;
          delay 1s;
-         port_value 'C', 0;
+         port_value 'C', 0, 0;
          delay 1s;
      }
 }
