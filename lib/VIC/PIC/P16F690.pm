@@ -10,8 +10,8 @@ has include => 'p16f690.inc';
 
 has org => 0;
 
-has config => <<'...';
-__config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _BOR_OFF & _IESO_OFF & _FCMEN_OFF)
+has config => <<"...";
+\t__config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _BOR_OFF & _IESO_OFF & _FCMEN_OFF)
 ...
 
 sub output_port {
@@ -21,9 +21,9 @@ sub output_port {
         (not defined $pin or $pin > 7);
     $code = "bcf TRIS$port, TRIS$port$pin" if (defined $pin and $pin < 7);
     return << "...";
-banksel TRIS$port
-$code
-banksel PORT$port
+\tbanksel TRIS$port
+\t$code
+\tbanksel PORT$port
 ...
 }
 
@@ -33,19 +33,19 @@ sub port_value {
     # if pin is not set set all values
     unless (defined $val or defined $pin) {
         return << "...";
-clrf PORT$port
-comf PORT$port, 1
+\tclrf PORT$port
+\tcomf PORT$port, 1
 ...
     }
-    return "clrf PORT$port\n" unless defined $pin;
+    return "\tclrf PORT$port\n" unless defined $pin;
     return undef if $pin > 7;
-    return $val ? "bsf PORT$port, $pin\n" :
-                  "bcf PORT$port, $pin\n";
+    return $val ? "\tbsf PORT$port, $pin\n" :
+                  "\tbcf PORT$port, $pin\n";
 }
 
 sub hang {
     my ($self, $ins, @args) = @_;
-    return 'goto $';
+    return "\tgoto \$";
 }
 
 sub m_delay_var {
@@ -153,28 +153,28 @@ sub delay {
     ## more than one function could be called so have them separate
     if ($sec > 0) {
         my $fn = "_delay_${sec}s";
-        $code .= "call $fn\n";
+        $code .= "\tcall $fn\n";
         $funcs->{$fn} = <<"....";
-m_delay_s D'$sec'
-return
+\tm_delay_s D'$sec'
+\treturn
 ....
         $macros->{m_delay_s} = $self->m_delay_s;
     }
     if ($ms > 0) {
         my $fn = "_delay_${ms}ms";
-        $code .= "call $fn\n";
+        $code .= "\tcall $fn\n";
         $funcs->{$fn} = <<"....";
-m_delay_ms D'$ms'
-return
+\tm_delay_ms D'$ms'
+\treturn
 ....
         $macros->{m_delay_ms} = $self->m_delay_ms;
     }
     if ($us > 0) {
         my $fn = "_delay_${us}us";
-        $code .= "call $fn\n";
+        $code .= "\tcall $fn\n";
         $funcs->{$fn} = <<"....";
-m_delay_us D'$us'
-return
+\tm_delay_us D'$us'
+\treturn
 ....
         $macros->{m_delay_us} = $self->m_delay_us;
     }

@@ -73,7 +73,7 @@ sub got_end_block {
     my $parent = $self->ast->{block_stack}->[$top - 1];
     return unless $parent;
     push @{$self->ast->{$parent}}, @{$self->ast->{$block}};
-    my $endcode = "goto _loop_$top\n" if $block =~ /^Loop/;
+    my $endcode = "\tgoto _loop_$top\n" if $block =~ /^Loop/;
     push @{$self->ast->{$parent}}, $endcode if $endcode;
     return;
 }
@@ -151,23 +151,24 @@ sub final {
         $macros .= $ast->{macros}->{$mac};
         $macros .= "\n";
     }
+    my $main_code = join("\n", @{$ast->{Main}});
     my $pic = <<"...";
 #include <$ast->{include}>
-
-$ast->{config}
-
-org $ast->{org}
 
 ; macros go here
 $macros
 
+$ast->{config}
+
+\torg $ast->{org}
+
 ; the main function goes here
-@{$ast->{Main}}
+$main_code
 
 ; all the other functions go here
 $funcs
 
-end
+\tend
 ...
     return $pic;
 }

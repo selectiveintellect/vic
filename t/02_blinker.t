@@ -2,7 +2,7 @@ use lib 'pegex-pm/lib', '../pegex-pm/lib';
 use Test::VIC tests => 1;
 
 my $input = <<'...';
-PIC P16f690;
+PIC P16F690;
 
 set_config;
 
@@ -23,10 +23,6 @@ Main {
 
 my $output = <<'...';
 #include <p16f690.inc>
-
-    __config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _BOR_OFF & _IESO_OFF & _FCMEN_OFF)
-
-     org 0
 
 DELAY_VAR_UDATA udata
 DELAY_VAR   res 3
@@ -50,6 +46,9 @@ _delay_secs_loop_0:
     goto    _delay_secs_loop_2
     endm
 
+    __config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _BOR_OFF & _IESO_OFF & _FCMEN_OFF)
+
+     org 0
 
 _start:
     banksel   TRISC

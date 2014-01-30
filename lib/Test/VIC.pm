@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Test::Builder;
+use VIC;
 use base qw(Exporter);
 
 our $VERSION = '0.01';
@@ -45,7 +46,6 @@ sub compiles_ok {
         require Carp;
         Carp::croak("compiles_ok: must pass an output code to compare with");
     }
-    require VIC;
     my $compiled = VIC::compile($input);
     $compiled = sanitize($compiled);
     $output = sanitize($output);
