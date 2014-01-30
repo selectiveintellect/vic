@@ -1,8 +1,5 @@
-use Test::More tests => 2;
-
 use lib 'pegex-pm/lib', '../pegex-pm/lib';
-
-BEGIN { use_ok('VIC'); }
+use Test::VIC tests => 1;
 
 my $input = <<'...';
 PIC P16f690;
@@ -37,11 +34,4 @@ _start:
      end
 ...
 
-my $compiled = VIC::compile($input);
-$compiled =~ s/\s+/ /g;
-$compiled =~ s/, /,/g;
-$output =~ s/;.*//g;
-$output =~ s/\s+/ /g;
-$output =~ s/, /,/g;
-
-is $compiled, $output;
+compiles_ok($input, $output);

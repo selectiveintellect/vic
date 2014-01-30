@@ -1,6 +1,5 @@
-use Test::More tests => 1;
-
 use lib 'pegex-pm/lib', '../pegex-pm/lib';
+use Test::VIC tests => 1;
 
 my $input = <<'...';
 PIC P16f690;
@@ -64,7 +63,4 @@ OffDelayLoop:
 
      end
 ...
-
-use VIC;
-
-is VIC::compile($input), 'fake output'; # $output;
+compiles_ok($input, $output);
