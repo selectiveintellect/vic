@@ -91,7 +91,7 @@ sub got_instruction {
     my @args = @$list if $list;
     $self->throw_error("Unknown instruction $name") unless
         $self->pic->can($name);
-    my ($code, $funcs) = $self->pic->$name($name, @args);
+    my ($code, $funcs, $macros) = $self->pic->$name($name, @args);
     $self->throw_error("Error in statement $name @args") unless $code;
     my $top = $self->ast->{block_stack_top};
     $top = $top - 1 if $top > 0;
@@ -100,6 +100,10 @@ sub got_instruction {
     return unless ref $funcs eq 'HASH';
     foreach (keys %$funcs) {
         $self->ast->{funcs}->{$_} = $funcs->{$_};
+    }
+    return unless ref $macros eq 'HASH';
+    foreach (keys %$macros) {
+        $self->ast->{macros}->{$_} = $macros->{$_};
     }
 }
 
@@ -142,6 +146,11 @@ sub final {
         $funcs .= $ast->{funcs}->{$fn};
         $funcs .= "\n";
     }
+    my $macros = '';
+    foreach my $mac (keys %{$ast->{macros}}) {
+        $macros .= $ast->{macros}->{$mac};
+        $macros .= "\n";
+    }
     my $pic = <<"...";
 #include <$ast->{include}>
 
@@ -149,8 +158,13 @@ $ast->{config}
 
 org $ast->{org}
 
+; macros go here
+$macros
+
+; the main function goes here
 @{$ast->{Main}}
 
+; all the other functions go here
 $funcs
 
 end

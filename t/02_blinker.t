@@ -22,45 +22,50 @@ Main {
 ...
 
 my $output = <<'...';
-#include <p16F690.inc>
+#include <p16f690.inc>
 
     __config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _BOR_OFF & _IESO_OFF & _FCMEN_OFF)
 
-
-    cblock 0x20
-Delay1                   ; Define two file registers for the
-Delay2                   ; delay loop
-     endc
-
      org 0
 
-Start:
+DELAY_VAR_UDATA udata
+DELAY_VAR   res 3
 
-     bsf       STATUS,RP0          ; select Register Page 1
-     bcf       TRISC,0             ; make IO Pin C.0 an output
-     bcf       STATUS,RP0          ; back to Register Page 0
+m_delay_s macro secs
+    local _delay_secs_loop_0, _delay_secs_loop_1, _delay_secs_loop_2
+    variable secs_1 = 0
+secs_1 = secs * D'1000000' / D'197379'
+    movlw   secs_1
+    movwf   DELAY_VAR + 2
+_delay_secs_loop_2:
+    clrf    DELAY_VAR + 1   ;; set to 0 which gets decremented to 0xFF
+_delay_secs_loop_1:
+    clrf    DELAY_VAR   ;; set to 0 which gets decremented to 0xFF
+_delay_secs_loop_0:
+    decfsz  DELAY_VAR, F
+    goto    _delay_secs_loop_0
+    decfsz  DELAY_VAR + 1, F
+    goto    _delay_secs_loop_1
+    decfsz  DELAY_VAR + 2, F
+    goto    _delay_secs_loop_2
+    endm
 
-MainLoop:
 
-     bsf       PORTC,0             ; turn on LED C0
+_start:
+    banksel   TRISC
+    bcf       TRISC, TRISC0
+    banksel   PORTC
+_loop_1:
+    bsf PORTC, 0
+    call _delay_1s
+    bcf PORTC, 0
+    call _delay_1s
+    goto _loop_1
 
-OndelayLoop:
-     decfsz    Delay1,f            ; Waste time.
-     goto      OndelayLoop         ; The Inner loop takes 3 instructions per loop * 256 loopss = 768 instructions
-     decfsz    Delay2,f            ; The outer loop takes and additional 3 instructions per lap * 256 loops
-     goto      OndelayLoop         ; (768+3) * 256 = 197376 instructions / 1M instructions per second = 0.197 sec.
-                                   ; call it a two-tenths of a second.
+_delay_1s:
+    m_delay_s D'1'
+    return
 
-     bcf       PORTC,0             ; Turn off LED C0
-
-OffDelayLoop:
-     decfsz    Delay1,f            ; same delay as above
-     goto      OffDelayLoop
-     decfsz    Delay2,f
-     goto      OffDelayLoop
-
-     goto      MainLoop            ; Do it again...
-
-     end
+    end
 ...
 compiles_ok($input, $output);
