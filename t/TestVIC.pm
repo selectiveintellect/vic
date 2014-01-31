@@ -60,3 +60,39 @@ sub compiles_ok {
 }
 
 1;
+
+=encoding utf8
+
+=head1 NAME
+
+t::TestVIC;
+
+=head1 SYNOPSIS
+
+A test class for handling VIC testing
+
+=head1 DESCRIPTION
+
+=over
+
+=item B<compiles_ok $input, $output>
+
+This function takes the input VIC code, and the expected assembly code and
+checks whether the VIC code compiles into the assembly code.
+
+=back
+
+=head1 AUTHOR
+
+Vikas N Kumar <vikas@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2014. Vikas N Kumar
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+See http://www.perl.com/perl/misc/Artistic.html
+
+=cut

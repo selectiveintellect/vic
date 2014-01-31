@@ -43,3 +43,34 @@ sub run {
 }
 
 1;
+
+=encoding utf8
+
+=head1 NAME
+
+VIC::Command
+
+=head1 SYNOPSIS
+
+The command-line tool for compiling VIC files.
+
+=head1 DESCRIPTION
+
+To view all the options run 
+    $ vic -h
+
+
+=head1 AUTHOR
+
+Vikas N Kumar <vikas@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2014. Vikas N Kumar
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+See http://www.perl.com/perl/misc/Artistic.html
+
+=cut

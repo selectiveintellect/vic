@@ -32,12 +32,11 @@ VIC - A Viciously Simple Syntax for PIC
 
 =head1 SYNOPSIS
 
-    $ vic program.vic > program.pic
+    $ vic program.vic -o program.asm
 
 =head1 DESCRIPTION
 
-…
-
+TODO
 
 =head1 AUTHOR
 
