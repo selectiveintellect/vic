@@ -116,12 +116,13 @@ To recompile the grammar into `lib/VIC/Grammar.pm` run,
 
 #Contributors
 
-- Vikas N Kumar @vikasnkumar
-- Ingy @ingydotnet
+- Vikas N Kumar [@vikasnkumar](https://github.com/vikasnkumar/)
+- Ingy [@ingydotnet](https://github.com/ingydotnet/)
 
 #Copyright
 
 Copyright: 2014. Vikas N Kumar. All Rights Reserved.
+
 LICENSE: refer LICENSE file in the repository.
 
 
