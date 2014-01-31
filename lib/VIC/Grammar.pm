@@ -5,83 +5,235 @@ use warnings;
 use base 'Pegex::Grammar';
 use XXX;
 
-# use constant creates a function text that returns the string
-# this is the same thing as needed by Pegex::Grammar
-use constant text => <<'...';
-%grammar vic
-%version 0.0.1
+use constant file => '../vic-pgx/vic.pgx';
 
-# uc-select is necessary.
-program: uc-select header* statement*
-
-header: uc-header | comment
-uc-select: /PIC <BLANK>+ (<uc-types>) <SEMI> <EOL>/
-
-# P16F690X is fake just to show how to enumerate.
-uc-types: /(?i:P16F690 | P16F690X)/
-uc-header: /set <UNDER> (config|org) <BLANK>* (<ANY>*) <SEMI> <EOL>/
-comment: /<HASH> <ANY>* <EOL>/ | blank-line
-blank-line: whitespace* /<EOL>/
-whitespace: /<BLANK>+/
-
-statement: comment | block | instruction | end-block
-
-block: name /<BLANK>* <LCURLY> <BLANK>*<EOL>?/
-end-block: /<BLANK>* <RCURLY> <BLANK>* <EOL>?/
-
-instruction: name values* whitespace* <SEMI>
-
-name: whitespace* identifier whitespace*
-values: value-comma* value
-value-comma: value /<COMMA>/
-value: whitespace* (string | number-units | number | variable) whitespace*
-
-string: single-quoted-string | double-quoted-string
-
-# most microcontrollers cannot do floating point math so ignore real numbers
-number-units: number whitespace* units
-# number handles both hex and non-hex values for ease of use
-number: /(0x<HEX>+ | 0X<HEX>+ | <DIGIT>+)/
-units: /(s | ms | us)/
-
-variable: <DOLLAR> identifier
-identifier: /(<ALPHA>[<WORDS>]*)/
-
-single_quoted_string:
-    /(:
-        <SINGLE>
-        ((:
-            [^<BREAK><BACK><SINGLE>] |
-            <BACK><SINGLE> |
-            <BACK><BACK>
-        )*?)
-        <SINGLE>
-    )/
-
-double_quoted_string:
-    /(:
-        <DOUBLE>
-        ((:
-            [^<BREAK><BACK><DOUBLE>] |
-            <BACK><DOUBLE> |
-            <BACK><BACK> |
-            <BACK><escape>
-        )*?)
-        <DOUBLE>
-    )/
-
-escape: / [0nt] /
-...
-
-# Remove the X_ to debug the grammar
-sub X_make_tree {
-    my ($self) = @_;
-    my $text = $self->text
-        or die "Can't create a '" . ref($self) .
-            "' grammar. No tree or text or file.";
-    require Pegex::Compiler;
-    local $ENV{PERL_PEGEX_DEBUG} = 1;
-    return XXX + Pegex::Compiler->new->compile($text)->tree;
+sub make_tree {
+  {
+    '+grammar' => 'vic',
+    '+toprule' => 'program',
+    '+version' => '0.0.1',
+    'DOLLAR' => {
+      '.rgx' => qr/\G\$/
+    },
+    'SEMI' => {
+      '.rgx' => qr/\G;/
+    },
+    'blank_line' => {
+      '.all' => [
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '.rgx' => qr/\G\r?\n/
+        }
+      ]
+    },
+    'block' => {
+      '.all' => [
+        {
+          '.ref' => 'name'
+        },
+        {
+          '.rgx' => qr/\G[\ \t]*\{[\ \t]*\r?\n?/
+        }
+      ]
+    },
+    'comment' => {
+      '.any' => [
+        {
+          '.rgx' => qr/\G\#.*\r?\n/
+        },
+        {
+          '.ref' => 'blank_line'
+        }
+      ]
+    },
+    'double_quoted_string' => {
+      '.rgx' => qr/\G(?:"((?:[^\n\\"]|\\"|\\\\|\\[0nt])*?)")/
+    },
+    'end_block' => {
+      '.rgx' => qr/\G[\ \t]*\}[\ \t]*\r?\n?/
+    },
+    'header' => {
+      '.any' => [
+        {
+          '.ref' => 'uc_header'
+        },
+        {
+          '.ref' => 'comment'
+        }
+      ]
+    },
+    'identifier' => {
+      '.rgx' => qr/\G([a-zA-Z][0-9A-Za-z_]*)/
+    },
+    'instruction' => {
+      '.all' => [
+        {
+          '.ref' => 'name'
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'values'
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '.ref' => 'SEMI'
+        }
+      ]
+    },
+    'name' => {
+      '.all' => [
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '.ref' => 'identifier'
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        }
+      ]
+    },
+    'number' => {
+      '.rgx' => qr/\G(0x[0-9a-fA-F]+|0X[0-9a-fA-F]+|[0-9]+)/
+    },
+    'number_units' => {
+      '.all' => [
+        {
+          '.ref' => 'number'
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '.ref' => 'units'
+        }
+      ]
+    },
+    'program' => {
+      '.all' => [
+        {
+          '.ref' => 'uc_select'
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'header'
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'statement'
+        }
+      ]
+    },
+    'single_quoted_string' => {
+      '.rgx' => qr/\G(?:'((?:[^\n\\']|\\'|\\\\)*?)')/
+    },
+    'statement' => {
+      '.any' => [
+        {
+          '.ref' => 'comment'
+        },
+        {
+          '.ref' => 'block'
+        },
+        {
+          '.ref' => 'instruction'
+        },
+        {
+          '.ref' => 'end_block'
+        }
+      ]
+    },
+    'string' => {
+      '.any' => [
+        {
+          '.ref' => 'single_quoted_string'
+        },
+        {
+          '.ref' => 'double_quoted_string'
+        }
+      ]
+    },
+    'uc_header' => {
+      '.rgx' => qr/\Gset_(config|org)[\ \t]*(.*);\r?\n/
+    },
+    'uc_select' => {
+      '.rgx' => qr/\GPIC[\ \t]+((?i:P16F690|P16F690X));\r?\n/
+    },
+    'units' => {
+      '.rgx' => qr/\G(s|ms|us)/
+    },
+    'value' => {
+      '.all' => [
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '.any' => [
+            {
+              '.ref' => 'string'
+            },
+            {
+              '.ref' => 'number_units'
+            },
+            {
+              '.ref' => 'number'
+            },
+            {
+              '.ref' => 'variable'
+            }
+          ]
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        }
+      ]
+    },
+    'value_comma' => {
+      '.all' => [
+        {
+          '.ref' => 'value'
+        },
+        {
+          '.rgx' => qr/\G,/
+        }
+      ]
+    },
+    'values' => {
+      '.all' => [
+        {
+          '+min' => 0,
+          '.ref' => 'value_comma'
+        },
+        {
+          '.ref' => 'value'
+        }
+      ]
+    },
+    'variable' => {
+      '.all' => [
+        {
+          '.ref' => 'DOLLAR'
+        },
+        {
+          '.ref' => 'identifier'
+        }
+      ]
+    },
+    'whitespace' => {
+      '.rgx' => qr/\G[\ \t]+/
+    }
+  }
 }
 
 1;
