@@ -28,6 +28,11 @@ To test you will need to have `App::Prove` installed.
 
     $ prove -lv t
 
+#Recompiling the grammar
+
+To recompile the grammar into `lib/VIC/Grammar.pm` run,
+
+    $ PERL5LIB=$PWD/pegex-pm/lib:$PERL5LIB perl -Ilib -MVIC::Grammar=compile
 
 #Contributors
 

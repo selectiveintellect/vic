@@ -5,7 +5,7 @@ use warnings;
 use base 'Pegex::Grammar';
 use XXX;
 
-use constant file => '../vic-pgx/vic.pgx';
+use constant file => './share/vic.pgx';
 
 sub make_tree {
   {
