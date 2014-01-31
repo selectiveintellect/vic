@@ -20,6 +20,7 @@ syn match   vicNumberUnits  "\<\%([0-9][[:digit:]]*\)s\|ms\|us"
 syn match   vicNumber    	"\<\%(0\%(x\x[[:xdigit:]_]*\|b[01][01_]*\|\o[0-7_]*\|\)\|[1-9][[:digit:]_]*\)\>"
 syn match   vicComment      "#.*"
 syn match   vicPIC          "\<PIC\s\+\%(\w\)*" contains=vicPICStatement
+syn match   vicVariable     "\$\w*"
 
 highlight link vicStatement     Statement 
 highlight link vicHeader        Type
@@ -31,6 +32,7 @@ highlight link vicNumberUnits   Number
 highlight link vicComment       Comment
 highlight link vicPIC           Type
 highlight link vicPICStatement  Special
+highlight link vicVariable      Identifier
 
 let b:current_syntax = "vic"
 
