@@ -147,7 +147,10 @@ sub final {
         $funcs .= "\n";
     }
     my $macros = '';
+    # variables are part of macros and need to go first
+    my $variables = '';
     foreach my $mac (keys %{$ast->{macros}}) {
+        $variables .= $ast->{macros}->{$mac} . "\n", next if $mac =~ /_var$/;
         $macros .= $ast->{macros}->{$mac};
         $macros .= "\n";
     }
@@ -155,6 +158,8 @@ sub final {
     my $pic = <<"...";
 #include <$ast->{include}>
 
+; variables go here
+$variables
 ; macros go here
 $macros
 
