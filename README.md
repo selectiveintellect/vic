@@ -1,4 +1,4 @@
-vic
+VIC
 ===
 
 VIC is a nice syntax that compiles to PIC assembly.
@@ -28,7 +28,19 @@ To test you will need to have `App::Prove` installed.
 
     $ prove -lv t
 
+#Vim Syntax
+
+The `vim` syntax for VIC is in `share/vic.vim`. You can place it in
+`$HOME/.vim/syntax` on Linux and OS X and in `$HOME/vimfiles/syntax` on Windows
+systems.
+
+#How to write VIC programs
+
+Documentation coming soon...
+
 #Recompiling the grammar
+
+This is for VIC developers only.
 
 To recompile the grammar into `lib/VIC/Grammar.pm` run,
 
@@ -42,6 +54,6 @@ To recompile the grammar into `lib/VIC/Grammar.pm` run,
 #Copyright
 
 Copyright: 2014. Vikas N Kumar. All Rights Reserved.
-LICENSE: MIT.
+LICENSE: refer LICENSE file in the repository.
 
 
