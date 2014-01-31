@@ -48,6 +48,15 @@ example you can do the following:
 
 This will generate the PIC assembly for the VIC file.
 
+#Placing `vic` in your `$PATH` for Makefiles
+
+Let us assume that your git checkout copy is in `$HOME/github/vic` then,
+
+    $ export VICPATH=$HOME/github/vic
+    $ export PERL5LIB=${VICPATH}/lib:${VICPATH}/pegex-pm/lib:$PERL5LIB
+    $ export PATH=${VICPATH}/bin:$PATH
+    $ which vic
+
 #Testing on PIC microcontrollers on Linux and Mac OS X
 
 The `helloworld.vic` test is for the Low Pin Count Demo board from Microchip and
