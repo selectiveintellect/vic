@@ -1,4 +1,4 @@
-package Test::VIC;
+package t::TestVIC;
 use strict;
 use warnings;
 
@@ -6,7 +6,6 @@ use Test::Builder;
 use VIC;
 use base qw(Exporter);
 
-our $VERSION = '0.01';
 our @EXPORT = qw(
     compiles_ok
 );

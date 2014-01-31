@@ -1,5 +1,5 @@
 use lib 'pegex-pm/lib', '../pegex-pm/lib';
-use Test::VIC tests => 1;
+use t::TestVIC tests => 1;
 
 my $input = <<'...';
 PIC P16F690;

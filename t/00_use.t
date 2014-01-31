@@ -6,8 +6,8 @@ use_ok('VIC');
 
 can_ok('VIC', 'compile');
 
-use_ok('Test::VIC');
+use_ok('t::TestVIC');
 
-can_ok('Test::VIC', 'compiles_ok');
+can_ok('t::TestVIC', 'compiles_ok');
 
 done_testing();

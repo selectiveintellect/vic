@@ -7,7 +7,7 @@ extends 'Pegex::Tree';
 
 use VIC::PIC::Any;
 
-use XXX;
+# use XXX;
 
 has pic => undef;
 has ast => {};
@@ -105,6 +105,7 @@ sub got_instruction {
     foreach (keys %$macros) {
         $self->ast->{macros}->{$_} = $macros->{$_};
     }
+    return;
 }
 
 sub got_variable {
