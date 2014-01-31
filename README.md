@@ -9,6 +9,7 @@ This module depends on the following:
 
 - `XXX` (temporary for debugging)
 - `Pegex` (this is stored as a submodule `pegex-pm`)
+- `Getopt::Long` (for handling command line options. Comes with perl itself)
 
 #Updating dependencies
 
@@ -44,7 +45,7 @@ Documentation coming soon...
 The examples are in `share/examples` folder. To compile the `helloworld.vic`
 example you can do the following:
 
-    $ ./bin/vic ./share/examples/helloworld.vic > ./share/examples/helloworld.asm
+    $ ./bin/vic ./share/examples/helloworld.vic -o ./share/examples/helloworld.asm
 
 This will generate the PIC assembly for the VIC file.
 

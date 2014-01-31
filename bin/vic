@@ -2,9 +2,35 @@
 use strict;
 use warnings;
 use lib 'lib', 'pegex-pm/lib', '../pegex-pm/lib';
-
+use Getopt::Long;
 use VIC;
 
-$VIC::Debug = 0;
+sub usage {
+    my $usage = << '...';
+    Usage: vic [options] <input file>
+
+        --help                      This help message
+        -h                          Same as --help
+        --output <output file>      Writes the compiled syntax to the given output file
+        --o <output file>           Same as --output
+        --debug                     Dump the compile tree for debugging
+        -d                          Same as --debug
+...
+    die $usage;
+}
+
+my $debug = 0;
+my $output = '';
+my $help = 0;
+GetOptions("output=s" => \$output, "debug" => \$debug, "help" => \$help) or usage();
+usage() if $help;
+
+$VIC::Debug = $debug;
+
+my $fh;
+if (length $output) {
+    open $fh, ">$output" or die "Unable to open $output: $!";
+    open STDOUT, ">&", $fh or die "$!";
+}
 
 print VIC::compile(do {local $/; <>});
