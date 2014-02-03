@@ -11,11 +11,11 @@ use VIC::PIC;
 our $Debug = 0;
 
 sub compile {
-    my ($input) = @_;
+    my ($input, $pic) = @_;
 
     my $parser = Pegex::Parser->new(
         grammar => VIC::Grammar->new,
-        receiver => VIC::PIC->new,
+        receiver => VIC::PIC->new(pic_override => $pic),
         debug => $Debug,
     );
 

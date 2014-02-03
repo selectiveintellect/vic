@@ -10,6 +10,7 @@ sub usage {
     Usage: vic [options] <input file>
 
         -h, --help            This help message
+        -p, --pic <PIC>       Use this PIC choice instead of the one in the code
         -o, --output <file>   Writes the compiled syntax to the given output file
         -d, --debug           Dump the compile tree for debugging
 ...
@@ -23,11 +24,13 @@ sub run {
     my $debug = 0;
     my $output = '';
     my $help = 0;
+    my $pic = undef;
 
     GetOptions(
         "output=s" => \$output,
         "debug" => \$debug,
-        "help" => \$help
+        "help" => \$help,
+        "pic=s" => \$pic,
     ) or usage();
     usage() if $help;
 
@@ -39,7 +42,7 @@ sub run {
         open STDOUT, ">&", $fh or die "$!";
     }
 
-    print VIC::compile(do {local $/; <>});
+    print VIC::compile(do {local $/; <>}, $pic);
 }
 
 1;

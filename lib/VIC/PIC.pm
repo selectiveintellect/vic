@@ -8,7 +8,7 @@ extends 'Pegex::Tree';
 use VIC::PIC::Any;
 
 # use XXX;
-
+has pic_override => undef;
 has pic => undef;
 has ast => {};
 
@@ -16,6 +16,8 @@ sub throw_error { shift->parser->throw_error(@_); }
 
 sub got_uc_select {
     my ($self, $type) = @_;
+    # override the PIC in code if defined
+    $type = $self->pic_override if defined $self->pic_override;
     $type = lc $type;
     # assume supported type else return
     $self->pic(VIC::PIC::Any->new($type));
