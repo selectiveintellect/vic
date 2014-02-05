@@ -10,11 +10,12 @@ Build.bat
 Makefile
 Makefile.old
 MANIFEST.bak
-META.yml
-MYMETA.yml
+META.*
+MYMETA.*
 nytprof.out
 pm_to_blib
 tags
 TAGS
 .*.swp
 *.log
+installer/

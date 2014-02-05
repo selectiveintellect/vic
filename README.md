@@ -3,6 +3,12 @@ VIC
 
 VIC is a nice syntax that compiles to PIC assembly.
 
+#Building as a user
+
+    $ perl ./Build.PL --install_base=/usr/local/
+    $ ./Build test
+    $ ./Build install
+
 #Dependencies
 
 This module depends on the following:
@@ -25,9 +31,13 @@ If you want to just update the submodule with a more recent version:
 
 #Testing the Module
 
-To test you will need to have `App::Prove` installed.
+To test you will need to have `App::Prove` installed if you're developing
 
     $ prove -lv t
+
+Another option is to use `Build.PL`
+
+    $ ./Build test
 
 #Vim Syntax
 
@@ -57,6 +67,9 @@ Let us assume that your git checkout copy is in `$HOME/github/vic` then,
     $ export PERL5LIB=${VICPATH}/lib:${VICPATH}/pegex-pm/lib:$PERL5LIB
     $ export PATH=${VICPATH}/bin:$PATH
     $ which vic
+
+_If you're installing it from CPAN or using `Build.PL` you do not need to set the
+above._
 
 #Testing on PIC microcontrollers on Linux and Mac OS X
 
