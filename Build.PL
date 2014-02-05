@@ -25,6 +25,7 @@ my $build = Module::Build->new(
     },
     recommends => {
         'XXX' => 0,
+        'App::Prove' => 0,
     },
     share_dir => 'share',
     dynamic_config => 1,
