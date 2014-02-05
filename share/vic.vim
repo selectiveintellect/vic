@@ -11,13 +11,14 @@ if exists("b:current_syntax")
 endif
 
 syn keyword vicHeader       set_config set_org
-syn keyword vicStatement    port_value output_port delay hang
+syn keyword vicStatement    port_value output_port delay hang input_port analog_input_port
+syn keyword vicStatement    adc_init adc_disable adc_read
 syn keyword vicBlock        Main Loop
 syn keyword vicPICStatement PIC contained
 syn region  vicString1      start=+'+  end=+'\|$+
 syn region  vicString2      start=+"+  end=+"\|$+
-syn match   vicNumberUnits  "\<\%([0-9][[:digit:]]*\)s\|ms\|us"
-syn match   vicNumber    	"\<\%(0\%(x\x[[:xdigit:]_]*\|b[01][01_]*\|\o[0-7_]*\|\)\|[1-9][[:digit:]_]*\)\>"
+syn match   vicNumberUnits  "\<\%([0-9][[:digit:]]*\)\%(s\|ms\|us\|MHz\|kHz\|Hz\)\>"
+syn match   vicNumber       "\<\%(0\%(x\x[[:xdigit:]_]*\|b[01][01_]*\|\o[0-7_]*\|\)\|[1-9][[:digit:]_]*\)\>"
 syn match   vicComment      "#.*"
 syn match   vicPIC          "\<PIC\s\+\%(\w\)*" contains=vicPICStatement
 syn match   vicVariable     "\$\w*"
