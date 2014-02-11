@@ -10,6 +10,147 @@ has include => 'p16f690.inc';
 
 has org => 0;
 
+has isr_org => 4;
+
+has pin_count => 20;
+
+has pins => {
+    1 => 'Vdd',
+    2 => 'RA5',
+    3 => 'RA4',
+    4 => 'RA3',
+    5 => 'RC5',
+    6 => 'RC4',
+    7 => 'RC3',
+    8 => 'RC6',
+    9 => 'RC7',
+    10 => 'RB7',
+    11 => 'RB6',
+    12 => 'RB5',
+    13 => 'RB4',
+    14 => 'RC2',
+    15 => 'RC1',
+    16 => 'RC0',
+    17 => 'RA2',
+    18 => 'RA1',
+    19 => 'RA0',
+    20 => 'Vss',
+};
+
+has gpio_pins => {
+    RA0 => 19,
+    RA1 => 18,
+    RA2 => 17,
+    RA4 => 3,
+    RA5 => 2,
+    RC0 => 16,
+    RC1 => 15,
+    RC2 => 14,
+    RC3 => 7,
+    RC4 => 6,
+    RC5 => 5,
+    RC6 => 8,
+    RC7 => 9,
+    RB4 => 13,
+    RB5 => 12,
+    RB6 => 11,
+    RB7 => 10,
+};
+
+has input_pins => {
+    RA3 => 4,
+};
+
+has power_pins => {
+    Vdd => 1,
+    Vss => 20,
+    Vpp => 4,
+    ULPWU => 19,
+    MCLR => 4,
+};
+
+has analog_pins => {
+    AN0 => 19,
+    AN1 => 18,
+    AN2 => 17,
+    AN3 => 3,
+    AN4 => 16,
+    AN5 => 15,
+    AN6 => 14,
+    AN7 => 7,
+    AN8 => 8,
+    AN9 => 9,
+    AN10 => 13,
+    AN11 => 12,
+};
+
+has comparator_pins => {
+    C1IN => 19,
+    C12IN0 => 18,
+    C1OUT => 17,
+    C2IN => 16,
+    C12IN1 => 15,
+    C12IN2 => 14,
+    C12IN3 => 7,
+    C2OUT => 6,
+};
+
+has timer_pins => {
+    TMR0 => 17,
+    TMR1 => 2,
+    T0CKI => 17,
+    T1CKI => 2,
+    T1G => 3
+};
+
+has interrupt_pins => {
+    INT => 17,
+};
+
+has usart_pins => {
+    RX => 12,
+    TX => 10,
+    CK => 10,
+    DT => 12,
+};
+
+has clock_pins => {
+    CLKOUT => 3,
+    CLKIN => 2,
+};
+
+has oscillator_pins => {
+    OSC1 => 2,
+    OSC2 => 3,
+};
+
+has icsp_pins => {
+    ICSPCLK => 18,
+    ICSPDAT => 19,
+};
+
+has selector_pins => {
+    SS => 8, # SPI or I2C
+};
+
+has spi_pins => {
+    SDI => 13, # SPI
+    SCK => 11, # SPI
+    SDO => 9, # SPI
+};
+
+has i2c_pins => {
+    SDA => 13, # I2C
+    SCL => 11, # I2C
+};
+
+has pwm_pins => {
+    P1D => 14,
+    P1C => 7,
+    P1B => 6,
+    P1A => 5,
+};
+
 has config => <<"...";
 \t__config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _BOR_OFF & _IESO_OFF & _FCMEN_OFF)
 ...
