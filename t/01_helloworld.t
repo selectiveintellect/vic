@@ -10,11 +10,11 @@ set_config;
 
 set_org 0;
 
-Main {
+Main { # set the Main function
      output_port 'C', 0; # mark RC0 as output
      port_value 'C', 0, 1;
      hang;
-}
+} # end the Main function
 ...
 
 my $output = <<'...';
