@@ -11,7 +11,7 @@ set_config;
 set_org 0;
 
 Main {
-     output_port 'C', 0;
+     output_port 'C', 0; # mark RC0 as output
      port_value 'C', 0, 1;
      hang;
 }

@@ -42,7 +42,7 @@ sub make_tree {
     'comment' => {
       '.any' => [
         {
-          '.rgx' => qr/\G\#.*\r?\n/
+          '.rgx' => qr/\G[\ \t]*\#.*\r?\n/
         },
         {
           '.ref' => 'blank_line'
