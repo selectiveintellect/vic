@@ -1,6 +1,6 @@
 use Test::More;
 
-use lib 'pegex-pm/lib', '../pegex-pm/lib';
+use lib 'pegex-pm/lib';
 
 use_ok('VIC');
 

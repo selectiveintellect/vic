@@ -1,4 +1,4 @@
-use lib 'pegex-pm/lib', '../pegex-pm/lib';
+use lib 'pegex-pm/lib';
 use t::TestVIC tests => 1;
 
 my $input = <<'...';
