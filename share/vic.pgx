@@ -1,5 +1,6 @@
 %grammar vic
 %version 0.0.1
+#COPYRIGHT: 2014 Vikas N Kumar <vikas@cpan.org>. All Rights Reserved
 
 # uc-select is necessary.
 program: uc-select header* statement*
