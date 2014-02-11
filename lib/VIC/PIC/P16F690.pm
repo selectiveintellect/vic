@@ -10,7 +10,126 @@ has include => 'p16f690.inc';
 
 has org => 0;
 
-has isr_org => 4;
+has address_range => [ 0x0000, 0x0FFF ]; # 4K
+
+has reset_address => 0x0000;
+
+has isr_address => 0x0004;
+
+has banks => {
+    # general purpose registers
+    gpr => {
+        [ 0x20, 0x7F ],
+        [ 0xA0, 0xEF ],
+        [ 0x120, 0x16F ],
+        [ ], # no GPRs in bank 4
+    },
+    # special function registers
+    sfr => {
+        [ 0x00, 0x1F ],
+        [ 0x80, 0x9F ],
+        [ 0x100, 0x11F ],
+        [ 0x180, 0x19F ],
+    },
+    bank_size => 0x80,
+};
+
+has register_banks => {
+    # 0x01
+    TMR0 => [ 0, 2 ],
+    OPTION_REG => [ 1, 3 ],
+    # 0x02
+    PCL => [ 0 .. 3 ],
+    # 0x03
+    STATUS => [ 0 .. 3 ],
+    # 0x04
+    FSR => [ 0 .. 3 ],
+    # 0x05
+    PORTA => [ 0, 2 ],
+    TRISA => [ 1, 3 ],
+    # 0x06
+    PORTB => [ 0, 2 ],
+    TRISB => [ 1, 3 ],
+    # 0x07
+    PORTC => [ 0, 2 ],
+    TRISC => [ 1, 3 ],
+    # 0x0A
+    PCLATH => [ 0 .. 3 ],
+    # 0x0B
+    INTCON => [ 0 .. 3 ],
+    # 0x0C
+    PIR1 => [ 0 ],
+    PIE1 => [ 1 ],
+    EEDAT => [ 2 ],
+    EECON1 => [ 3 ],
+    # 0x0D
+    PIR2 => [ 0 ],
+    PIE2 => [ 1 ],
+    EEADR => [ 2 ],
+    EECON2 => [ 3 ],
+    # 0x0E
+    TMR1L => [ 0 ],
+    PCON => [ 1 ],
+    EEDATH => [ 2 ],
+    # 0x0F
+    TMR1H => [ 0 ],
+    OSCCON => [ 1 ],
+    EEADRH => [ 2 ],
+    # 0x10
+    T1CON => [ 0 ],
+    OSCTUNE => [ 1 ],
+    # 0x11
+    TMR2 => [ 0 ],
+    # 0x12
+    T2CON => [ 0 ],
+    PR2 => [ 1 ],
+    # 0x13
+    SSPBUF => [ 0 ],
+    SSPADD => [ 1 ],
+    # 0x14
+    SSPCON => [ 0 ],
+    SSPSTAT => [ 1 ],
+    # 0x15
+    CCPR1L => [ 0 ],
+    WPUA => [ 1 ],
+    WPUB => [ 2 ],
+    # 0x16
+    CCPR1H => [ 0 ],
+    IOCA => [ 1 ],
+    IOCB => [ 2 ],
+    # 0x17
+    CCP1CON => [ 0 ],
+    WDTCON => [ 1 ],
+    # 0x18
+    RCSTA => [ 0 ],
+    TXSTA => [ 1 ],
+    VRCON => [ 2 ],
+    # 0x19
+    TXREG => [ 0 ],
+    SPBRG => [ 1 ],
+    CM1CON0 => [ 2 ],
+    # 0x1A
+    RCREG => [ 0 ],
+    SPBRGH => [ 1 ],
+    CM2CON0 => [ 2 ],
+    # 0x1B
+    BAUDCTL => [ 1 ],
+    CM2CON1 => [ 2 ],
+    # 0x1C
+    PWM1CON => [ 0 ],
+    # 0x1D
+    ECCPAS => [ 0 ],
+    PSTRCON => [ 3 ],
+    # 0x1E
+    ADRESH => [ 0 ],
+    ADRESL => [ 1 ],
+    ANSEL => [ 2 ],
+    PSTRCON => [ 3 ],
+    # 0x1F
+    ADCON0 => [ 0 ],
+    ADCON1 => [ 1 ],
+    ANSELH => [ 2 ],
+};
 
 has pin_count => 20;
 
