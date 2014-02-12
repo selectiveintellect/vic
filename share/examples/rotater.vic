@@ -1,11 +1,11 @@
 PIC P16F690;
 
 Main {
-    output_port 'C', 0;
+    output_port 'C';
     $display = 0x08; # create a 8-bit register by checking size
     Loop {
-        port_value 'C', 0, $display;
-        delay 1s;
+        port_value 'C', 0xFF, $display;
+        delay 100ms;
         # improve this depiction
         # circular rotate right by 1 bit
         ror $display, 1;

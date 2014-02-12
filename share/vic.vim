@@ -10,7 +10,7 @@ if exists("b:current_syntax")
   finish
 endif
 
-syn keyword vicHeader       set_config set_org
+syn keyword vicHeader       config array table
 syn keyword vicStatement    port_value output_port delay hang input_port analog_input_port
 syn keyword vicStatement    adc_init adc_disable adc_read
 syn keyword vicBlock        Main Loop
