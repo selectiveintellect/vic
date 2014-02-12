@@ -1,0 +1,16 @@
+PIC P16F690;
+
+config switch debounce_count = 5;
+config switch debounce_delay = 1ms;
+
+Main {
+    output_port 'C';
+    analog_input_port 'A'; # all pins
+    digital_port 'A', 3; # pin 3 is digital, rest analog
+    Loop {
+        switch 'A', 3, on_press {
+            $value++;
+            port_value 'C', 0xFF, $value;
+        };
+    }
+}
