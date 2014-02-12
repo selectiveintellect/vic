@@ -4,11 +4,7 @@ use t::TestVIC tests => 1;
 my $input = <<'...';
 PIC P16F690;
 
-set_config;
-
 # A Comment
-
-set_org 0;
 
 Main {
      output_port 'C', 0;
