@@ -41,7 +41,7 @@ sub got_uc_config {
     return;
 }
 
-sub got_block {
+sub got_start_block {
     my ($self, $list) = @_;
     $self->flatten($list); # we flatten because we only want the name out
     my $block = shift @$list;

@@ -1,9 +1,9 @@
 %grammar vic
-%version 0.0.1
+%version 0.0.2
 #COPYRIGHT: 2014 Vikas N Kumar <vikas@cpan.org>. All Rights Reserved
 
 # uc-select is necessary.
-program: uc-select header* statement*
+program: uc-select header* statement* <EOS>
 
 header: uc-config | comment
 uc-select: /PIC <BLANK>+ (<uc-types>) <SEMI> <EOL>/
@@ -15,17 +15,19 @@ comment: /<BLANK>* <HASH> <ANY>* <EOL>/ | blank-line
 blank-line: whitespace* /<EOL>/
 whitespace: /<BLANK>+/
 
-statement: comment | block | instruction | end-block
+statement: comment | start-block | instruction | expression | end-block
 
-block: name /<BLANK>* <LCURLY> <BLANK>* <EOL>?/
-end-block: /<BLANK>* <RCURLY> <BLANK>* <EOL>?/
+start-block: name whitespace* <LCURLY> whitespace* <EOL>?
+end-block: whitespace* <RCURLY> whitespace* <EOL>?
 
-instruction: name values* whitespace* <SEMI>
+instruction: name values* whitespace* <SEMI> <EOL>?
 
 name: whitespace* identifier whitespace*
 values: value-comma* value
 value-comma: value /<COMMA>/
 value: whitespace* (string | number-units | number | variable) whitespace*
+
+expression: whitespace* variable whitespace* /=/ value <SEMI> <EOL>?
 
 string: single-quoted-string | double-quoted-string
 

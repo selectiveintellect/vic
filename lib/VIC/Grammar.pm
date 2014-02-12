@@ -11,9 +11,21 @@ sub make_tree {
   {
     '+grammar' => 'vic',
     '+toprule' => 'program',
-    '+version' => '0.0.1',
+    '+version' => '0.0.2',
     'DOLLAR' => {
       '.rgx' => qr/\G\$/
+    },
+    'EOL' => {
+      '.rgx' => qr/\G\r?\n/
+    },
+    'EOS' => {
+      '.rgx' => qr/\G\z/
+    },
+    'LCURLY' => {
+      '.rgx' => qr/\G\{/
+    },
+    'RCURLY' => {
+      '.rgx' => qr/\G\}/
     },
     'SEMI' => {
       '.rgx' => qr/\G;/
@@ -26,16 +38,6 @@ sub make_tree {
         },
         {
           '.rgx' => qr/\G\r?\n/
-        }
-      ]
-    },
-    'block' => {
-      '.all' => [
-        {
-          '.ref' => 'name'
-        },
-        {
-          '.rgx' => qr/\G[\ \t]*\{[\ \t]*\r?\n?/
         }
       ]
     },
@@ -53,7 +55,51 @@ sub make_tree {
       '.rgx' => qr/\G(?:"((?:[^\n\\"]|\\"|\\\\|\\[0nt])*?)")/
     },
     'end_block' => {
-      '.rgx' => qr/\G[\ \t]*\}[\ \t]*\r?\n?/
+      '.all' => [
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '.ref' => 'RCURLY'
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '+max' => 1,
+          '.ref' => 'EOL'
+        }
+      ]
+    },
+    'expression' => {
+      '.all' => [
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '.ref' => 'variable'
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '.rgx' => qr/\G=/
+        },
+        {
+          '.ref' => 'value'
+        },
+        {
+          '.ref' => 'SEMI'
+        },
+        {
+          '+max' => 1,
+          '.ref' => 'EOL'
+        }
+      ]
     },
     'header' => {
       '.any' => [
@@ -83,6 +129,10 @@ sub make_tree {
         },
         {
           '.ref' => 'SEMI'
+        },
+        {
+          '+max' => 1,
+          '.ref' => 'EOL'
         }
       ]
     },
@@ -130,11 +180,36 @@ sub make_tree {
         {
           '+min' => 0,
           '.ref' => 'statement'
+        },
+        {
+          '.ref' => 'EOS'
         }
       ]
     },
     'single_quoted_string' => {
       '.rgx' => qr/\G(?:'((?:[^\n\\']|\\'|\\\\)*?)')/
+    },
+    'start_block' => {
+      '.all' => [
+        {
+          '.ref' => 'name'
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '.ref' => 'LCURLY'
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '+max' => 1,
+          '.ref' => 'EOL'
+        }
+      ]
     },
     'statement' => {
       '.any' => [
@@ -142,10 +217,13 @@ sub make_tree {
           '.ref' => 'comment'
         },
         {
-          '.ref' => 'block'
+          '.ref' => 'start_block'
         },
         {
           '.ref' => 'instruction'
+        },
+        {
+          '.ref' => 'expression'
         },
         {
           '.ref' => 'end_block'

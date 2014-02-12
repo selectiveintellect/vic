@@ -448,6 +448,10 @@ sub delay {
     return wantarray ? ($code, $funcs, $macros) : $code;
 }
 
+sub ror {
+    my ($self, $ins, $var, $bits) = @_;
+    return ' ';
+}
 1;
 
 =encoding utf8
