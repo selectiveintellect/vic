@@ -1,6 +1,7 @@
 package VIC::PIC;
 use strict;
 use warnings;
+use POSIX ();
 
 use Pegex::Base;
 extends 'Pegex::Tree';
@@ -10,7 +11,12 @@ use VIC::PIC::Any;
 # use XXX;
 has pic_override => undef;
 has pic => undef;
-has ast => {};
+has ast => {
+    block_stack => [],
+    block_stack_top => 0,
+    funcs => {},
+    variables => {},
+};
 
 sub throw_error { shift->parser->throw_error(@_); }
 
@@ -26,9 +32,6 @@ sub got_uc_select {
     # set the defaults in case the headers are not provided by the user
     $self->ast->{org} = $self->pic->org;
     $self->ast->{config} = $self->pic->config;
-    $self->ast->{block_stack} = [];
-    $self->ast->{block_stack_top} = 0;
-    $self->ast->{funcs} = {};
     return;
 }
 
@@ -104,9 +107,19 @@ sub got_instruction {
     return;
 }
 
+sub got_expression {
+    return;
+}
+
 sub got_variable {
     my ($self, $list) = @_;
-    return;
+    $self->flatten($list);
+    my $varname = shift @$list;
+    $self->ast->{variables}->{$varname} = {
+        scope => $self->ast->{block_stack_top},
+        size => POSIX::ceil($self->pic->address_bits / 8),
+    };
+    return $varname;
 }
 
 sub got_number {
@@ -146,8 +159,14 @@ sub final {
     my $macros = '';
     # variables are part of macros and need to go first
     my $variables = '';
+    my $varhref = $ast->{variables};
+    $variables .= "GLOBAL_VAR_UDATA udata\n" if keys %$varhref;
+    foreach my $var (keys %$varhref) {
+        # should we care about scope ?
+        $variables .= uc($var) . " res $varhref->{$var}->{size}\n";
+    }
     foreach my $mac (keys %{$ast->{macros}}) {
-        $variables .= $ast->{macros}->{$mac} . "\n", next if $mac =~ /_var$/;
+        $variables .= "\n" . $ast->{macros}->{$mac} . "\n", next if $mac =~ /_var$/;
         $macros .= $ast->{macros}->{$mac};
         $macros .= "\n";
     }
