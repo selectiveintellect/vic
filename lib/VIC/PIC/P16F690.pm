@@ -282,7 +282,7 @@ has config => <<"...";
 ...
 
 sub output_port {
-    my ($self, $ins, $port, $pin) = @_;
+    my ($self, $port, $pin) = @_;
     return undef unless $port =~ /^[A-C]$/;
     my $code = "clrf TRIS$port" if
         (not defined $pin or $pin > 7);
@@ -295,7 +295,7 @@ sub output_port {
 }
 
 sub port_value {
-    my ($self, $ins, $port, $pin, $val) = @_;
+    my ($self, $port, $pin, $val) = @_;
     return undef unless $port =~ /^[A-C]$/;
     # if pin is not set set all values
     unless (defined $val or defined $pin) {
@@ -305,13 +305,18 @@ sub port_value {
 ...
     }
     return "\tclrf PORT$port\n" unless defined $pin;
-    return undef if $pin > 7;
-    return $val ? "\tbsf PORT$port, $pin\n" :
-                  "\tbcf PORT$port, $pin\n";
+    if ($val =~ /^\d+$/) {
+        return "\tbcf PORT$port, $pin\n" if "$val" eq '0';
+        return "\tbsf PORT$port, $pin\n" if "$val" eq '1';
+        return $self->assign_literal("PORT$port", $val);
+    } else {
+        # $val is a variable
+        return $self->assign_variable("PORT$port", uc $val);
+    }
 }
 
 sub hang {
-    my ($self, $ins, @args) = @_;
+    my ($self, @args) = @_;
     return "\tgoto \$";
 }
 
@@ -408,7 +413,7 @@ _delay_secs_loop_0:
 }
 
 sub delay {
-    my ($self, $ins, $t) = @_;
+    my ($self, $t) = @_;
     return '' if $t <= 0;
     # divide the time into component seconds, milliseconds and microseconds
     my $sec = POSIX::floor($t / 1e6);
@@ -449,9 +454,37 @@ sub delay {
 }
 
 sub ror {
-    my ($self, $ins, $var, $bits) = @_;
-    return ' ';
+    my ($self, $var, $bits) = @_;
+    $var = uc $var;
+    my $code = <<"...";
+\tbcf STATUS, C
+...
+    for (1 .. $bits) {
+        $code .= << "...";
+\trrf $var, 1
+\tbtfsc STATUS, C
+\tbsf $var, 7
+...
+    }
+    return $code;
 }
+
+sub assign_literal {
+    my ($self, $var, $val) = @_;
+    return <<"...";
+\tmovlw D'$val'
+\tmovwf $var
+...
+}
+
+sub assign_variable {
+    my ($self, $var1, $var2) = @_;
+    return <<"...";
+\tmovf  $var2, 0 ; moves $var2 to W
+\tmovwf $var1    ; moves W to $var2
+...
+}
+
 1;
 
 =encoding utf8

@@ -56,8 +56,10 @@ sub compiles_ok {
     $output =~ s/\s+//gm;
     my @c0 = split//,$compiled;
     my @c1 = split//,$output;
+    my $count = 0;
     for (my $i = 0; $i < $#c0 and $i < $#c1; $i++) {
-        $Tester->diag("Character $i: $c0[$i] != $c1[$i]") if $c0[$i] ne $c1[$i];
+        $Tester->diag("Character $i: $c0[$i] != $c1[$i]"), $count++ if $c0[$i] ne $c1[$i];
+        last if $count > 5;
     }
 }
 

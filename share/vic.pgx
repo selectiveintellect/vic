@@ -27,7 +27,7 @@ values: value-comma* value
 value-comma: value /<COMMA>/
 value: whitespace* (string | number-units | number | variable) whitespace*
 
-expression: whitespace* variable whitespace* /=/ value <SEMI> <EOL>?
+expression: whitespace* variable whitespace* operator value <SEMI> <EOL>?
 
 string: single-quoted-string | double-quoted-string
 
@@ -39,6 +39,8 @@ units: /(s | ms | us)/
 
 variable: <DOLLAR> identifier
 identifier: /(<ALPHA>[<WORDS>]*)/
+
+operator: /([=])/
 
 single_quoted_string:
     /(:

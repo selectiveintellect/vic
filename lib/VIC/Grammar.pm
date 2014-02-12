@@ -87,7 +87,7 @@ sub make_tree {
           '.ref' => 'whitespace'
         },
         {
-          '.rgx' => qr/\G=/
+          '.ref' => 'operator'
         },
         {
           '.ref' => 'value'
@@ -167,6 +167,9 @@ sub make_tree {
           '.ref' => 'units'
         }
       ]
+    },
+    'operator' => {
+      '.rgx' => qr/\G([=])/
     },
     'program' => {
       '.all' => [

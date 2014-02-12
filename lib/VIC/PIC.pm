@@ -83,15 +83,8 @@ sub got_name {
     return shift(@$list);
 }
 
-sub got_instruction {
-    my ($self, $list) = @_;
-    my $name = shift @$list;
-    $self->flatten($list) if $list;
-    my @args = @$list if $list;
-    $self->throw_error("Unknown instruction $name") unless
-        $self->pic->can($name);
-    my ($code, $funcs, $macros) = $self->pic->$name($name, @args);
-    $self->throw_error("Error in statement $name @args") unless $code;
+sub _update_block {
+    my ($self, $code, $funcs, $macros) = @_;
     my $top = $self->ast->{block_stack_top};
     $top = $top - 1 if $top > 0;
     my $block = $self->ast->{block_stack}->[$top];
@@ -104,10 +97,36 @@ sub got_instruction {
     foreach (keys %$macros) {
         $self->ast->{macros}->{$_} = $macros->{$_};
     }
+}
+
+sub got_instruction {
+    my ($self, $list) = @_;
+    my $method = shift @$list;
+    $self->flatten($list) if $list;
+    my @args = @$list if $list;
+    $self->throw_error("Unknown instruction $method") unless $self->pic->can($method);
+    my ($code, $funcs, $macros) = $self->pic->$method(@args);
+    $self->throw_error("Error in statement $method @args") unless $code;
+    $self->_update_block($code, $funcs, $macros);
     return;
 }
 
 sub got_expression {
+    my ($self, $list) = @_;
+    $self->flatten($list);
+    my $varname = shift @$list;
+    my $op = shift @$list;
+    my $value = shift @$list;
+    my $code;
+    $self->throw_error("Operator $op not supported") unless $op eq '=';
+    my $method = 'assign_' if $op eq '=';
+    $method .= exists $self->ast->{variables}->{$value} ? 'variable' : 'literal';
+
+    $self->throw_error("Unknown instruction $method") unless $self->pic->can($method);
+    my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
+    $code = $self->pic->$method($nvar, $value) if $op eq '=';
+    $self->throw_error("Invalid expression $varname $op $value") unless $code;
+    $self->_update_block($code);
     return;
 }
 
@@ -116,9 +135,10 @@ sub got_variable {
     $self->flatten($list);
     my $varname = shift @$list;
     $self->ast->{variables}->{$varname} = {
+        name => uc $varname,
         scope => $self->ast->{block_stack_top},
         size => POSIX::ceil($self->pic->address_bits / 8),
-    };
+    } unless exists $self->ast->{variables}->{$varname};
     return $varname;
 }
 
@@ -159,11 +179,11 @@ sub final {
     my $macros = '';
     # variables are part of macros and need to go first
     my $variables = '';
-    my $varhref = $ast->{variables};
-    $variables .= "GLOBAL_VAR_UDATA udata\n" if keys %$varhref;
-    foreach my $var (keys %$varhref) {
+    my $vhref = $ast->{variables};
+    $variables .= "GLOBAL_VAR_UDATA udata\n" if keys %$vhref;
+    foreach my $var (keys %$vhref) {
         # should we care about scope ?
-        $variables .= uc($var) . " res $varhref->{$var}->{size}\n";
+        $variables .= "$vhref->{$var}->{name} res $vhref->{$var}->{size}\n";
     }
     foreach my $mac (keys %{$ast->{macros}}) {
         $variables .= "\n" . $ast->{macros}->{$mac} . "\n", next if $mac =~ /_var$/;
