@@ -14,6 +14,7 @@ META.yml
 README.md
 share/examples/blinker.vic
 share/examples/helloworld.vic
+share/examples/rotater.vic
 share/rebuild-grammar
 share/vic.pgx
 share/vic.vim
