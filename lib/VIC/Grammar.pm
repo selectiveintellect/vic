@@ -58,7 +58,7 @@ sub make_tree {
     'header' => {
       '.any' => [
         {
-          '.ref' => 'uc_header'
+          '.ref' => 'uc_config'
         },
         {
           '.ref' => 'comment'
@@ -162,8 +162,8 @@ sub make_tree {
         }
       ]
     },
-    'uc_header' => {
-      '.rgx' => qr/\Gset_(config|org)[\ \t]*(.*);\r?\n/
+    'uc_config' => {
+      '.rgx' => qr/\Gconfig[\ \t]+(.*);\r?\n/
     },
     'uc_select' => {
       '.rgx' => qr/\GPIC[\ \t]+((?i:P16F690|P16F690X));\r?\n/

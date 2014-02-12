@@ -32,18 +32,12 @@ sub got_uc_select {
     return;
 }
 
-sub got_uc_header {
+sub got_uc_config {
     my ($self, $list) = @_;
-    my $hdr = shift @$list;
-    if ($hdr eq 'org') {
-        my $org = shift @$list;
-        $org = $self->pic->org unless defined $org;
-        $self->ast->{org} = $org;
-    } elsif ($hdr eq 'config') {
-        ## TODO: add more options to the default
-        $self->ast->{config} = $self->pic->config;
-        chomp $self->ast->{config};
-    }
+    #my $conf = shift @$list;
+    ## TODO: add more options to the default
+    $self->ast->{config} = $self->pic->config;
+    chomp $self->ast->{config};
     return;
 }
 
