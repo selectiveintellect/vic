@@ -10,11 +10,17 @@ has include => 'p16f690.inc';
 
 has org => 0;
 
+has address_bits => 8;
+
 has address_range => [ 0x0000, 0x0FFF ]; # 4K
 
 has reset_address => 0x0000;
 
 has isr_address => 0x0004;
+
+has program_counter_size => 13; # PCL and PCLATH<4:0>
+
+has stack_size => 8; # 8-level x 13-bit wide
 
 has banks => {
     # general purpose registers
@@ -189,6 +195,7 @@ has power_pins => {
 };
 
 has analog_pins => {
+    # use ANSEL for pins AN0-AN7 and ANSELH for AN8-AN11
     AN0 => 19,
     AN1 => 18,
     AN2 => 17,
