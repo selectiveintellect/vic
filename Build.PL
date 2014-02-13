@@ -18,9 +18,9 @@ my $build = Module::Build->new(
         'Module::Build' => 0,
         'Test::More' => 0,
         'File::Spec' => 0,
+        'Pegex' => 0.22, # needed for PL_files to work
     },
     requires => {
-        'Pegex' => 0.22,
         'Getopt::Long' => 0,
     },
     recommends => {
