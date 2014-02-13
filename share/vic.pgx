@@ -15,7 +15,6 @@ comment: /<BLANK>* <HASH> <ANY>* <EOL>/ | blank-line
 blank-line: whitespace* /<EOL>/
 whitespace: /<BLANK>+/
 
-statement: comment | start-block | instruction | expression | end-block
 statement: comment | instruction | expression | block
 
 block: start-block statement* end-block
