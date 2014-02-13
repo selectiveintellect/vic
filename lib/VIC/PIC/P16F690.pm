@@ -510,6 +510,7 @@ sub ror {
 
 sub assign_literal {
     my ($self, $var, $val) = @_;
+    return "\tclrf $var\n" if "$val" eq '0';
     return <<"...";
 \t;; moves $val to $var
 \tmovlw D'$val'
@@ -542,9 +543,71 @@ sub decrement {
 ...
 }
 
+sub m_debounce_var {
+    return <<'...';
+;;;;;; DEBOUNCE VARIABLES ;;;;;;;
+
+DEBOUNCE_VAR_IDATA idata
+;; initialize state to 1
+DEBOUNCESTATE db 0x01
+;; initialize counter to 0
+DEBOUNCECOUNTER db 0x00
+
+...
+}
 sub debounce {
-    my ($self, @args) = @_;
-    return ' ;DEBOUNCE '. join("\t", @args);
+    my ($self, $port, $pin, $action) = @_;
+    my ($parent_label, $action_label);
+    if ($action =~ /LABEL::(\w+)::\w+::\w+::(\w+)/) {
+        $action_label = $1;
+        $parent_label = $2;
+    }
+    return unless $action_label;
+    return unless $parent_label;
+    my $debounce_count = 5; #TODO: read from config
+    my $debounce_delay = 1000; #TODO: read from config. this is microseconds
+    my ($deb_code, $funcs, $macros) = $self->delay($debounce_delay);
+    $macros = {} unless defined $macros;
+    $funcs = {} unless defined $funcs;
+    $deb_code = 'nop' unless defined $deb_code;
+    $macros->{m_debounce_var} = $self->m_debounce_var;
+    my $code = <<"...";
+\t;;; generate code for debounce $port<$pin>
+$deb_code
+\t;; has debounce state changed to down (bit 0 is 0)
+\t;; if yes go to debounce-state-down
+\tbtfsc   DEBOUNCESTATE, 0
+\tgoto    _debounce_state_up
+_debounce_state_down:
+\tclrw
+\tbtfss   PORT$port, $pin
+\t;; increment and move into counter
+\tincf    DEBOUNCECOUNTER, 0
+\tmovwf   DEBOUNCECOUNTER
+\tgoto    _debounce_state_check
+
+_debounce_state_up:
+\tclrw
+\tbtfsc   PORT$port, $pin
+\tincf    DEBOUNCECOUNTER, 0
+\tmovwf   DEBOUNCECOUNTER
+\tgoto    _debounce_state_check
+
+_debounce_state_check:
+\tmovf    DEBOUNCECOUNTER, W
+\txorlw   $debounce_count
+\t;; is counter == $debounce_count ?
+\tbtfss   STATUS, Z
+\tgoto    $parent_label
+\t;; after $debounce_count straight, flip direction
+\tcomf    DEBOUNCESTATE, 1
+\tclrf    DEBOUNCECOUNTER
+\t;; was it a key-down
+\tbtfss   DEBOUNCESTATE, 0
+\tgoto    $parent_label
+\tgoto    $action_label
+...
+    return wantarray ? ($code, $funcs, $macros) : $code;
 }
 1;
 

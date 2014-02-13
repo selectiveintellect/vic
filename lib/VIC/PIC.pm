@@ -7,7 +7,7 @@ use Pegex::Base;
 extends 'Pegex::Tree';
 
 use VIC::PIC::Any;
-#    use XXX;
+#use XXX;
 
 has pic_override => undef;
 has pic => undef;
@@ -44,13 +44,6 @@ sub got_uc_config {
     return;
 }
 
-#sub got_values {
-#    my ($self, $list) = @_;
-#    $self->flatten($list);
-#    YYY $list;
-#    return $list;
-#}
-
 sub got_block {
     my ($self, $list) = @_;
     $self->flatten($list);
@@ -61,7 +54,15 @@ sub got_block {
         $block_label = "LABEL::$1::$block" if $block_label =~ /^\s*(\w+):/;
         ## do not allow the parent to be a label
         if (defined $parent) {
-            $block_label .= "::$parent" unless $parent =~ /LABEL::/;
+            unless ($parent =~ /LABEL::/) {
+                $block_label .= "::$parent";
+                if (exists $self->ast->{$parent} and
+                    ref $self->ast->{$parent} eq 'ARRAY' and
+                    $parent ne $block) {
+                    my $plabel = $1 if $self->ast->{$parent}->[0] =~ /^\s*(\w+):/;
+                    $block_label .= "::$plabel" if $plabel;
+                }
+            }
             push @{$self->ast->{$parent}}, $block_label;
         }
         return $block_label;
@@ -222,17 +223,21 @@ sub _generate_code {
     return wantarray ? @code : [] unless exists $ast->{$block};
     $ast->{generated_blocks} = {} unless defined $ast->{generated_blocks};
     push @code, ";;;; generated code for $block";
+    my @action_code = ();
     foreach my $line (@{$ast->{$block}}) {
         if ($line =~ /LABEL::(\w+)::(\w+)(?:::(\w+))?/) {
             my $label = $1;
             my $child = $2;
             my $parent = $3;
-            #print "$label $child $parent $line $block\n";
             next if $child eq $parent; # bug - FIXME
             next if $child eq $block; # bug - FIXME
             next if exists $ast->{generated_blocks}->{$child};
             my @newcode = _generate_code($ast, $child);
-            push @code, @newcode if @newcode;
+            if ($child =~ /^Action/) {
+                push @action_code, @newcode if @newcode;
+            } else {
+                push @code, @newcode if @newcode;
+            }
             $ast->{generated_blocks}->{$child} = 1 if @newcode;
             # parent equals block if it is the topmost of the stack
             # if the child is not a loop construct it will need a goto back to
@@ -246,6 +251,10 @@ sub _generate_code {
             push @code, "\tgoto $label" if $child =~ /^Loop/;
         } else {
             push @code, $line;
+            if (scalar @action_code) {
+                push @code, @action_code;
+                @action_code = ();
+            }
         }
     }
     return wantarray ? @code : [@code];
@@ -268,6 +277,7 @@ sub final {
     $variables .= "GLOBAL_VAR_UDATA udata\n" if keys %$vhref;
     foreach my $var (keys %$vhref) {
         # should we care about scope ?
+        # FIXME: initialized variables ?
         $variables .= "$vhref->{$var}->{name} res $vhref->{$var}->{size}\n";
     }
     foreach my $mac (keys %{$ast->{macros}}) {
