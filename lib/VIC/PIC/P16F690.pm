@@ -322,7 +322,7 @@ sub analog_input_port {
         (not defined $pin or $pin > 7);
     $code = "bcf TRIS$port, TRIS$port$pin" if (defined $pin and $pin < 7);
     #TODO: find RA3 in the list of ports and adjust flags
-    my $flags = 0x00;
+    my $flags = sprintf "0x%2X", 0x00;
     return << "...";
 \tbanksel TRIS$port
 \t$code
@@ -340,7 +340,7 @@ sub digital_input_port {
     my $code = "clrf TRIS$port" if
         (not defined $pin or $pin > 7);
     $code = "bcf TRIS$port, TRIS$port$pin" if (defined $pin and $pin < 7);
-    my $flags = 0xFF;
+    my $flags = sprintf "0x%2X", 0xFF;
     #TODO: find RA3 in the list of ports and adjust flags
     return << "...";
 \tbanksel TRIS$port
