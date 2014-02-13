@@ -6,8 +6,6 @@ use Pegex::Parser;
 use VIC::Grammar;
 use VIC::PIC;
 
-# use XXX;
-
 our $Debug = 0;
 our $VERSION = '0.01';
 $VERSION = eval $VERSION;

@@ -8,7 +8,6 @@ extends 'Pegex::Tree';
 
 use VIC::PIC::Any;
 
-# use XXX;
 has pic_override => undef;
 has pic => undef;
 has ast => {

@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 use base 'Pegex::Grammar';
-# use XXX;
 
 use constant file => './share/vic.pgx';
 
