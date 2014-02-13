@@ -1,5 +1,5 @@
 use lib 'pegex-pm/lib';
-use t::TestVIC tests => 1, debug => 1;
+use t::TestVIC tests => 1, debug => 0;
 
 my $input = <<'...';
 PIC P16F690;
@@ -12,14 +12,16 @@ Main {
     digital_input_port 'A', 3; # pin 3 is digital, rest analog
     Loop {
         debounce 'A', 3, Action {
-            $value++;
-            port_value 'C', 0xFF, $value;
+            $display++;
+            port_value 'C', 0xFF, $display;
         };
     }
 }
 ...
 
 my $output = <<'...';
+#include <p16f690.inc>
+
 GLOBAL_VAR_UDATA udata
 DISPLAY res 1
 SWITCHSTATE res 1
