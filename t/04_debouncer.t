@@ -12,7 +12,7 @@ Main {
     digital_input_port 'A', 3; # pin 3 is digital, rest analog
     Loop {
         debounce 'A', 3, Action {
-        #    $value++;
+            $value++;
             port_value 'C', 0xFF, $value;
         };
     }

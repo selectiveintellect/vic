@@ -111,7 +111,36 @@ sub got_instruction {
     return;
 }
 
-sub got_expression {
+sub _handle_var_op {
+    my ($self, $varname, $op) = @_;
+    my $method = 'increment' if $op eq '++';
+    $method = 'decrement' if $op eq '--';
+    $self->throw_error("Operator $op not supported. Use -- or ++ only.") unless $method;
+    $self->throw_error("Unknown instruction $method") unless $self->pic->can($method);
+    my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
+    my $code = $self->pic->$method($nvar);
+    $self->throw_error("Invalid expression $varname $op") unless $code;
+    $self->_update_block($code);
+    return;
+}
+
+sub got_lhs_op {
+    my ($self, $list) = @_;
+    $self->flatten($list);
+    my $varname = shift @$list;
+    my $op = shift @$list;
+    return $self->_handle_var_op($varname, $op);
+}
+
+sub got_op_rhs {
+    my ($self, $list) = @_;
+    $self->flatten($list);
+    my $op = shift @$list;
+    my $varname = shift @$list;
+    return $self->_handle_var_op($varname, $op);
+}
+
+sub got_lhs_op_rhs {
     my ($self, $list) = @_;
     $self->flatten($list);
     my $varname = shift @$list;
@@ -124,7 +153,7 @@ sub got_expression {
 
     $self->throw_error("Unknown instruction $method") unless $self->pic->can($method);
     my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
-    $code = $self->pic->$method($nvar, $value) if $op eq '=';
+    $code = $self->pic->$method($nvar, $value);
     $self->throw_error("Invalid expression $varname $op $value") unless $code;
     $self->_update_block($code);
     return;

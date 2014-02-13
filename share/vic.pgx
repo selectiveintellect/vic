@@ -29,7 +29,10 @@ values: value-comma* value
 value-comma: value /<COMMA>/
 value: whitespace* (string | number-units | number | variable | block) whitespace*
 
-expression: whitespace* variable whitespace* operator value <SEMI> <EOL>?
+expression: lhs-op-rhs | lhs-op | op-rhs
+lhs-op: whitespace* variable whitespace* operator <SEMI>? <EOL>?
+op-rhs: whitespace* operator whitespace* variable <SEMI>? <EOL>?
+lhs-op-rhs: whitespace* variable whitespace* operator value <SEMI> <EOL>?
 
 string: single-quoted-string | double-quoted-string
 
@@ -42,9 +45,9 @@ units: /(s | ms | us)/
 variable: <DOLLAR> identifier
 identifier: /(<ALPHA>[<WORDS>]*)/
 
-operator: /(:(
+operator: /((:
     <BANG> | <EQUAL> | <PERCENT> | <CARET> | <AMP> | <STAR> | <TILDE> | <DASH> |
-    <PLUS> | <PIPE> | <SLASH> | <LANGLE> | <RANGLE>){1, 2})/
+    <PLUS> | <PIPE> | <SLASH> | <LANGLE> | <RANGLE>){1,2})/
 
 
 single_quoted_string:

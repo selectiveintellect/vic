@@ -523,6 +523,16 @@ sub assign_variable {
 ...
 }
 
+sub increment {
+    my ($self, $var) = @_;
+    return "\tincf $var, 1\n";
+}
+
+sub decrement {
+    my ($self, $var) = @_;
+    return "\tdecf $var, 1\n";
+}
+
 sub debounce {
     return ' ';
 }

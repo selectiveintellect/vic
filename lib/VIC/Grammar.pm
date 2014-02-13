@@ -88,30 +88,15 @@ sub make_tree {
       ]
     },
     'expression' => {
-      '.all' => [
+      '.any' => [
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => 'lhs_op_rhs'
         },
         {
-          '.ref' => 'variable'
+          '.ref' => 'lhs_op'
         },
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
-        },
-        {
-          '.ref' => 'operator'
-        },
-        {
-          '.ref' => 'value'
-        },
-        {
-          '.ref' => 'SEMI'
-        },
-        {
-          '+max' => 1,
-          '.ref' => 'EOL'
+          '.ref' => 'op_rhs'
         }
       ]
     },
@@ -140,6 +125,60 @@ sub make_tree {
         {
           '+min' => 0,
           '.ref' => 'whitespace'
+        },
+        {
+          '.ref' => 'SEMI'
+        },
+        {
+          '+max' => 1,
+          '.ref' => 'EOL'
+        }
+      ]
+    },
+    'lhs_op' => {
+      '.all' => [
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '.ref' => 'variable'
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '.ref' => 'operator'
+        },
+        {
+          '+max' => 1,
+          '.ref' => 'SEMI'
+        },
+        {
+          '+max' => 1,
+          '.ref' => 'EOL'
+        }
+      ]
+    },
+    'lhs_op_rhs' => {
+      '.all' => [
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '.ref' => 'variable'
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '.ref' => 'operator'
+        },
+        {
+          '.ref' => 'value'
         },
         {
           '.ref' => 'SEMI'
@@ -182,8 +221,34 @@ sub make_tree {
         }
       ]
     },
+    'op_rhs' => {
+      '.all' => [
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '.ref' => 'operator'
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '.ref' => 'variable'
+        },
+        {
+          '+max' => 1,
+          '.ref' => 'SEMI'
+        },
+        {
+          '+max' => 1,
+          '.ref' => 'EOL'
+        }
+      ]
+    },
     'operator' => {
-      '.rgx' => qr/\G(?:(!|=|%|\^|&|\*|\~|\-|\+|\||\/|<|>){1,2})/
+      '.rgx' => qr/\G((?:!|=|%|\^|&|\*|\~|\-|\+|\||\/|<|>){1,2})/
     },
     'program' => {
       '.all' => [
