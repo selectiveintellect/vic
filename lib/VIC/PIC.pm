@@ -37,10 +37,10 @@ sub got_uc_select {
 
 sub got_uc_config {
     my ($self, $list) = @_;
-    #my $conf = shift @$list;
-    ## TODO: add more options to the default
+    $self->flatten($list);
+    $self->pic->update_config(@$list);
+    # get the updated config
     $self->ast->{config} = $self->pic->config;
-    chomp $self->ast->{config};
     return;
 }
 

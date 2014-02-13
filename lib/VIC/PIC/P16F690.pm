@@ -279,7 +279,27 @@ has pwm_pins => {
 
 has config => <<"...";
 \t__config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _BOR_OFF & _IESO_OFF & _FCMEN_OFF)
+
 ...
+
+has code_config => {
+    debounce => {
+        count => 5,
+        delay => 1000, # in microseconds
+    },
+};
+
+sub update_config {
+    my ($self, $grp, $key, $val) = @_;
+    return unless defined $grp;
+    $self->code_config->{$grp} = {} unless exists $self->code_config->{$grp};
+    my $grpref = $self->code_config->{$grp};
+    if (ref $grpref eq 'HASH') {
+        $grpref->{$key} = $val;
+    } else {
+        warn "Unsupported type for $grp\n";
+    }
+}
 
 sub output_port {
     my ($self, $port, $pin) = @_;
@@ -564,8 +584,9 @@ sub debounce {
     }
     return unless $action_label;
     return unless $parent_label;
-    my $debounce_count = 5; #TODO: read from config
-    my $debounce_delay = 1000; #TODO: read from config. this is microseconds
+    # incase the user does weird stuff override the count and delay
+    my $debounce_count = $self->code_config->{debounce}->{count} || 1;
+    my $debounce_delay = $self->code_config->{debounce}->{delay} || 1000;
     my ($deb_code, $funcs, $macros) = $self->delay($debounce_delay);
     $macros = {} unless defined $macros;
     $funcs = {} unless defined $funcs;

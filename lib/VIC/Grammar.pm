@@ -20,6 +20,9 @@ sub make_tree {
     'EOS' => {
       '.rgx' => qr/\G\z/
     },
+    'EQUAL' => {
+      '.rgx' => qr/\G=/
+    },
     'LCURLY' => {
       '.rgx' => qr/\G\{/
     },
@@ -61,6 +64,34 @@ sub make_tree {
         },
         {
           '.ref' => 'blank_line'
+        }
+      ]
+    },
+    'config_expression' => {
+      '.all' => [
+        {
+          '.ref' => 'name'
+        },
+        {
+          '.ref' => 'EQUAL'
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '.any' => [
+            {
+              '.ref' => 'number_units'
+            },
+            {
+              '.ref' => 'number'
+            }
+          ]
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
         }
       ]
     },
@@ -319,7 +350,27 @@ sub make_tree {
       ]
     },
     'uc_config' => {
-      '.rgx' => qr/\Gconfig[\ \t]+(.*);\r?\n/
+      '.all' => [
+        {
+          '.rgx' => qr/\Gconfig/
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'whitespace'
+        },
+        {
+          '.ref' => 'name'
+        },
+        {
+          '.ref' => 'config_expression'
+        },
+        {
+          '.ref' => 'SEMI'
+        },
+        {
+          '.ref' => 'EOL'
+        }
+      ]
     },
     'uc_select' => {
       '.rgx' => qr/\GPIC[\ \t]+((?i:P16F690|P16F690X));\r?\n/
