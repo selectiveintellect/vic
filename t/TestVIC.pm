@@ -27,7 +27,7 @@ sub import {
 
 sub sanitize {
     my $c = shift;
-    $c =~ s/;.*//gm;
+    $c =~ s/;.*[\r\n]//gm;
     $c =~ s/, /,/gm;
     $c =~ s/[\r\n]+/\n/gm;
     $c =~ s/[\r\n]\s+/\n/gm;
@@ -50,13 +50,15 @@ sub compiles_ok {
     my $compiled = VIC::compile($input);
     $compiled = sanitize($compiled);
     $output = sanitize($output);
-    $Tester->is_eq($compiled, $output, $msg);
+    my $ok = $Tester->is_eq($compiled, $output, $msg);
+    return if $ok;
     ## show the diffs
     $compiled =~ s/\s+//gm;
     $output =~ s/\s+//gm;
     my @c0 = split//,$compiled;
     my @c1 = split//,$output;
     my $count = 0;
+    $Tester->diag("Count of characters: $#c0 $#c1\n");
     for (my $i = 0; $i < $#c0 and $i < $#c1; $i++) {
         $Tester->diag("Character $i: $c0[$i] != $c1[$i]"), $count++ if $c0[$i] ne $c1[$i];
         last if $count > 5;
