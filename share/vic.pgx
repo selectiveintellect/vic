@@ -16,7 +16,9 @@ blank-line: whitespace* /<EOL>/
 whitespace: /<BLANK>+/
 
 statement: comment | start-block | instruction | expression | end-block
+statement: comment | instruction | expression | block
 
+block: start-block statement* end-block
 start-block: name whitespace* <LCURLY> whitespace* <EOL>?
 end-block: whitespace* <RCURLY> whitespace* <EOL>?
 
@@ -25,7 +27,7 @@ instruction: name values* whitespace* <SEMI> <EOL>?
 name: whitespace* identifier whitespace*
 values: value-comma* value
 value-comma: value /<COMMA>/
-value: whitespace* (string | number-units | number | variable) whitespace*
+value: whitespace* (string | number-units | number | variable | block) whitespace*
 
 expression: whitespace* variable whitespace* operator value <SEMI> <EOL>?
 
@@ -40,7 +42,10 @@ units: /(s | ms | us)/
 variable: <DOLLAR> identifier
 identifier: /(<ALPHA>[<WORDS>]*)/
 
-operator: /([=])/
+operator: /(:(
+    <BANG> | <EQUAL> | <PERCENT> | <CARET> | <AMP> | <STAR> | <TILDE> | <DASH> |
+    <PLUS> | <PIPE> | <SLASH> | <LANGLE> | <RANGLE>){1, 2})/
+
 
 single_quoted_string:
     /(:

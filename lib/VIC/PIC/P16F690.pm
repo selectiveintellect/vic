@@ -315,6 +315,44 @@ sub port_value {
     }
 }
 
+sub analog_input_port {
+    my ($self, $port, $pin) = @_;
+    return undef unless $port =~ /^[A-C]$/;
+    my $code = "clrf TRIS$port" if
+        (not defined $pin or $pin > 7);
+    $code = "bcf TRIS$port, TRIS$port$pin" if (defined $pin and $pin < 7);
+    #TODO: find RA3 in the list of ports and adjust flags
+    my $flags = 0x00;
+    return << "...";
+\tbanksel TRIS$port
+\t$code
+\tbanksel ANSEL
+\tmovlw $flags
+\tmovwf ANSEL
+\tbanksel PORT$port
+...
+
+}
+
+sub digital_input_port {
+    my ($self, $port, $pin) = @_;
+    return undef unless $port =~ /^[A-C]$/;
+    my $code = "clrf TRIS$port" if
+        (not defined $pin or $pin > 7);
+    $code = "bcf TRIS$port, TRIS$port$pin" if (defined $pin and $pin < 7);
+    my $flags = 0xFF;
+    #TODO: find RA3 in the list of ports and adjust flags
+    return << "...";
+\tbanksel TRIS$port
+\t$code
+\tbanksel ANSEL
+\tmovlw $flags
+\tmovwf ANSEL
+\tbanksel PORT$port
+...
+
+}
+
 sub hang {
     my ($self, @args) = @_;
     return "\tgoto \$";
@@ -485,6 +523,9 @@ sub assign_variable {
 ...
 }
 
+sub debounce {
+    return ' ';
+}
 1;
 
 =encoding utf8

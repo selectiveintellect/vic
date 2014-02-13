@@ -41,6 +41,20 @@ sub make_tree {
         }
       ]
     },
+    'block' => {
+      '.all' => [
+        {
+          '.ref' => 'start_block'
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'statement'
+        },
+        {
+          '.ref' => 'end_block'
+        }
+      ]
+    },
     'comment' => {
       '.any' => [
         {
@@ -169,7 +183,7 @@ sub make_tree {
       ]
     },
     'operator' => {
-      '.rgx' => qr/\G([=])/
+      '.rgx' => qr/\G(?:(!|=|%|\^|&|\*|\~|\-|\+|\||\/|<|>){1,2})/
     },
     'program' => {
       '.all' => [
@@ -220,16 +234,13 @@ sub make_tree {
           '.ref' => 'comment'
         },
         {
-          '.ref' => 'start_block'
-        },
-        {
           '.ref' => 'instruction'
         },
         {
           '.ref' => 'expression'
         },
         {
-          '.ref' => 'end_block'
+          '.ref' => 'block'
         }
       ]
     },
@@ -271,6 +282,9 @@ sub make_tree {
             },
             {
               '.ref' => 'variable'
+            },
+            {
+              '.ref' => 'block'
             }
           ]
         },

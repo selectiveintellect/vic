@@ -1,19 +1,18 @@
 use lib 'pegex-pm/lib';
-use t::TestVIC tests => 1, debug => 0;
+use t::TestVIC tests => 1, debug => 1;
 
 my $input = <<'...';
 PIC P16F690;
 
-config switch_debounce_count = 5;
-config switch_debounce_delay = 1ms;
+config debounce count = 5;
+config debounce delay = 1ms;
 
 Main {
     output_port 'C';
-    analog_input_port 'A'; # all pins
-    digital_port 'A', 3; # pin 3 is digital, rest analog
+    digital_input_port 'A', 3; # pin 3 is digital, rest analog
     Loop {
-        switch 'A', 3, on_press {
-            $value++;
+        debounce 'A', 3, Action {
+        #    $value++;
             port_value 'C', 0xFF, $value;
         };
     }
@@ -37,8 +36,10 @@ _start:
     ;; make all PORTA pins as input
     movlw   0xFF
     movwf   TRISA
-    ;; ANSEL has to be initialized to configure an analog channel as digital
-    ;; input. we want pin RA3 to be configured as digital input
+    ;; setting ANSEL bits to 1 enables the the pin to be an analog input
+    ;; setting TRISx bits to 0 enables digital output
+    ;; hence setting RA3's corresponding bit in ANSEL to 0 makes it a digital input
+    ;; the rest of the pins need to be analog input for now
     banksel ANSEL
     movlw   0xF7
     movwf   ANSEL
