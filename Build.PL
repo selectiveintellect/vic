@@ -40,6 +40,7 @@ my $build = Module::Build->new(
             directory => [qw/ t /],
         },
     },
+    PL_files => { 'share/rebuild-grammar.PL' => [] },
 );
 
 $build->create_build_script;
