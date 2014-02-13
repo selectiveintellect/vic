@@ -510,6 +510,7 @@ sub ror {
 sub assign_literal {
     my ($self, $var, $val) = @_;
     return <<"...";
+\t;; moves $val to $var
 \tmovlw D'$val'
 \tmovwf $var
 ...
@@ -518,8 +519,9 @@ sub assign_literal {
 sub assign_variable {
     my ($self, $var1, $var2) = @_;
     return <<"...";
-\tmovf  $var2, 0 ; moves $var2 to W
-\tmovwf $var1    ; moves W to $var2
+\t;; moves $var2 to $var1
+\tmovf  $var2, 0
+\tmovwf $var1
 ...
 }
 
@@ -534,7 +536,8 @@ sub decrement {
 }
 
 sub debounce {
-    return ' ';
+    my ($self, @args) = @_;
+    return ' ;DEBOUNCE '. join("\t", @args);
 }
 1;
 

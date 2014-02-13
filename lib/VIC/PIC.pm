@@ -7,6 +7,7 @@ use Pegex::Base;
 extends 'Pegex::Tree';
 
 use VIC::PIC::Any;
+#    use XXX;
 
 has pic_override => undef;
 has pic => undef;
@@ -43,12 +44,36 @@ sub got_uc_config {
     return;
 }
 
+#sub got_values {
+#    my ($self, $list) = @_;
+#    $self->flatten($list);
+#    YYY $list;
+#    return $list;
+#}
+
+sub got_block {
+    my ($self, $list) = @_;
+    $self->flatten($list);
+    my $block = shift @$list;
+    my $parent = shift @$list;
+    if (exists $self->ast->{$block} and ref $self->ast->{$block} eq 'ARRAY') {
+        my $block_label = $self->ast->{$block}->[0];
+        $block_label = "LABEL::$1::$block" if $block_label =~ /^\s*(\w+):/;
+        ## do not allow the parent to be a label
+        if (defined $parent) {
+            $block_label .= "::$parent" unless $parent =~ /LABEL::/;
+            push @{$self->ast->{$parent}}, $block_label;
+        }
+        return $block_label;
+    }
+}
+
 sub got_start_block {
     my ($self, $list) = @_;
     $self->flatten($list); # we flatten because we only want the name out
     my $block = shift @$list;
     my $id = $self->ast->{block_stack_top};
-    $block = "$block$id" if $block eq 'Loop';
+    $block = "$block$id" if $block =~ /^(?:Loop|Action)/;
     push @{$self->ast->{block_stack}}, $block;
     $self->ast->{block_stack_top} = scalar @{$self->ast->{block_stack}};
     my $stack = [];
@@ -56,9 +81,11 @@ sub got_start_block {
         push @$stack, "_start:\n";
     } elsif ($block =~ /^Loop/) {
         push @$stack, "_loop_$id:\n";
+    } elsif ($block =~ /^Action/) {
+        push @$stack, "_action_$id:\n";
     }
     $self->ast->{$block} = $stack;
-    return;
+    return $block;
 }
 
 sub got_end_block {
@@ -67,13 +94,8 @@ sub got_end_block {
     my $block = pop @{$self->ast->{block_stack}};
     $self->ast->{block_stack_top} = scalar @{$self->ast->{block_stack}};
     my $top = $self->ast->{block_stack_top};
-    return if $top eq 0;
-    my $parent = $self->ast->{block_stack}->[$top - 1];
-    return unless $parent;
-    push @{$self->ast->{$parent}}, @{$self->ast->{$block}};
-    my $endcode = "\tgoto _loop_$top\n" if $block =~ /^Loop/;
-    push @{$self->ast->{$parent}}, $endcode if $endcode;
-    return;
+    return $block if $top eq 0;
+    return $self->ast->{block_stack}->[$top - 1];
 }
 
 sub got_name {
@@ -193,6 +215,41 @@ sub got_number_units {
 # remove the dumb stuff from the tree
 sub got_comment { return; }
 
+sub _generate_code {
+    my ($ast, $block) = @_;
+    my @code = ();
+    return wantarray ? @code : [] unless defined $ast;
+    return wantarray ? @code : [] unless exists $ast->{$block};
+    $ast->{generated_blocks} = {} unless defined $ast->{generated_blocks};
+    push @code, ";;;; generated code for $block";
+    foreach my $line (@{$ast->{$block}}) {
+        if ($line =~ /LABEL::(\w+)::(\w+)(?:::(\w+))?/) {
+            my $label = $1;
+            my $child = $2;
+            my $parent = $3;
+            #print "$label $child $parent $line $block\n";
+            next if $child eq $parent; # bug - FIXME
+            next if $child eq $block; # bug - FIXME
+            next if exists $ast->{generated_blocks}->{$child};
+            my @newcode = _generate_code($ast, $child);
+            push @code, @newcode if @newcode;
+            $ast->{generated_blocks}->{$child} = 1 if @newcode;
+            # parent equals block if it is the topmost of the stack
+            # if the child is not a loop construct it will need a goto back to
+            # the parent construct. if a child is a loop construct it will
+            # already have a goto back to itself
+            if (defined $parent and exists $ast->{$parent} and
+                ref $ast->{$parent} eq 'ARRAY' and $parent ne $block) {
+                my $plabel = $1 if $ast->{$parent}->[0] =~ /^\s*(\w+):/;
+                push @code, "\tgoto $plabel" if $plabel;
+            }
+            push @code, "\tgoto $label" if $child =~ /^Loop/;
+        } else {
+            push @code, $line;
+        }
+    }
+    return wantarray ? @code : [@code];
+}
 sub final {
     my ($self, $got) = @_;
     my $ast = $self->ast;
@@ -218,25 +275,27 @@ sub final {
         $macros .= $ast->{macros}->{$mac};
         $macros .= "\n";
     }
-    my $main_code = join("\n", @{$ast->{Main}});
+    my @main_code = _generate_code($ast, 'Main');
+    my $main_code = join("\n", @main_code);
     my $pic = <<"...";
+;;;; generated code for PIC header file
 #include <$ast->{include}>
 
-; variables go here
+;;;; generated code for variables
 $variables
-; macros go here
+;;;; generated code for macros
 $macros
 
 $ast->{config}
 
 \torg $ast->{org}
 
-; the main function goes here
 $main_code
 
-; all the other functions go here
+;;;; generated code for functions
 $funcs
 
+;;;; generated code for end-of-file
 \tend
 ...
     return $pic;
