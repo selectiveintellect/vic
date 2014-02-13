@@ -13,6 +13,7 @@ VIC is a nice syntax that compiles to PIC assembly.
 
 This module depends on the following:
 
+- `Module::Build` (this is needed for building)
 - `Pegex` (this is stored as a submodule `pegex-pm`)
 - `Getopt::Long` (for handling command line options. Comes with perl itself)
 - `XXX` (only required for debugging)
@@ -136,6 +137,17 @@ This is for VIC developers only.
 To recompile the grammar into `lib/VIC/Grammar.pm` run,
 
     $ ./share/rebuild-grammar
+
+or
+
+    $ ./share/rebuild-grammar.PL
+
+or
+
+    $ perl ./Build.PL
+    $ ./Build
+
+All of the above do the same thing.
 
 #Contributors
 
