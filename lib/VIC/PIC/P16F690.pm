@@ -291,6 +291,7 @@ sub output_port {
 \tbanksel TRIS$port
 \t$code
 \tbanksel PORT$port
+\tclrf PORT$port
 ...
 }
 
@@ -527,12 +528,18 @@ sub assign_variable {
 
 sub increment {
     my ($self, $var) = @_;
-    return "\tincf $var, 1\n";
+    return <<"..."
+\t;; increments $var in place
+\tincf $var, 1
+...
 }
 
 sub decrement {
     my ($self, $var) = @_;
-    return "\tdecf $var, 1\n";
+    return <<"..."
+\t;; decrements $var in place
+\tdecf $var, 1
+...
 }
 
 sub debounce {

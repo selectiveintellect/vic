@@ -25,6 +25,7 @@ _start:
      banksel   TRISC
      bcf       TRISC, TRISC0
      banksel   PORTC
+     clrf      PORTC
      bsf       PORTC,0
      goto      $
      end

@@ -54,6 +54,7 @@ _start:
     banksel TRISC
     clrf TRISC
     banksel PORTC
+    clrf    PORTC
     movlw D'8'
     movwf DISPLAY
 _loop_1:

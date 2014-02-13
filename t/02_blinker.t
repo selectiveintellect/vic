@@ -50,6 +50,7 @@ _start:
     banksel   TRISC
     bcf       TRISC, TRISC0
     banksel   PORTC
+    clrf      PORTC
 _loop_1:
     bsf PORTC, 0
     call _delay_1s
