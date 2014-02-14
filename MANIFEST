@@ -3,6 +3,7 @@ Build.PL
 lib/VIC.pm
 lib/VIC/Command.pm
 lib/VIC/Grammar.pm
+lib/VIC/Parser.pm
 lib/VIC/PIC.pm
 lib/VIC/PIC/Any.pm
 lib/VIC/PIC/P16F690.pm

@@ -4,6 +4,9 @@ use warnings;
 use POSIX ();
 use Pegex::Base; # use this instead of Mo
 
+our $VERSION = '0.02';
+$VERSION = eval $VERSION;
+
 has type => 'p16f690';
 
 has include => 'p16f690.inc';

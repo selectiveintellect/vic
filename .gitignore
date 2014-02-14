@@ -19,3 +19,4 @@ TAGS
 .*.swp
 *.log
 installer/
+*.tar.gz

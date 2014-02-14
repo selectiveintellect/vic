@@ -2,6 +2,9 @@ package VIC::Grammar;
 use strict;
 use warnings;
 
+our $VERSION = '0.02';
+$VERSION = eval $VERSION;
+
 use base 'Pegex::Grammar';
 
 use constant file => './share/vic.pgx';

@@ -2,18 +2,18 @@ package VIC;
 use strict;
 use warnings;
 
-use Pegex::Parser;
+use VIC::Parser;
 use VIC::Grammar;
 use VIC::PIC;
 
 our $Debug = 0;
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 $VERSION = eval $VERSION;
 
 sub compile {
     my ($input, $pic) = @_;
 
-    my $parser = Pegex::Parser->new(
+    my $parser = VIC::Parser->new(
         grammar => VIC::Grammar->new,
         receiver => VIC::PIC->new(pic_override => $pic),
         debug => $Debug,

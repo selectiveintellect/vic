@@ -3,6 +3,9 @@ use strict;
 use warnings;
 use POSIX ();
 
+our $VERSION = '0.02';
+$VERSION = eval $VERSION;
+
 use Pegex::Base;
 extends 'Pegex::Tree';
 
@@ -19,6 +22,8 @@ has ast => {
 };
 
 sub throw_error { shift->parser->throw_error(@_); }
+
+sub stack { shift->parser->stack; }
 
 sub got_uc_select {
     my ($self, $type) = @_;

@@ -2,6 +2,9 @@ package VIC::PIC::Any;
 use strict;
 use warnings;
 
+our $VERSION = '0.02';
+$VERSION = eval $VERSION;
+
 use VIC::PIC::P16F690;
 
 # use this to map various PICs to their classes
