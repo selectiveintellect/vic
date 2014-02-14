@@ -6,6 +6,7 @@ config debounce delay = 1ms;
 Main {
     output_port 'C';
     digital_input_port 'A', 3;
+    $display = 0;
     Loop {
         debounce 'A', 3, Action {
             $display++;

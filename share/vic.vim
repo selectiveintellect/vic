@@ -10,9 +10,10 @@ if exists("b:current_syntax")
   finish
 endif
 
-syn keyword vicHeader       config array table
+syn keyword vicHeader       config array table contained
 syn keyword vicStatement    port_value output_port delay hang input_port analog_input_port
-syn keyword vicStatement    adc_init adc_disable adc_read
+syn keyword vicStatement    adc_init adc_disable adc_read digital_input_port
+syn keyword vicStatement    debounce
 syn keyword vicBlock        Main Loop Action
 syn keyword vicPICStatement PIC contained
 syn region  vicString1      start=+'+  end=+'\|$+
@@ -22,6 +23,7 @@ syn match   vicNumber       "\<\%(0\%(x\x[[:xdigit:]_]*\|b[01][01_]*\|\o[0-7_]*\
 syn match   vicComment      "#.*"
 syn match   vicPIC          "\<PIC\s\+\%(\w\)*" contains=vicPICStatement
 syn match   vicVariable     "\$\w*"
+syn match   vicConfig       "\<config\s\+\%(\w\)*\s\+\%(\w\)*" contains=vicHeader
 
 highlight link vicStatement     Statement 
 highlight link vicHeader        Type
@@ -34,6 +36,7 @@ highlight link vicComment       Comment
 highlight link vicPIC           Type
 highlight link vicPICStatement  Special
 highlight link vicVariable      Identifier
+highlight link vicConfig        Function
 
 let b:current_syntax = "vic"
 
