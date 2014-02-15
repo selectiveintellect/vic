@@ -5,6 +5,9 @@ use warnings;
 use Getopt::Long;
 use VIC;
 
+our $VERSION = '0.03';
+$VERSION = eval $VERSION;
+
 sub usage {
     my $usage = << '...';
     Usage: vic [options] <input file>

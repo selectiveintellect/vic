@@ -4,7 +4,7 @@ use warnings;
 use POSIX ();
 use Pegex::Base; # use this instead of Mo
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 $VERSION = eval $VERSION;
 
 has type => 'p16f690';
