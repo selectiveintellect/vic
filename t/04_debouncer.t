@@ -28,13 +28,6 @@ my $output = <<'...';
 GLOBAL_VAR_UDATA udata
 DISPLAY res 1
 
-;;;;;; DELAY FUNCTIONS ;;;;;;;
-
-DELAY_VAR_UDATA udata
-DELAY_VAR   res 3
-
-
-
 ;;;;;; DEBOUNCE VARIABLES ;;;;;;;
 
 DEBOUNCE_VAR_IDATA idata
@@ -42,6 +35,13 @@ DEBOUNCE_VAR_IDATA idata
 DEBOUNCESTATE db 0x01
 ;; initialize counter to 0
 DEBOUNCECOUNTER db 0x00
+
+
+;;;;;; DELAY FUNCTIONS ;;;;;;;
+
+DELAY_VAR_UDATA udata
+DELAY_VAR   res 3
+
 
 
 
