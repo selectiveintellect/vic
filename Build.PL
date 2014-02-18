@@ -22,6 +22,8 @@ my $build = Module::Build->new(
     },
     requires => {
         'Getopt::Long' => 0,
+        'File::Spec' => 0,
+        'Pegex' => 0.22, # needed for PL_files to work
     },
     recommends => {
         'XXX' => 0,
