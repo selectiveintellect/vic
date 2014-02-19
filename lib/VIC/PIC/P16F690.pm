@@ -362,7 +362,7 @@ sub digital_output {
 \tbanksel TRIS$port
 \tbcf TRIS$port, TRIS$port$pin
 \tbanksel PORT$port
-\tbcf PORT$port, $outp
+\tbcf PORT$port, $pin
 ...
         }
     }
@@ -399,8 +399,8 @@ sub write {
     } elsif (exists $self->pins->{$port}) {
         my ($p, $pin) = @{$self->pins->{$port}};
         if ($val =~ /^\d+$/) {
-            return "\tbcf PORT$p, $port\n" if "$val" eq '0';
-            return "\tbsf PORT$p, $port\n" if "$val" eq '1';
+            return "\tbcf PORT$p, $pin\n" if "$val" eq '0';
+            return "\tbsf PORT$p, $pin\n" if "$val" eq '1';
             carp "$val cannot be applied to a pin $port";
         }
         return $self->assign_variable("PORT$p", uc $val);
