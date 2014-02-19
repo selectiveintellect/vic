@@ -8,13 +8,13 @@ config debounce count = 5;
 config debounce delay = 1ms;
 
 Main {
-    output_port 'C';
-    digital_input_port 'A', 3; # pin 3 is digital, rest analog
+    digital_output PORTC;
+    digital_input RA3; # pin 3 is digital
     $display = 0;
     Loop {
         debounce 'A', 3, Action {
             $display++;
-            port_value 'C', 0xFF, $display;
+            write PORTC, $display;
         };
     }
 }

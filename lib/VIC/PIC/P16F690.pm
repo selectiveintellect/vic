@@ -344,25 +344,25 @@ sub validate {
 }
 
 sub digital_output {
-    my ($self, $port) = @_;
-    return unless defined $port;
+    my ($self, $outp) = @_;
+    return unless defined $outp;
     my $code;
-    if (exists $self->ports->{$port}) {
-        my $p = $self->ports->{$port};
+    if (exists $self->ports->{$outp}) {
+        my $port = $self->ports->{$outp};
         $code = << "...";
-\tbanksel TRIS$p
-\tclrf TRIS$p
-\tbanksel $port
-\tclrf $port
+\tbanksel TRIS$port
+\tclrf TRIS$port
+\tbanksel $outp
+\tclrf $outp
 ...
-    } elsif (exists $self->pins->{$port}) {
-        my ($p, $pin) = @{$self->pins->{$port}};
-        if (defined $p and defined $pin) {
+    } elsif (exists $self->pins->{$outp}) {
+        my ($port, $pin) = @{$self->pins->{$outp}};
+        if (defined $port and defined $pin) {
             $code = << "...";
-\tbanksel TRIS$p
-\tbcf TRIS$p, TRIS$p$pin
-\tbanksel PORT$p
-\tbcf PORT$p, $port
+\tbanksel TRIS$port
+\tbcf TRIS$port, TRIS$port$pin
+\tbanksel PORT$port
+\tbcf PORT$port, $outp
 ...
         }
     }
@@ -445,6 +445,38 @@ sub analog_input_port {
 \tbanksel PORT$port
 ...
 
+}
+
+sub digital_input {
+    my ($self, $inp) = @_;
+    return unless defined $inp;
+    my $code;
+    if (exists $self->ports->{$inp}) {
+        my $port = $self->ports->{$inp};
+        $code = << "...";
+\tbanksel TRIS$port
+\tclrf TRIS$port
+\tbanksel ANSEL
+\tmovlw 0xFF
+\tmovwf ANSEL
+\tbanksel PORT$port
+...
+    } elsif (exists $self->pins->{$inp}) {
+        my ($port, $pin) = @{$self->pins->{$inp}};
+        if (defined $port and defined $pin) {
+            my $flags = 0xFF;
+            $flags = sprintf "0x%2X", $flags;
+            $code = << "...";
+\tbanksel TRIS$port
+\tbcf TRIS$port, TRIS$port$pin
+\tbanksel ANSEL
+\tmovlw $flags
+\tmovwf ANSEL
+\tbanksel PORT$port
+...
+        }
+    }
+    return $code;
 }
 
 sub digital_input_port {

@@ -4,13 +4,13 @@ config debounce count = 5;
 config debounce delay = 1ms;
 
 Main {
-    output_port 'C';
-    digital_input_port 'A', 3;
+    digital_output PORTC;
+    digital_input RA3;
     $display = 0;
     Loop {
         debounce 'A', 3, Action {
             $display++;
-            port_value 'C', 0xFF, $display;
+            write PORTC, $display;
         };
     }
 }
