@@ -7,11 +7,11 @@ PIC P16F690;
 # A Comment
 
 Main {
-     output_port 'C', 0;
+     digital_output RC0;
      Loop {
-         port_value 'C', 0, 0x1;
+         write RC0, 0x1;
          delay 1s;
-         port_value 'C', 0, 0;
+         write RC0, 0;
          delay 1s;
      }
 }
@@ -50,11 +50,11 @@ _start:
     banksel   TRISC
     bcf       TRISC, TRISC0
     banksel   PORTC
-    clrf      PORTC
+    bcf PORTC, RC0
 _loop_1:
-    bsf PORTC, 0
+    bsf PORTC, RC0
     call _delay_1s
-    bcf PORTC, 0
+    bcf PORTC, RC0
     call _delay_1s
     goto _loop_1
 
