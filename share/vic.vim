@@ -24,9 +24,13 @@ syn match   vicComment      "#.*"
 syn match   vicPIC          "\<PIC\s\+\%(\w\)*" contains=vicPICStatement
 syn match   vicVariable     "\$\w*"
 syn match   vicConfig       "\<config\s\+\%(\w\)*\s\+\%(\w\)*" contains=vicHeader
+syn match   vicValidVars    "\<\%(\%(PORT\|TRIS\)\w\w*\)\|\%(R[A-Z][0-9]\)\>"
+syn match   vicValidVars    "\<\%(\w\+CON[0-9]*\)\|\%(TMR[0-9]*\)\|\%(ANSEL\w*\)\>"
+syn match   vicValidVars    "\<\%(ADRES\w*\)\|\%(\w\+REG\w?\)\|\%(PCL\w*\)\>"
+syn match   vicValidVars    "\<\%(FSR\|STATUS\|OPTION_REG\|IND\)\w*\>"
 
 highlight link vicStatement     Statement 
-highlight link vicHeader        Type
+highlight link vicHeader        PreProc
 highlight link vicBlock         Function
 highlight link vicString1       String
 highlight link vicString2       String
@@ -36,7 +40,9 @@ highlight link vicComment       Comment
 highlight link vicPIC           Type
 highlight link vicPICStatement  Special
 highlight link vicVariable      Identifier
-highlight link vicConfig        Function
+"highlight link vicConfig        Function
+highlight link vicConfig        PreProc
+highlight link vicValidVars     Type
 
 let b:current_syntax = "vic"
 
