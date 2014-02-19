@@ -365,6 +365,8 @@ sub digital_output {
 \tbcf PORT$port, $pin
 ...
         }
+    } else {
+        carp "Cannot find $outp in the list of ports or pins";
     }
     return $code;
 }
@@ -384,26 +386,28 @@ sub output_port {
 }
 
 sub write {
-    my ($self, $port, $val) = @_;
-    return unless defined $port;
-    if (exists $self->ports->{$port}) {
-        my $p = $self->ports->{$port};
+    my ($self, $outp, $val) = @_;
+    return unless defined $outp;
+    if (exists $self->ports->{$outp}) {
+        my $port = $self->ports->{$outp};
         unless (defined $val) {
             return << "...";
-\tclrf PORT$p
-\tcomf PORT$p, 1
+\tclrf PORT$port
+\tcomf PORT$port, 1
 ...
         }
-        return $self->assign_literal("PORT$p", $val) if ($val =~ /^\d+$/); 
-        return $self->assign_variable("PORT$p", uc $val);
-    } elsif (exists $self->pins->{$port}) {
-        my ($p, $pin) = @{$self->pins->{$port}};
+        return $self->assign_literal("PORT$port", $val) if ($val =~ /^\d+$/);
+        return $self->assign_variable("PORT$port", uc $val);
+    } elsif (exists $self->pins->{$outp}) {
+        my ($port, $pin) = @{$self->pins->{$outp}};
         if ($val =~ /^\d+$/) {
-            return "\tbcf PORT$p, $pin\n" if "$val" eq '0';
-            return "\tbsf PORT$p, $pin\n" if "$val" eq '1';
-            carp "$val cannot be applied to a pin $port";
+            return "\tbcf PORT$port, $pin\n" if "$val" eq '0';
+            return "\tbsf PORT$port, $pin\n" if "$val" eq '1';
+            carp "$val cannot be applied to a pin $outp";
         }
-        return $self->assign_variable("PORT$p", uc $val);
+        return $self->assign_variable("PORT$port", uc $val);
+    } else {
+        carp "Cannot find $outp in the list of ports or pins";
     }
 }
 
@@ -475,6 +479,8 @@ sub digital_input {
 \tbanksel PORT$port
 ...
         }
+    } else {
+        carp "Cannot find $inp the list of ports or pins";
     }
     return $code;
 }
@@ -700,7 +706,7 @@ DEBOUNCECOUNTER db 0x00
 ...
 }
 sub debounce {
-    my ($self, $port, $pin, $action) = @_;
+    my ($self, $inp, $action) = @_;
     my ($parent_label, $action_label);
     if ($action =~ /LABEL::(\w+)::\w+::\w+::(\w+)/) {
         $action_label = $1;
@@ -708,6 +714,17 @@ sub debounce {
     }
     return unless $action_label;
     return unless $parent_label;
+    my ($port, $pin);
+    if (exists $self->pins->{$inp}) {
+        ($port, $pin) = @{$self->pins->{$inp}};
+    } elsif (exists $self->ports->{$inp}) {
+        $port = $self->ports->{$inp};
+        $pin = 0;
+        carp "Port $inp has been supplied. Assuming pin to debounce is $pin";
+    } else {
+        carp "Cannot find $inp in the list of ports or pins";
+        return;
+    }
     # incase the user does weird stuff override the count and delay
     my $debounce_count = $self->code_config->{debounce}->{count} || 1;
     my $debounce_delay = $self->code_config->{debounce}->{delay} || 1000;

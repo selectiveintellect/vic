@@ -12,7 +12,7 @@ Main {
     digital_input RA3; # pin 3 is digital
     $display = 0;
     Loop {
-        debounce 'A', 3, Action {
+        debounce RA3, Action {
             $display++;
             write PORTC, $display;
         };
