@@ -1,6 +1,7 @@
 package VIC::PIC::P16F690;
 use strict;
 use warnings;
+use Carp;
 use POSIX ();
 use Pegex::Base; # use this instead of Mo
 
@@ -143,6 +144,36 @@ has register_banks => {
 has pin_count => 20;
 
 has pins => {
+            #port  #pin  #position
+	Vdd => [undef, undef, 1],
+	RA5 => ['A', 5, 2],
+	RA4 => ['A', 4, 3],
+	RA3 => ['A', 3, 4],
+	RC5 => ['C', 5, 5],
+	RC4 => ['C', 4, 6],
+	RC3 => ['C', 3, 7],
+	RC6 => ['C', 6, 8],
+	RC7 => ['C', 7, 9],
+	RB7 => ['B', 7, 10],
+	RB6 => ['B', 6, 11],
+	RB5 => ['B', 5, 12],
+	RB4 => ['B', 4, 13],
+	RC2 => ['C', 2, 14],
+	RC1 => ['C', 1, 15],
+	RC0 => ['C', 0, 16],
+	RA2 => ['A', 2, 17],
+	RA1 => ['A', 1, 18],
+	RA0 => ['A', 0, 19],
+	Vss => [undef, undef, 20],
+};
+
+has ports => {
+    PORTA => 'A',
+    PORTB => 'B',
+    PORTC => 'C',
+};
+
+has visible_pins => {
     1 => 'Vdd',
     2 => 'RA5',
     3 => 'RA4',
@@ -304,6 +335,40 @@ sub update_config {
     }
 }
 
+sub validate {
+    my ($self, $var) = @_;
+    return undef unless defined $var;
+    return 1 if exists $self->pins->{$var};
+    return 1 if exists $self->ports->{$var};
+    return 0;
+}
+
+sub digital_output {
+    my ($self, $port) = @_;
+    return unless defined $port;
+    my $code;
+    if (exists $self->ports->{$port}) {
+        my $p = $self->ports->{$port};
+        $code = << "...";
+\tbanksel TRIS$p
+\tclrf TRIS$p
+\tbanksel $port
+\tclrf $port
+...
+    } elsif (exists $self->pins->{$port}) {
+        my ($p, $pin) = @{$self->pins->{$port}};
+        if (defined $p and defined $pin) {
+            $code = << "...";
+\tbanksel TRIS$p
+\tbcf TRIS$p, TRIS$p$pin
+\tbanksel PORT$p
+\tbcf PORT$p, $port
+...
+        }
+    }
+    return $code;
+}
+
 sub output_port {
     my ($self, $port, $pin) = @_;
     return undef unless $port =~ /^[A-C]$/;
@@ -316,6 +381,30 @@ sub output_port {
 \tbanksel PORT$port
 \tclrf PORT$port
 ...
+}
+
+sub write {
+    my ($self, $port, $val) = @_;
+    return unless defined $port;
+    if (exists $self->ports->{$port}) {
+        my $p = $self->ports->{$port};
+        unless (defined $val) {
+            return << "...";
+\tclrf PORT$p
+\tcomf PORT$p, 1
+...
+        }
+        return $self->assign_literal("PORT$p", $val) if ($val =~ /^\d+$/); 
+        return $self->assign_variable("PORT$p", uc $val);
+    } elsif (exists $self->pins->{$port}) {
+        my ($p, $pin) = @{$self->pins->{$port}};
+        if ($val =~ /^\d+$/) {
+            return "\tbcf PORT$p, $port\n" if "$val" eq '0';
+            return "\tbsf PORT$p, $port\n" if "$val" eq '1';
+            carp "$val cannot be applied to a pin $port";
+        }
+        return $self->assign_variable("PORT$p", uc $val);
+    }
 }
 
 sub port_value {

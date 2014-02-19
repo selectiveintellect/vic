@@ -13,7 +13,7 @@ sub make_tree {
   {
     '+grammar' => 'vic',
     '+toprule' => 'program',
-    '+version' => '0.0.3',
+    '+version' => '0.0.4',
     'DOLLAR' => {
       '.rgx' => qr/\G\$/
     },
@@ -381,6 +381,9 @@ sub make_tree {
     'units' => {
       '.rgx' => qr/\G(s|ms|us)/
     },
+    'validated_variable' => {
+      '.ref' => 'identifier'
+    },
     'value' => {
       '.all' => [
         {
@@ -403,6 +406,9 @@ sub make_tree {
             },
             {
               '.ref' => 'block'
+            },
+            {
+              '.ref' => 'validated_variable'
             }
           ]
         },

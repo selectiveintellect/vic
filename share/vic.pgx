@@ -1,5 +1,5 @@
 %grammar vic
-%version 0.0.3
+%version 0.0.4
 #COPYRIGHT: 2014 Vikas N Kumar <vikas@cpan.org>. All Rights Reserved
 
 # uc-select is necessary.
@@ -28,7 +28,7 @@ instruction: name values* whitespace* <SEMI> <EOL>?
 name: whitespace* identifier whitespace*
 values: value-comma* value
 value-comma: value /<COMMA>/
-value: whitespace* (string | number-units | number | variable | block) whitespace*
+value: whitespace* (string | number-units | number | variable | block | validated-variable) whitespace*
 
 expression: lhs-op-rhs | lhs-op | op-rhs
 lhs-op: whitespace* variable whitespace* operator <SEMI>? <EOL>?
@@ -43,6 +43,7 @@ number-units: number whitespace* units
 number: /(0x<HEX>+ | 0X<HEX>+ | <DIGIT>+)/
 units: /(s | ms | us)/
 
+validated-variable: identifier
 variable: <DOLLAR> identifier
 identifier: /(<ALPHA>[<WORDS>]*)/
 

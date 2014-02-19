@@ -186,6 +186,19 @@ sub got_lhs_op_rhs {
     return;
 }
 
+sub got_validated_variable {
+    my ($self, $list) = @_;
+    my $varname;
+    if (ref $list eq 'ARRAY') {
+        $self->flatten($list);
+        $varname = shift @$list;
+    } else {
+        $varname = $list;
+    }
+    return $varname if $self->pic->validate($varname);
+    $self->throw_error("$varname is not a valid part of the " . $self->pic->type);
+}
+
 sub got_variable {
     my ($self, $list) = @_;
     $self->flatten($list);
