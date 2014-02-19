@@ -28,7 +28,7 @@ sub compile {
 
 =head1 NAME
 
-VIC - A Viciously Simple Syntax for PIC
+VIC - A Viciously Simple Syntax for PIC Microcontrollers
 
 =head1 SYNOPSIS
 
