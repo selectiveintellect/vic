@@ -429,9 +429,23 @@ sub update_config {
 sub validate {
     my ($self, $var) = @_;
     return undef unless defined $var;
+    return 0 if $var =~ /^\d+$/;
     return 1 if exists $self->pins->{$var};
     return 1 if exists $self->ports->{$var};
     return 1 if exists $self->analog_pins->{$var};
+    return 1 if exists $self->register_banks->{$var};
+    return 1 if exists $self->power_pins->{$var};
+    return 1 if exists $self->comparator_pins->{$var};
+    return 1 if exists $self->interrupt_pins->{$var};
+    return 1 if exists $self->timer_pins->{$var};
+    return 1 if exists $self->spi_pins->{$var};
+    return 1 if exists $self->usart_pins->{$var};
+    return 1 if exists $self->clock_pins->{$var};
+    return 1 if exists $self->selector_pins->{$var};
+    return 1 if exists $self->oscillator_pins->{$var};
+    return 1 if exists $self->icsp_pins->{$var};
+    return 1 if exists $self->i2c_pins->{$var};
+    return 1 if exists $self->pwm_pins->{$var};
     return 0;
 }
 
@@ -484,6 +498,11 @@ sub write {
             carp "$val cannot be applied to a pin $outp";
         }
         return $self->assign_variable("PORT$port", uc $val);
+    } elsif (exists $self->register_banks->{$outp}) {
+        my $code = "\tbanksel $outp\n";
+        $code .= ($val =~ /^\d+$/) ? $self->assign_literal($outp, $val) :
+                                    $self->assign_variable($outp, uc $val);
+        return $code;
     } else {
         carp "Cannot find $outp in the list of ports or pins";
     }
