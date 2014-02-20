@@ -1,0 +1,17 @@
+PIC P16F690;
+
+config adc right_justify = 0;
+
+Main {
+    digital_output PORTC; # all pins
+    analog_input RA3;
+    adc_enable 500kHz, AN0;
+    $display = 0x08; # create a 8-bit register
+    Loop {
+        write PORTC, $display;
+        adc_read $userval;
+        $userval += 100;
+        delay_ms $userval;
+        ror $display, 1;
+    }
+}
