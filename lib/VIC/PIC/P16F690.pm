@@ -144,7 +144,7 @@ has register_banks => {
 has pin_count => 20;
 
 has pins => {
-            #port  #pin  #position
+    #name  #port  #portbit #pin
 	Vdd => [undef, undef, 1],
 	RA5 => ['A', 5, 2],
 	RA4 => ['A', 4, 3],
@@ -171,6 +171,9 @@ has ports => {
     PORTA => 'A',
     PORTB => 'B',
     PORTC => 'C',
+    A => 'PORTA',
+    B => 'PORTB',
+    C => 'PORTC',
 };
 
 has visible_pins => {
@@ -214,10 +217,28 @@ has gpio_pins => {
     RB5 => 12,
     RB6 => 11,
     RB7 => 10,
+    19 => 'RA0',
+    18 => 'RA1',
+    17 => 'RA2',
+    3 => 'RA4',
+    2 => 'RA5',
+    16 => 'RC0',
+    15 => 'RC1',
+    14 => 'RC2',
+    7 => 'RC3',
+    6 => 'RC4',
+    5 => 'RC5',
+    8 => 'RC6',
+    9 => 'RC7',
+    13 => 'RB4',
+    12 => 'RB5',
+    11 => 'RB6',
+    10 => 'RB7',
 };
 
 has input_pins => {
     RA3 => 4,
+    4 => 'RA3',
 };
 
 has power_pins => {
@@ -226,22 +247,41 @@ has power_pins => {
     Vpp => 4,
     ULPWU => 19,
     MCLR => 4,
+    1 => 'Vdd',
+    20 => 'Vss',
+    4 => 'Vpp',
+    19 => 'ULPWU',
+    4 => 'MCLR',
 };
 
 has analog_pins => {
     # use ANSEL for pins AN0-AN7 and ANSELH for AN8-AN11
-    AN0 => 19,
-    AN1 => 18,
-    AN2 => 17,
-    AN3 => 3,
-    AN4 => 16,
-    AN5 => 15,
-    AN6 => 14,
-    AN7 => 7,
-    AN8 => 8,
-    AN9 => 9,
-    AN10 => 13,
-    AN11 => 12,
+    #name   #pin    #portbit
+    AN0 => [19, 0],
+    AN1 => [18, 1],
+    AN2 => [17, 2],
+    AN3 => [3, 3],
+    AN4 => [16, 4],
+    AN5 => [15, 5],
+    AN6 => [14, 6],
+    AN7 => [7, 7],
+    AN8 => [8, 8],
+    AN9 => [9, 9],
+    AN10 => [13, 10],
+    AN11 => [12, 12],
+    #pin #name
+    19 => 'AN0',
+    18 => 'AN1',
+    17 => 'AN2',
+    3 => 'AN3',
+    16 => 'AN4',
+    15 => 'AN5',
+    14 => 'AN6',
+    7 => 'AN7',
+    8 => 'AN8',
+    9 => 'AN9',
+    13 => 'AN10',
+    12 => 'AN11',
 };
 
 has comparator_pins => {
@@ -253,6 +293,14 @@ has comparator_pins => {
     C12IN2 => 14,
     C12IN3 => 7,
     C2OUT => 6,
+    19 => 'C1IN',
+    18 => 'C12IN0',
+    17 => 'C1OUT',
+    16 => 'C2IN',
+    15 => 'C12IN1',
+    14 => 'C12IN2',
+    7 => 'C12IN3',
+    6 => 'C2OUT',
 };
 
 has timer_pins => {
@@ -260,11 +308,17 @@ has timer_pins => {
     TMR1 => 2,
     T0CKI => 17,
     T1CKI => 2,
-    T1G => 3
+    T1G => 3,
+    17 => 'TMR0',
+    2 => 'TMR1',
+    17 => 'T0CKI',
+    2 => 'T1CKI',
+    3 => 'T1G',
 };
 
 has interrupt_pins => {
     INT => 17,
+    17 => 'INT',
 };
 
 has usart_pins => {
@@ -272,36 +326,52 @@ has usart_pins => {
     TX => 10,
     CK => 10,
     DT => 12,
+    12 => 'RX',
+    10 => 'TX',
+    10 => 'CK',
+    12 => 'DT',
 };
 
 has clock_pins => {
     CLKOUT => 3,
     CLKIN => 2,
+    3 => 'CLKOUT',
+    2 => 'CLKIN',
 };
 
 has oscillator_pins => {
     OSC1 => 2,
     OSC2 => 3,
+    2 => 'OSC1',
+    3 => 'OSC2',
 };
 
 has icsp_pins => {
     ICSPCLK => 18,
     ICSPDAT => 19,
+    18 => 'ICSPCLK',
+    19 => 'ICSPDAT',
 };
 
 has selector_pins => {
     SS => 8, # SPI or I2C
+    8 => 'SS',
 };
 
 has spi_pins => {
     SDI => 13, # SPI
     SCK => 11, # SPI
     SDO => 9, # SPI
+    13 => 'SDI',
+    11 => 'SCK',
+    9 => 'SDO',
 };
 
 has i2c_pins => {
     SDA => 13, # I2C
     SCL => 11, # I2C
+    13 => 'SDA',
+    11 => 'SCL',
 };
 
 has pwm_pins => {
@@ -309,6 +379,10 @@ has pwm_pins => {
     P1C => 7,
     P1B => 6,
     P1A => 5,
+    14 => 'P1D',
+    7 => 'P1C',
+    6 => 'P1B',
+    5 => 'P1A',
 };
 
 has config => <<"...";
@@ -356,33 +430,19 @@ sub digital_output {
 \tclrf $outp
 ...
     } elsif (exists $self->pins->{$outp}) {
-        my ($port, $pin) = @{$self->pins->{$outp}};
-        if (defined $port and defined $pin) {
+        my ($port, $portbit) = @{$self->pins->{$outp}};
+        if (defined $port and defined $portbit) {
             $code = << "...";
 \tbanksel TRIS$port
-\tbcf TRIS$port, TRIS$port$pin
+\tbcf TRIS$port, TRIS$port$portbit
 \tbanksel PORT$port
-\tbcf PORT$port, $pin
+\tbcf PORT$port, $portbit
 ...
         }
     } else {
         carp "Cannot find $outp in the list of ports or pins";
     }
     return $code;
-}
-
-sub __deprecated_output_port {
-    my ($self, $port, $pin) = @_;
-    return undef unless $port =~ /^[A-C]$/;
-    my $code = "clrf TRIS$port" if
-        (not defined $pin or $pin > 7);
-    $code = "bcf TRIS$port, TRIS$port$pin" if (defined $pin and $pin < 7);
-    return << "...";
-\tbanksel TRIS$port
-\t$code
-\tbanksel PORT$port
-\tclrf PORT$port
-...
 }
 
 sub write {
@@ -399,10 +459,10 @@ sub write {
         return $self->assign_literal("PORT$port", $val) if ($val =~ /^\d+$/);
         return $self->assign_variable("PORT$port", uc $val);
     } elsif (exists $self->pins->{$outp}) {
-        my ($port, $pin) = @{$self->pins->{$outp}};
+        my ($port, $portbit) = @{$self->pins->{$outp}};
         if ($val =~ /^\d+$/) {
-            return "\tbcf PORT$port, $pin\n" if "$val" eq '0';
-            return "\tbsf PORT$port, $pin\n" if "$val" eq '1';
+            return "\tbcf PORT$port, $portbit\n" if "$val" eq '0';
+            return "\tbsf PORT$port, $portbit\n" if "$val" eq '1';
             carp "$val cannot be applied to a pin $outp";
         }
         return $self->assign_variable("PORT$port", uc $val);
@@ -411,46 +471,49 @@ sub write {
     }
 }
 
-sub __deprecated_port_value {
-    my ($self, $port, $pin, $val) = @_;
-    return undef unless $port =~ /^[A-C]$/;
-    # if pin is not set set all values
-    unless (defined $val or defined $pin) {
-        return << "...";
-\tclrf PORT$port
-\tcomf PORT$port, 1
-...
-    }
-    return "\tclrf PORT$port\n" unless defined $pin;
-    if ($val =~ /^\d+$/) {
-        return "\tbcf PORT$port, $pin\n" if "$val" eq '0';
-        return "\tbsf PORT$port, $pin\n" if "$val" eq '1';
-        return $self->assign_literal("PORT$port", $val);
-    } else {
-        # $val is a variable
-        return $self->assign_variable("PORT$port", uc $val);
-    }
-}
-
-sub __deprecated_analog_input_port {
-    my ($self, $port, $pin) = @_;
-    return undef unless $port =~ /^[A-C]$/;
-    my $code = "clrf TRIS$port" if
-        (not defined $pin or $pin > 7);
-    $code = "bcf TRIS$port, TRIS$port$pin" if (defined $pin and $pin < 7);
-    #TODO: find RA3 in the list of ports and adjust flags
-    my $flags = sprintf "0x%2X", 0x00;
-    return << "...";
+sub analog_input {
+    my ($self, $inp) = @_;
+    return unless defined $inp;
+    my $code;
+    if (exists $self->ports->{$inp}) {
+        my $port = $self->ports->{$inp};
+        $code = << "...";
 \tbanksel TRIS$port
-\t$code
+\tclrf TRIS$port
+\tbanksel ANSEL
+\tclrf ANSEL
+\tclrf ANSELH
+\tbanksel PORT$port
+...
+    } elsif (exists $self->pins->{$inp}) {
+        my ($port, $portbit, $pin) = @{$self->pins->{$inp}};
+        if (defined $port and defined $portbit and defined $pin) {
+            my $flags = 0;
+            my $flagsH = 0;
+            if (exists $self->analog_pins->{$pin}) {
+                my $pinname = $self->analog_pins->{$pin};
+                my ($apin, $abit) = @{$self->analog_pins->{$pinname}};
+                $flags ^= 1 << $abit if $abit < 8;
+                $flagsH ^= 1 << ($abit - 8) if $abit >= 8;
+            }
+            $flags = sprintf "0x%2X", $flags;
+            $flagsH = sprintf "0x%2X", $flagsH;
+            $code = << "...";
+\tbanksel TRIS$port
+\tbcf TRIS$port, TRIS$port$portbit
 \tbanksel ANSEL
 \tmovlw $flags
 \tmovwf ANSEL
+\tmovlw $flagsH
+\tmovwf ANSELH
 \tbanksel PORT$port
 ...
-
+        }
+    } else {
+        carp "Cannot find $inp the list of ports or pins";
+    }
+    return $code;
 }
-
 sub digital_input {
     my ($self, $inp) = @_;
     return unless defined $inp;
@@ -463,19 +526,30 @@ sub digital_input {
 \tbanksel ANSEL
 \tmovlw 0xFF
 \tmovwf ANSEL
+\tmovwf ANSELH
 \tbanksel PORT$port
 ...
     } elsif (exists $self->pins->{$inp}) {
-        my ($port, $pin) = @{$self->pins->{$inp}};
-        if (defined $port and defined $pin) {
+        my ($port, $portbit, $pin) = @{$self->pins->{$inp}};
+        if (defined $port and defined $portbit and defined $pin) {
             my $flags = 0xFF;
+            my $flagsH = 0xFF;
+            if (exists $self->analog_pins->{$pin}) {
+                my $pinname = $self->analog_pins->{$pin};
+                my ($apin, $abit) = @{$self->analog_pins->{$pinname}};
+                $flags ^= 1 << $abit if $abit < 8;
+                $flagsH ^= 1 << ($abit - 8) if $abit >= 8;
+            }
             $flags = sprintf "0x%2X", $flags;
+            $flagsH = sprintf "0x%2X", $flagsH;
             $code = << "...";
 \tbanksel TRIS$port
-\tbcf TRIS$port, TRIS$port$pin
+\tbcf TRIS$port, TRIS$port$portbit
 \tbanksel ANSEL
 \tmovlw $flags
 \tmovwf ANSEL
+\tmovlw $flagsH
+\tmovwf ANSELH
 \tbanksel PORT$port
 ...
         }
@@ -483,25 +557,6 @@ sub digital_input {
         carp "Cannot find $inp the list of ports or pins";
     }
     return $code;
-}
-
-sub __deprecated_digital_input_port {
-    my ($self, $port, $pin) = @_;
-    return undef unless $port =~ /^[A-C]$/;
-    my $code = "clrf TRIS$port" if
-        (not defined $pin or $pin > 7);
-    $code = "bcf TRIS$port, TRIS$port$pin" if (defined $pin and $pin < 7);
-    my $flags = sprintf "0x%2X", 0xFF;
-    #TODO: find RA3 in the list of ports and adjust flags
-    return << "...";
-\tbanksel TRIS$port
-\t$code
-\tbanksel ANSEL
-\tmovlw $flags
-\tmovwf ANSEL
-\tbanksel PORT$port
-...
-
 }
 
 sub hang {
@@ -714,13 +769,13 @@ sub debounce {
     }
     return unless $action_label;
     return unless $parent_label;
-    my ($port, $pin);
+    my ($port, $portbit);
     if (exists $self->pins->{$inp}) {
-        ($port, $pin) = @{$self->pins->{$inp}};
+        ($port, $portbit) = @{$self->pins->{$inp}};
     } elsif (exists $self->ports->{$inp}) {
         $port = $self->ports->{$inp};
-        $pin = 0;
-        carp "Port $inp has been supplied. Assuming pin to debounce is $pin";
+        $portbit = 0;
+        carp "Port $inp has been supplied. Assuming portbit to debounce is $portbit";
     } else {
         carp "Cannot find $inp in the list of ports or pins";
         return;
@@ -734,7 +789,7 @@ sub debounce {
     $deb_code = 'nop' unless defined $deb_code;
     $macros->{m_debounce_var} = $self->m_debounce_var;
     my $code = <<"...";
-\t;;; generate code for debounce $port<$pin>
+\t;;; generate code for debounce $port<$portbit>
 $deb_code
 \t;; has debounce state changed to down (bit 0 is 0)
 \t;; if yes go to debounce-state-down
@@ -742,7 +797,7 @@ $deb_code
 \tgoto    _debounce_state_up
 _debounce_state_down:
 \tclrw
-\tbtfss   PORT$port, $pin
+\tbtfss   PORT$port, $portbit
 \t;; increment and move into counter
 \tincf    DEBOUNCECOUNTER, 0
 \tmovwf   DEBOUNCECOUNTER
@@ -750,7 +805,7 @@ _debounce_state_down:
 
 _debounce_state_up:
 \tclrw
-\tbtfsc   PORT$port, $pin
+\tbtfsc   PORT$port, $portbit
 \tincf    DEBOUNCECOUNTER, 0
 \tmovwf   DEBOUNCECOUNTER
 \tgoto    _debounce_state_check

@@ -86,6 +86,8 @@ _start:
 	banksel ANSEL
 	movlw 0xFF
 	movwf ANSEL
+    movlw 0xFF
+    movwf ANSELH
 	banksel PORTA
 
 	clrf DISPLAY
