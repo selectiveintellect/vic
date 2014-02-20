@@ -172,16 +172,16 @@ sub got_lhs_op_rhs {
     $self->flatten($list);
     my $varname = shift @$list;
     my $op = shift @$list;
-    my $value = shift @$list;
-    my $code;
-    $self->throw_error("Operator $op not supported") unless $op eq '=';
+    my $rhs = shift @$list;
     my $method = 'assign_' if $op eq '=';
-    $method .= exists $self->ast->{variables}->{$value} ? 'variable' : 'literal';
+    $method = 'selfadd_' if $op eq '+=';
+    $method .= exists $self->ast->{variables}->{$rhs} ? 'variable' : 'literal';
 
+    $self->throw_error("Operator $op not supported") unless $method;
     $self->throw_error("Unknown instruction $method") unless $self->pic->can($method);
     my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
-    $code = $self->pic->$method($nvar, $value);
-    $self->throw_error("Invalid expression $varname $op $value") unless $code;
+    my $code = $self->pic->$method($nvar, $rhs);
+    $self->throw_error("Invalid expression $varname $op $rhs") unless $code;
     $self->_update_block($code);
     return;
 }

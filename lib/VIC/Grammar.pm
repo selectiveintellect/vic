@@ -5,7 +5,8 @@ use warnings;
 our $VERSION = '0.03';
 $VERSION = eval $VERSION;
 
-use base 'Pegex::Grammar';
+use Pegex::Base;
+extends 'Pegex::Grammar';
 
 use constant file => './share/vic.pgx';
 

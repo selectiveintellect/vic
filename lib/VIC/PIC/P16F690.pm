@@ -855,6 +855,27 @@ sub assign_variable {
 ...
 }
 
+## FIXME: handle carry bit
+sub selfadd_literal {
+    my ($self, $var, $val) = @_;
+    return "\n" if "$val" eq '0';
+    return << "...";
+\t;;moves $val to W
+\tmovlw D'$val'
+\taddwf $var, F
+...
+}
+
+## FIXME: handle carry bit
+sub selfadd_variable {
+    my ($self, $var, $var2) = @_;
+    return << "...";
+\t;;moves $var2 to W
+\tmovf $var2, W
+\taddwf $var, F
+...
+}
+
 sub increment {
     my ($self, $var) = @_;
     return <<"..."

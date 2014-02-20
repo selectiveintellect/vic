@@ -2,10 +2,13 @@ package VIC::Parser;
 use strict;
 use warnings;
 
-use base 'Pegex::Parser';
-
 our $VERSION = '0.03';
 $VERSION = eval $VERSION;
+
+use Pegex::Base;
+extends 'Pegex::Parser';
+
+has throw_on_error => 1;
 
 sub match_ref {
     my ($self, $ref, $parent) = @_;
