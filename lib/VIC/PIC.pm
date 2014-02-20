@@ -224,10 +224,14 @@ sub got_number_units {
     my ($self, $list) = @_;
     $self->flatten($list);
     my $num = shift @$list;
-    my $units = shift @$list || 's';
+    my $units = shift @$list;
+    return $num unless defined $units;
     $num *= 1 if $units eq 'us';
     $num *= 1000 if $units eq 'ms';
     $num *= 1e6 if $units eq 's';
+    $num *= 1 if $units eq 'Hz';
+    $num *= 1000 if $units eq 'kHz';
+    $num *= 1e6 if $units eq 'MHz';
     return $num;
 }
 

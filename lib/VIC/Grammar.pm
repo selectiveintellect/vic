@@ -379,7 +379,7 @@ sub make_tree {
       '.rgx' => qr/\GPIC[\ \t]+((?i:P16F690|P16F690X));\r?\n/
     },
     'units' => {
-      '.rgx' => qr/\G(s|ms|us)/
+      '.rgx' => qr/\G(s|ms|us|kHz|Hz|MHz)/
     },
     'validated_variable' => {
       '.ref' => 'identifier'

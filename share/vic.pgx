@@ -41,7 +41,7 @@ string: single-quoted-string | double-quoted-string
 number-units: number whitespace* units
 # number handles both hex and non-hex values for ease of use
 number: /(0x<HEX>+ | 0X<HEX>+ | <DIGIT>+)/
-units: /(s | ms | us)/
+units: /(s | ms | us | kHz | Hz | MHz)/
 
 validated-variable: identifier
 variable: <DOLLAR> identifier

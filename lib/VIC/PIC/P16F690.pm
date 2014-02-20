@@ -496,8 +496,8 @@ sub analog_input {
                 $flags ^= 1 << $abit if $abit < 8;
                 $flagsH ^= 1 << ($abit - 8) if $abit >= 8;
             }
-            $flags = sprintf "0x%2X", $flags;
-            $flagsH = sprintf "0x%2X", $flagsH;
+            $flags = sprintf "0x%02X", $flags;
+            $flagsH = sprintf "0x%02X", $flagsH;
             $code = << "...";
 \tbanksel TRIS$port
 \tbcf TRIS$port, TRIS$port$portbit
@@ -540,8 +540,8 @@ sub digital_input {
                 $flags ^= 1 << $abit if $abit < 8;
                 $flagsH ^= 1 << ($abit - 8) if $abit >= 8;
             }
-            $flags = sprintf "0x%2X", $flags;
-            $flagsH = sprintf "0x%2X", $flagsH;
+            $flags = sprintf "0x%02X", $flags;
+            $flagsH = sprintf "0x%02X", $flagsH;
             $code = << "...";
 \tbanksel TRIS$port
 \tbcf TRIS$port, TRIS$port$portbit
@@ -601,6 +601,18 @@ endif
 ...
 }
 
+sub m_delay_wus {
+    return <<'...';
+m_delay_wus macro
+    local _delayw_usecs_loop_0
+    movwf   DELAY_VAR
+_delayw_usecs_loop_0:
+    decfsz  DELAY_VAR, F
+    goto    _delayw_usecs_loop_0
+    endm
+...
+}
+
 sub m_delay_ms {
     return <<'...';
 ;; 1MHz => 1us per instruction
@@ -622,6 +634,22 @@ _delay_msecs_loop_0:
     goto    _delay_msecs_loop_0
     decfsz  DELAY_VAR + 1, F
     goto    _delay_msecs_loop_1
+    endm
+...
+}
+
+sub m_delay_wms {
+    return <<'...';
+m_delay_wms macro
+    local _delayw_msecs_loop_0, _delayw_msecs_loop_1
+    movwf   DELAY_VAR + 1
+_delayw_msecs_loop_1:
+    clrf   DELAY_VAR   ;; set to 0 which gets decremented to 0xFF
+_delayw_msecs_loop_0:
+    decfsz  DELAY_VAR, F
+    goto    _delayw_msecs_loop_0
+    decfsz  DELAY_VAR + 1, F
+    goto    _delayw_msecs_loop_1
     endm
 ...
 }
@@ -656,8 +684,63 @@ _delay_secs_loop_0:
 ...
 }
 
+sub m_delay_ws {
+    return <<'...';
+m_delay_ws macro
+    local _delayw_secs_loop_0, _delayw_secs_loop_1, _delayw_secs_loop_2
+    movwf   DELAY_VAR + 2
+_delayw_secs_loop_2:
+    clrf    DELAY_VAR + 1   ;; set to 0 which gets decremented to 0xFF
+_delayw_secs_loop_1:
+    clrf    DELAY_VAR   ;; set to 0 which gets decremented to 0xFF
+_delayw_secs_loop_0:
+    decfsz  DELAY_VAR, F
+    goto    _delayw_secs_loop_0
+    decfsz  DELAY_VAR + 1, F
+    goto    _delayw_secs_loop_1
+    decfsz  DELAY_VAR + 2, F
+    goto    _delayw_secs_loop_2
+    endm
+...
+}
+
+sub delay_s {
+    my ($self, $t) = @_;
+    return $self->delay($t * 1e6) if $t =~ /^\d+$/;
+    return $self->delay_w(s => uc($t));
+}
+
+sub delay_ms {
+    my ($self, $t) = @_;
+    return $self->delay($t * 1000) if $t =~ /^\d+$/;
+    return $self->delay_w(ms => uc($t));
+}
+
+sub delay_us {
+    my ($self, $t) = @_;
+    return $self->delay($t) if $t =~ /^\d+$/;
+    return $self->delay_w(us => uc($t));
+}
+
+sub delay_w {
+    my ($self, $unit, $varname) = @_;
+    my $code = '';
+    my $funcs = {};
+    my $macros = { m_delay_var => $self->m_delay_var };
+    my $fn = "_delay_w$unit";
+    $code .= "\tcall $fn\n";
+    $funcs->{$fn} = << "....";
+\tm_delay_w$unit
+\treturn
+....
+    my $mac = "m_delay_w$unit";
+    $macros->{$mac} = $self->$mac;
+    return wantarray ? ($code, $funcs, $macros) : $code;
+}
+
 sub delay {
     my ($self, $t) = @_;
+    return $self->delay_w(s => uc($t)) unless $t =~ /^\d+$/;
     return '' if $t <= 0;
     # divide the time into component seconds, milliseconds and microseconds
     my $sec = POSIX::floor($t / 1e6);
@@ -826,6 +909,17 @@ _debounce_state_check:
 ...
     return wantarray ? ($code, $funcs, $macros) : $code;
 }
+
+sub adc_enable {
+    my ($self, $clock, $channel) = @_;
+    my $code;
+}
+
+sub adc_read {
+    my ($self, $varhigh, $varlow) = @_;
+    my $code;
+}
+
 1;
 
 =encoding utf8
