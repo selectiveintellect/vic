@@ -941,19 +941,24 @@ sub adc_enable {
         my $adcs = $self->adcon1_scale->{$scale};
         $adcs = $self->adcon1_scale->{internal} if $self->code_config->{adc}->{internal};
         my $adcon1 = "0$adcs" . '0000';
-        my $adfm = defined $self->code_config->{adc}->{right_justify} ?
-                    $self->code_config->{adc}->{right_justify} : 1;
-        my $vcfg = $self->code_config->{adc}->{vref} || 0;
-        my ($pin, $pbit, $chs) = @{$self->analog_pins->{$channel}};
-        my $adcon0 = "$adfm$vcfg$chs" . '01';
-        return << "...";
+        my $code = << "...";
 \tbanksel ADCON1
 \tmovlw B'$adcon1'
 \tmovwf ADCON1
+...
+        if (defined $channel) {
+            my $adfm = defined $self->code_config->{adc}->{right_justify} ?
+            $self->code_config->{adc}->{right_justify} : 1;
+            my $vcfg = $self->code_config->{adc}->{vref} || 0;
+            my ($pin, $pbit, $chs) = @{$self->analog_pins->{$channel}};
+            my $adcon0 = "$adfm$vcfg$chs" . '01';
+            $code .= << "...";
 \tbanksel ADCON0
 \tmovlw B'$adcon0'
 \tmovwf ADCON0
 ...
+        }
+        return $code;
     }
     # no arguments have been given
     return << "...";

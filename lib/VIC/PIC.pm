@@ -197,6 +197,7 @@ sub got_validated_variable {
     }
     return $varname if $self->pic->validate($varname);
     $self->throw_error("$varname is not a valid part of the " . $self->pic->type);
+    return;
 }
 
 sub got_variable {
