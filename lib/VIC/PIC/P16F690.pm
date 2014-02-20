@@ -932,24 +932,41 @@ _debounce_state_check:
 }
 
 sub adc_enable {
-    my ($self, $clock, $channel) = @_;
-    my $scale = int(1e6 / $clock) if $clock > 0;
-    $scale = 2 unless $clock;
-    $scale = 2 if $scale < 2;
-    my $adcs = $self->adcon1_scale->{$scale};
-    $adcs = $self->adcon1_scale->{internal} if $self->code_config->{adc}->{internal};
-    my $adcon1 = "0$adcs" . '0000';
-    my $adfm = $self->code_config->{adc}->{right_justify} || 1;
-    my $vcfg = $self->code_config->{adc}->{vref} || 0;
-    my ($pin, $pbit, $chs) = @{$self->analog_pins->{$channel}};
-    my $adcon0 = "$adfm$vcfg$chs" . '01';
-    my $code = << "...";
+    my $self = shift;
+    if (@_) {
+        my ($clock, $channel) = @_;
+        my $scale = int(1e6 / $clock) if $clock > 0;
+        $scale = 2 unless $clock;
+        $scale = 2 if $scale < 2;
+        my $adcs = $self->adcon1_scale->{$scale};
+        $adcs = $self->adcon1_scale->{internal} if $self->code_config->{adc}->{internal};
+        my $adcon1 = "0$adcs" . '0000';
+        my $adfm = defined $self->code_config->{adc}->{right_justify} ?
+                    $self->code_config->{adc}->{right_justify} : 1;
+        my $vcfg = $self->code_config->{adc}->{vref} || 0;
+        my ($pin, $pbit, $chs) = @{$self->analog_pins->{$channel}};
+        my $adcon0 = "$adfm$vcfg$chs" . '01';
+        return << "...";
 \tbanksel ADCON1
 \tmovf B'$adcon1', W
 \tmovwf ADCON1
 \tbanksel ADCON0
 \tmovf B'$adcon0', W
 \tmovwf ADCON0
+...
+    }
+    # no arguments have been given
+    return << "...";
+\tbanksel ADCON0
+\tbsf ADCON0, ADON
+...
+}
+
+sub adc_disable {
+    my $self = shift;
+    return << "...";
+\tbanksel ADCON0
+\tbcf ADCON0, ADON
 ...
 }
 
