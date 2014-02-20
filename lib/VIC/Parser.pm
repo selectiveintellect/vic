@@ -8,8 +8,6 @@ $VERSION = eval $VERSION;
 use Pegex::Base;
 extends 'Pegex::Parser';
 
-has throw_on_error => 1;
-
 sub match_ref {
     my ($self, $ref, $parent) = @_;
     # create a stack to track who is the parent of the current element being
