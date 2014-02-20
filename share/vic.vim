@@ -11,9 +11,9 @@ if exists("b:current_syntax")
 endif
 
 syn keyword vicHeader       config array table contained
-syn keyword vicStatement    port_value output_port delay hang input_port analog_input_port
-syn keyword vicStatement    adc_init adc_disable adc_read digital_input_port
-syn keyword vicStatement    debounce digital_output write read digital_input
+syn keyword vicStatement    delay hang analog_input digital_input digital_output
+syn keyword vicStatement    adc_enable adc_disable adc_read
+syn keyword vicStatement    debounce digital_output write read analog_output
 syn keyword vicBlock        Main Loop Action
 syn keyword vicPICStatement PIC contained
 syn region  vicString1      start=+'+  end=+'\|$+

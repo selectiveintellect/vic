@@ -371,7 +371,7 @@ sub digital_output {
     return $code;
 }
 
-sub output_port {
+sub __deprecated_output_port {
     my ($self, $port, $pin) = @_;
     return undef unless $port =~ /^[A-C]$/;
     my $code = "clrf TRIS$port" if
@@ -411,7 +411,7 @@ sub write {
     }
 }
 
-sub port_value {
+sub __deprecated_port_value {
     my ($self, $port, $pin, $val) = @_;
     return undef unless $port =~ /^[A-C]$/;
     # if pin is not set set all values
@@ -432,7 +432,7 @@ sub port_value {
     }
 }
 
-sub analog_input_port {
+sub __deprecated_analog_input_port {
     my ($self, $port, $pin) = @_;
     return undef unless $port =~ /^[A-C]$/;
     my $code = "clrf TRIS$port" if
@@ -485,7 +485,7 @@ sub digital_input {
     return $code;
 }
 
-sub digital_input_port {
+sub __deprecated_digital_input_port {
     my ($self, $port, $pin) = @_;
     return undef unless $port =~ /^[A-C]$/;
     my $code = "clrf TRIS$port" if
