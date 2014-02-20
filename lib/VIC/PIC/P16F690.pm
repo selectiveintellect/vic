@@ -728,12 +728,15 @@ sub delay_w {
     my $funcs = {};
     my $macros = { m_delay_var => $self->m_delay_var };
     my $fn = "_delay_w$unit";
-    $code .= "\tcall $fn\n";
+    my $mac = "m_delay_w$unit";
+    my $code = << "...";
+\tmovf $varname, W
+\tcall $fn
+...
     $funcs->{$fn} = << "....";
-\tm_delay_w$unit
+\t$mac
 \treturn
 ....
-    my $mac = "m_delay_w$unit";
     $macros->{$mac} = $self->$mac;
     return wantarray ? ($code, $funcs, $macros) : $code;
 }
