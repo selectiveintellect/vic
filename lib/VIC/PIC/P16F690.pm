@@ -498,7 +498,7 @@ sub write {
             carp "$val cannot be applied to a pin $outp";
         }
         return $self->assign_variable("PORT$port", uc $val);
-    } elsif (exists $self->register_banks->{$outp}) {
+    } elsif ($self->validate($outp)) {
         my $code = "\tbanksel $outp\n";
         $code .= ($val =~ /^\d+$/) ? $self->assign_literal($outp, $val) :
                                     $self->assign_variable($outp, uc $val);
