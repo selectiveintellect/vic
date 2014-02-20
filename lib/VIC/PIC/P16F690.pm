@@ -948,10 +948,10 @@ sub adc_enable {
         my $adcon0 = "$adfm$vcfg$chs" . '01';
         return << "...";
 \tbanksel ADCON1
-\tmovf B'$adcon1', W
+\tmovlw B'$adcon1'
 \tmovwf ADCON1
 \tbanksel ADCON0
-\tmovf B'$adcon0', W
+\tmovlw B'$adcon0'
 \tmovwf ADCON0
 ...
     }
