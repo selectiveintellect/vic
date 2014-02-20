@@ -254,21 +254,33 @@ has power_pins => {
     4 => 'MCLR',
 };
 
+has adcon1_scale  => {
+    2 => '000',
+    4 => '100',
+    8 => '001',
+    16 => '101',
+    32 => '010',
+    64 => '110',
+    internal => '111',
+};
+
 has analog_pins => {
     # use ANSEL for pins AN0-AN7 and ANSELH for AN8-AN11
-    #name   #pin    #portbit
-    AN0 => [19, 0],
-    AN1 => [18, 1],
-    AN2 => [17, 2],
-    AN3 => [3, 3],
-    AN4 => [16, 4],
-    AN5 => [15, 5],
-    AN6 => [14, 6],
-    AN7 => [7, 7],
-    AN8 => [8, 8],
-    AN9 => [9, 9],
-    AN10 => [13, 10],
-    AN11 => [12, 12],
+    #name   #pin    #portbit, #chsbits
+    AN0  => [19, 0, '0000'],
+    AN1  => [18, 1, '0001'],
+    AN2  => [17, 2, '0010'],
+    AN3  => [3,  3, '0011'],
+    AN4  => [16, 4, '0100'],
+    AN5  => [15, 5, '0101'],
+    AN6  => [14, 6, '0110'],
+    AN7  => [ 7, 7, '0111'],
+    AN8  => [ 8, 8, '1000'],
+    AN9  => [ 9, 9, '1001'],
+    AN10 => [13, 10, '1010'],
+    AN11 => [12, 12, '1011'],
+    CVref => [undef, undef, '1100'],
+    '0.6V' => [undef, undef, '1101'],
     #pin #name
     19 => 'AN0',
     18 => 'AN1',
@@ -395,6 +407,11 @@ has code_config => {
         count => 5,
         delay => 1000, # in microseconds
     },
+    adc => {
+        right_justify => 1,
+        vref => 0,
+        internal => 0,
+    },
 };
 
 sub update_config {
@@ -414,6 +431,7 @@ sub validate {
     return undef unless defined $var;
     return 1 if exists $self->pins->{$var};
     return 1 if exists $self->ports->{$var};
+    return 1 if exists $self->analog_pins->{$var};
     return 0;
 }
 
@@ -479,7 +497,8 @@ sub analog_input {
         my $port = $self->ports->{$inp};
         $code = << "...";
 \tbanksel TRIS$port
-\tclrf TRIS$port
+\tmovlw 0xFF
+\tmovwf TRIS$port
 \tbanksel ANSEL
 \tclrf ANSEL
 \tclrf ANSELH
@@ -500,7 +519,7 @@ sub analog_input {
             $flagsH = sprintf "0x%02X", $flagsH;
             $code = << "...";
 \tbanksel TRIS$port
-\tbcf TRIS$port, TRIS$port$portbit
+\tbsf TRIS$port, TRIS$port$portbit
 \tbanksel ANSEL
 \tmovlw $flags
 \tmovwf ANSEL
@@ -724,7 +743,6 @@ sub delay_us {
 
 sub delay_w {
     my ($self, $unit, $varname) = @_;
-    my $code = '';
     my $funcs = {};
     my $macros = { m_delay_var => $self->m_delay_var };
     my $fn = "_delay_w$unit";
@@ -915,12 +933,45 @@ _debounce_state_check:
 
 sub adc_enable {
     my ($self, $clock, $channel) = @_;
-    my $code;
+    my $scale = int(1e6 / $clock) if $clock > 0;
+    $scale = 2 unless $clock;
+    $scale = 2 if $scale < 2;
+    my $adcs = $self->adcon1_scale->{$scale};
+    $adcs = $self->adcon1_scale->{internal} if $self->code_config->{adc}->{internal};
+    my $adcon1 = "0$adcs" . '0000';
+    my $adfm = $self->code_config->{adc}->{right_justify} || 1;
+    my $vcfg = $self->code_config->{adc}->{vref} || 0;
+    my ($pin, $pbit, $chs) = @{$self->analog_pins->{$channel}};
+    my $adcon0 = "$adfm$vcfg$chs" . '01';
+    my $code = << "...";
+\tbanksel ADCON1
+\tmovf B'$adcon1', W
+\tmovwf ADCON1
+\tbanksel ADCON0
+\tmovf B'$adcon0', W
+\tmovwf ADCON0
+...
 }
 
 sub adc_read {
     my ($self, $varhigh, $varlow) = @_;
-    my $code;
+    $varhigh = uc $varhigh;
+    $varlow = uc $varlow if defined $varlow;
+    my $code = << "...";
+\t;;;delay 5us
+\tnop
+\tnop
+\tnop
+\tnop
+\tnop
+\tbsf ADCON0, GO
+\tbtfss ADCON0, GO
+\tgoto \$ - 1
+\tmovf ADRESH, W
+\tmovwf $varhigh
+...
+    $code .= "\tmovf ADRESL, W\n\tmovwf $varlow\n" if defined $varlow;
+    return $code;
 }
 
 1;
