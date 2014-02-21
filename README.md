@@ -14,21 +14,9 @@ VIC is a nice syntax that compiles to PIC assembly.
 This module depends on the following:
 
 - `Module::Build` (this is needed for building)
-- `Pegex` (this is stored as a submodule `pegex-pm`)
+- `Pegex` (this is stored as a subrepo `pegex-pm`)
 - `Getopt::Long` (for handling command line options. Comes with perl itself)
 - `XXX` (only required for debugging)
-
-#Updating dependencies
-
-When you clone this repo for the first time you will need to do the following:
-
-    $ git submodule init
-    $ git submodule update
-
-If you want to just update the submodule with a more recent version:
-
-    $ git submodule update
-
 
 #Testing the Module
 
