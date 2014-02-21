@@ -1,0 +1,11 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:ingydotnet/pegex-pm.git
+	branch = master
+	commit = a7f2a78536e94ea6e3dac7328fdd9d1bbb58b98d
+	former = 23cd7da776698db7d454986e501cc116f890b51f
+	cmdver = 0.1.0
