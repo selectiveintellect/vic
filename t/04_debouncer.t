@@ -138,7 +138,7 @@ _action_2:
 	incf DISPLAY, 1
 
 	;; moves DISPLAY to PORTC
-	movf  DISPLAY, 0
+	movf  DISPLAY, W
 	movwf PORTC
 
 	goto _loop_1

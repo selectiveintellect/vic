@@ -1,0 +1,13 @@
+PIC P16F690;
+
+Main {
+    digital_output PORTC;
+    $display = 0;    
+    timer_enable TMR0, 256;
+    Loop {
+        timer Action {
+            $display++;
+            write PORTC, $display;
+        };
+    }
+}

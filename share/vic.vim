@@ -13,7 +13,8 @@ endif
 syn keyword vicHeader       config array table contained
 syn keyword vicStatement    delay hang analog_input digital_input digital_output
 syn keyword vicStatement    adc_enable adc_disable adc_read delay_ms delay_us delay_s
-syn keyword vicStatement    debounce digital_output write read ror rol
+syn keyword vicStatement    debounce digital_output write read ror rol timer_enable
+syn keyword vicStatement    timer
 syn keyword vicBlock        Main Loop Action
 syn keyword vicPICStatement PIC contained
 syn region  vicString1      start=+'+  end=+'\|$+

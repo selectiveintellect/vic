@@ -315,6 +315,28 @@ has comparator_pins => {
     6 => 'C2OUT',
 };
 
+has timer_prescaler => {
+    2 => '000',
+    4 => '001',
+    8 => '010',
+    16 => '011',
+    32 => '100',
+    64 => '101',
+    128 => '110',
+    256 => '111',
+};
+
+has wdt_prescaler => {
+    1 => '000',
+    2 => '001',
+    4 => '010',
+    8 => '011',
+    16 => '100',
+    32 => '101',
+    64 => '110',
+    128 => '111',
+};
+
 has timer_pins => {
     TMR0 => 17,
     TMR1 => 2,
@@ -866,7 +888,7 @@ sub assign_variable {
     my ($self, $var1, $var2) = @_;
     return <<"...";
 \t;; moves $var2 to $var1
-\tmovf  $var2, 0
+\tmovf  $var2, W
 \tmovwf $var1
 ...
 }
@@ -1050,6 +1072,40 @@ sub adc_read {
 ...
     $code .= "\tmovf ADRESL, W\n\tmovwf $varlow\n" if defined $varlow;
     return $code;
+}
+
+sub timer_enable {
+    my ($self, $tmr, $scale) = @_;
+    unless (exists $self->timer_pins->{$tmr}) {
+        carp "$tmr is not a timer.";
+        return;
+    }
+    my $psx = $self->timer_prescaler->{$scale} || $self->timer_prescaler->{256};
+    return << "...";
+\tbanksel OPTION_REG
+\tclrw
+\tiorlw B'00000$psx'
+\tmovwf OPTION_REG
+\tbanksel $tmr
+\tclrf $tmr
+...
+}
+
+sub timer {
+    my ($self, $action) = @_;
+    my ($parent_label, $action_label);
+    if ($action =~ /LABEL::(\w+)::\w+::\w+::(\w+)/) {
+        $action_label = $1;
+        $parent_label = $2;
+    }
+    return unless $action_label;
+    return unless $parent_label;
+    return << "...";
+\tbtfss INTCON, T0IF
+\tgoto $parent_label
+\tbcf INTCON, T0IF
+\tgoto $action_label
+...
 }
 
 1;

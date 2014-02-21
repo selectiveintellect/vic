@@ -58,7 +58,7 @@ _start:
     movlw D'8'
     movwf DISPLAY
 _loop_1:
-    movf DISPLAY, 0
+    movf DISPLAY, W
     movwf PORTC
     call _delay_1s
     ;; ror
