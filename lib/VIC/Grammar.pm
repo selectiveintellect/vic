@@ -15,9 +15,6 @@ sub make_tree {
     '+grammar' => 'vic',
     '+toprule' => 'program',
     '+version' => '0.0.4',
-    'BLANK' => {
-      '.rgx' => qr/\G[\ \t]/
-    },
     'COMMA' => {
       '.rgx' => qr/\G,/
     },
@@ -42,11 +39,16 @@ sub make_tree {
     'SEMI' => {
       '.rgx' => qr/\G;/
     },
+    '_' => {
+      '.rgx' => qr/\G[\ \t]*/
+    },
+    '__' => {
+      '.rgx' => qr/\G[\ \t]+/
+    },
     'blank_line' => {
       '.all' => [
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         },
         {
           '.ref' => 'EOL'
@@ -86,8 +88,7 @@ sub make_tree {
           '.ref' => 'EQUAL'
         },
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         },
         {
           '.any' => [
@@ -100,8 +101,7 @@ sub make_tree {
           ]
         },
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         }
       ]
     },
@@ -111,15 +111,13 @@ sub make_tree {
     'end_block' => {
       '.all' => [
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         },
         {
           '.ref' => 'RCURLY'
         },
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         },
         {
           '+max' => 1,
@@ -163,8 +161,7 @@ sub make_tree {
           '.ref' => 'values'
         },
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         },
         {
           '.ref' => 'SEMI'
@@ -178,15 +175,13 @@ sub make_tree {
     'lhs_op' => {
       '.all' => [
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         },
         {
           '.ref' => 'variable'
         },
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         },
         {
           '.ref' => 'operator'
@@ -204,15 +199,13 @@ sub make_tree {
     'lhs_op_rhs' => {
       '.all' => [
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         },
         {
           '.ref' => 'variable'
         },
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         },
         {
           '.ref' => 'operator'
@@ -232,15 +225,13 @@ sub make_tree {
     'name' => {
       '.all' => [
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         },
         {
           '.ref' => 'identifier'
         },
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         }
       ]
     },
@@ -253,8 +244,7 @@ sub make_tree {
           '.ref' => 'number'
         },
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         },
         {
           '.ref' => 'units'
@@ -264,15 +254,13 @@ sub make_tree {
     'op_rhs' => {
       '.all' => [
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         },
         {
           '.ref' => 'operator'
         },
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         },
         {
           '.ref' => 'variable'
@@ -317,15 +305,13 @@ sub make_tree {
           '.ref' => 'name'
         },
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         },
         {
           '.ref' => 'LCURLY'
         },
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         },
         {
           '+max' => 1,
@@ -365,8 +351,7 @@ sub make_tree {
           '.rgx' => qr/\Gconfig/
         },
         {
-          '+min' => 1,
-          '.ref' => 'whitespace'
+          '.ref' => '__'
         },
         {
           '.ref' => 'name'
@@ -394,8 +379,7 @@ sub make_tree {
     'value' => {
       '.all' => [
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         },
         {
           '.any' => [
@@ -420,8 +404,7 @@ sub make_tree {
           ]
         },
         {
-          '+min' => 0,
-          '.ref' => 'whitespace'
+          '.ref' => '_'
         }
       ]
     },
@@ -455,9 +438,6 @@ sub make_tree {
           '.ref' => 'identifier'
         }
       ]
-    },
-    'whitespace' => {
-      '.ref' => 'BLANK'
     }
   }
 }
