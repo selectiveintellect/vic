@@ -72,12 +72,7 @@ sub compile_fails_ok {
         require Carp;
         Carp::croak("compile_fails_ok: must pass an input code to compile");
     }
-    eval {
-        my $save = $VIC::ThrowOnError;
-        $VIC::ThrowOnError = 1;
-        my $c = VIC::compile($input);
-        $VIC::ThrowOnError = $save;
-    };
+    eval { VIC::compile($input); };
     $Tester->ok($@, $@);
 }
 
