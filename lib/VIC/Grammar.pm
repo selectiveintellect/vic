@@ -359,7 +359,7 @@ sub make_tree {
           '.rgx' => qr/\Gconfig/
         },
         {
-          '+min' => 0,
+          '+min' => 1,
           '.ref' => 'whitespace'
         },
         {
