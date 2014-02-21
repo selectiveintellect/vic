@@ -131,9 +131,9 @@ sub got_instruction {
     my $method = shift @$list;
     $self->flatten($list) if $list;
     my @args = @$list if $list;
-    $self->throw_error("Unknown instruction $method") unless $self->pic->can($method);
+    return $self->throw_error("Unknown instruction $method") unless $self->pic->can($method);
     my ($code, $funcs, $macros) = $self->pic->$method(@args);
-    $self->throw_error("Error in statement $method @args") unless $code;
+    return $self->throw_error("Error in statement $method @args") unless $code;
     $self->_update_block($code, $funcs, $macros);
     return;
 }
@@ -142,11 +142,11 @@ sub _handle_var_op {
     my ($self, $varname, $op) = @_;
     my $method = 'increment' if $op eq '++';
     $method = 'decrement' if $op eq '--';
-    $self->throw_error("Operator $op not supported. Use -- or ++ only.") unless $method;
-    $self->throw_error("Unknown instruction $method") unless $self->pic->can($method);
+    return $self->throw_error("Operator $op not supported. Use -- or ++ only.") unless $method;
+    return $self->throw_error("Unknown instruction $method") unless $self->pic->can($method);
     my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
     my $code = $self->pic->$method($nvar);
-    $self->throw_error("Invalid expression $varname $op") unless $code;
+    return $self->throw_error("Invalid expression $varname $op") unless $code;
     $self->_update_block($code);
     return;
 }
@@ -177,11 +177,11 @@ sub got_lhs_op_rhs {
     $method = 'selfadd_' if $op eq '+=';
     $method .= exists $self->ast->{variables}->{$rhs} ? 'variable' : 'literal';
 
-    $self->throw_error("Operator $op not supported") unless $method;
-    $self->throw_error("Unknown instruction $method") unless $self->pic->can($method);
+    return $self->throw_error("Operator $op not supported") unless $method;
+    return $self->throw_error("Unknown instruction $method") unless $self->pic->can($method);
     my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
     my $code = $self->pic->$method($nvar, $rhs);
-    $self->throw_error("Invalid expression $varname $op $rhs") unless $code;
+    return $self->throw_error("Invalid expression $varname $op $rhs") unless $code;
     $self->_update_block($code);
     return;
 }
@@ -196,7 +196,7 @@ sub got_validated_variable {
         $varname = $list;
     }
     return $varname if $self->pic->validate($varname);
-    $self->throw_error("$varname is not a valid part of the " . $self->pic->type);
+    return $self->throw_error("$varname is not a valid part of the " . $self->pic->type);
     return;
 }
 
@@ -285,8 +285,8 @@ sub _generate_code {
 sub final {
     my ($self, $got) = @_;
     my $ast = $self->ast;
-    $self->throw_error("Missing '}'") if $self->ast->{block_stack_top} ne 0;
-    $self->throw_error("Main not defined") unless defined $self->ast->{Main};
+    return $self->throw_error("Missing '}'") if $self->ast->{block_stack_top} ne 0;
+    return $self->throw_error("Main not defined") unless defined $self->ast->{Main};
     my $funcs = '';
     foreach my $fn (sort(keys %{$ast->{funcs}})) {
         $funcs .= "$fn:\n";

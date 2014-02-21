@@ -8,6 +8,7 @@ use base qw(Exporter);
 
 our @EXPORT = qw(
     compiles_ok
+    compile_fails_ok
 );
 
 my $CLASS = __PACKAGE__;
@@ -65,6 +66,21 @@ sub compiles_ok {
     }
 }
 
+sub compile_fails_ok {
+    my ($input, $msg) = @_;
+    unless (defined $input) {
+        require Carp;
+        Carp::croak("compile_fails_ok: must pass an input code to compile");
+    }
+    eval {
+        my $save = $VIC::ThrowOnError;
+        $VIC::ThrowOnError = 1;
+        my $c = VIC::compile($input);
+        $VIC::ThrowOnError = $save;
+    };
+    $Tester->ok($@, $@);
+}
+
 1;
 
 =encoding utf8
@@ -85,6 +101,11 @@ A test class for handling VIC testing
 
 This function takes the input VIC code, and the expected assembly code and
 checks whether the VIC code compiles into the assembly code.
+
+=item B<compile_fails_ok $input>
+
+This function takes the input VIC code and checks whether the VIC code fails
+to compile into assembly code.
 
 =back
 

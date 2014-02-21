@@ -7,6 +7,8 @@ use VIC::Grammar;
 use VIC::PIC;
 
 our $Debug = 0;
+our $ThrowOnError = 1;
+
 our $VERSION = '0.03';
 $VERSION = eval $VERSION;
 
@@ -17,6 +19,7 @@ sub compile {
         grammar => VIC::Grammar->new,
         receiver => VIC::PIC->new(pic_override => $pic),
         debug => $Debug,
+        throw_on_error => $ThrowOnError,
     );
 
     $parser->parse($input);
