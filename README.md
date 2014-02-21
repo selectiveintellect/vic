@@ -14,7 +14,7 @@ VIC is a nice syntax that compiles to PIC assembly.
 This module depends on the following:
 
 - `Module::Build` (this is needed for building)
-- `Pegex` (this is stored as a subrepo `pegex-pm`)
+- `Pegex` (this is included as a subrepo `ext/pegex-pm`)
 - `Getopt::Long` (for handling command line options. Comes with perl itself)
 - `XXX` (only required for debugging)
 
