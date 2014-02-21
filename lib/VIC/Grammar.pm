@@ -15,6 +15,12 @@ sub make_tree {
     '+grammar' => 'vic',
     '+toprule' => 'program',
     '+version' => '0.0.4',
+    'BLANK' => {
+      '.rgx' => qr/\G[\ \t]/
+    },
+    'COMMA' => {
+      '.rgx' => qr/\G,/
+    },
     'DOLLAR' => {
       '.rgx' => qr/\G\$/
     },
@@ -43,7 +49,7 @@ sub make_tree {
           '.ref' => 'whitespace'
         },
         {
-          '.rgx' => qr/\G\r?\n/
+          '.ref' => 'EOL'
         }
       ]
     },
@@ -425,7 +431,7 @@ sub make_tree {
           '.ref' => 'value'
         },
         {
-          '.rgx' => qr/\G,/
+          '.ref' => 'COMMA'
         }
       ]
     },
@@ -451,7 +457,7 @@ sub make_tree {
       ]
     },
     'whitespace' => {
-      '.rgx' => qr/\G[\ \t]+/
+      '.ref' => 'BLANK'
     }
   }
 }
