@@ -246,7 +246,6 @@ sub _generate_code {
     return wantarray ? @code : [] unless exists $ast->{$block};
     $ast->{generated_blocks} = {} unless defined $ast->{generated_blocks};
     push @code, ";;;; generated code for $block";
-    my @action_code = ();
     foreach my $line (@{$ast->{$block}}) {
         if ($line =~ /LABEL::(\w+)::(\w+)(?:::(\w+))?/) {
             my $label = $1;
@@ -257,7 +256,8 @@ sub _generate_code {
             next if exists $ast->{generated_blocks}->{$child};
             my @newcode = _generate_code($ast, $child);
             if ($child =~ /^Action/) {
-                push @action_code, @newcode if @newcode;
+                push @newcode, "\treturn ;; from $label\n" if @newcode;
+                $ast->{funcs}->{$label} = [@newcode] if @newcode;
             } else {
                 push @code, @newcode if @newcode;
             }
@@ -269,15 +269,11 @@ sub _generate_code {
             if (defined $parent and exists $ast->{$parent} and
                 ref $ast->{$parent} eq 'ARRAY' and $parent ne $block) {
                 my $plabel = $1 if $ast->{$parent}->[0] =~ /^\s*(\w+):/;
-                push @code, "\tgoto $plabel" if $plabel;
+                push @code, "\tgoto $plabel;; $plabel" if $plabel;
             }
             push @code, "\tgoto $label" if $child =~ /^Loop/;
         } else {
             push @code, $line;
-            if (scalar @action_code) {
-                push @code, @action_code;
-                @action_code = ();
-            }
         }
     }
     return wantarray ? @code : [@code];
@@ -287,13 +283,10 @@ sub final {
     my $ast = $self->ast;
     return $self->throw_error("Missing '}'") if $self->ast->{block_stack_top} ne 0;
     return $self->throw_error("Main not defined") unless defined $self->ast->{Main};
-    my $funcs = '';
-    foreach my $fn (sort(keys %{$ast->{funcs}})) {
-        $funcs .= "$fn:\n";
-        $funcs .= $ast->{funcs}->{$fn};
-        $funcs .= "\n";
-    }
-    my $macros = '';
+    # generate main code first so that any addition to functions, macros,
+    # variables during generation can be handled after
+    my @main_code = _generate_code($ast, 'Main');
+    my $main_code = join("\n", @main_code);
     # variables are part of macros and need to go first
     my $variables = '';
     my $vhref = $ast->{variables};
@@ -303,13 +296,23 @@ sub final {
         # FIXME: initialized variables ?
         $variables .= "$vhref->{$var}->{name} res $vhref->{$var}->{size}\n";
     }
+    my $macros = '';
     foreach my $mac (sort(keys %{$ast->{macros}})) {
         $variables .= "\n" . $ast->{macros}->{$mac} . "\n", next if $mac =~ /_var$/;
         $macros .= $ast->{macros}->{$mac};
         $macros .= "\n";
     }
-    my @main_code = _generate_code($ast, 'Main');
-    my $main_code = join("\n", @main_code);
+    my $funcs = '';
+    foreach my $fn (sort(keys %{$ast->{funcs}})) {
+        my $fn_val = $ast->{funcs}->{$fn};
+        if (ref $fn_val eq 'ARRAY') {
+            $funcs .= join("\n", @$fn_val);
+        } else {
+            $funcs .= "$fn:\n";
+            $funcs .= $fn_val unless ref $fn_val eq 'ARRAY';
+        }
+        $funcs .= "\n";
+    }
     my $pic = <<"...";
 ;;;; generated code for PIC header file
 #include <$ast->{include}>

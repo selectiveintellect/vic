@@ -129,8 +129,11 @@ _debounce_state_check:
 	;; was it a key-down
 	btfss   DEBOUNCESTATE, 0
 	goto    _loop_1
-	goto    _action_2
+	call _action_2
 
+	goto _loop_1
+
+;;;; generated code for functions
 ;;;; generated code for Action2
 _action_2:
 
@@ -140,10 +143,8 @@ _action_2:
 	;; moves DISPLAY to PORTC
 	movf  DISPLAY, W
 	movwf PORTC
+    return ;; from _action_2
 
-	goto _loop_1
-
-;;;; generated code for functions
 _delay_1ms:
 	m_delay_ms D'1'
 	return

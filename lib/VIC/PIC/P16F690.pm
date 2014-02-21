@@ -1004,7 +1004,7 @@ _debounce_state_check:
 \t;; was it a key-down
 \tbtfss   DEBOUNCESTATE, 0
 \tgoto    $parent_label
-\tgoto    $action_label
+\tcall    $action_label
 ...
     return wantarray ? ($code, $funcs, $macros) : $code;
 }
@@ -1104,7 +1104,7 @@ sub timer {
 \tbtfss INTCON, T0IF
 \tgoto $parent_label
 \tbcf INTCON, T0IF
-\tgoto $action_label
+\tcall $action_label
 ...
 }
 

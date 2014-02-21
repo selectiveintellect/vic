@@ -57,8 +57,10 @@ _loop_1:
 	btfss INTCON, T0IF
 	goto _loop_1
 	bcf INTCON, T0IF
-	goto _action_2
+	call _action_2
+    goto _loop_1
 
+;;;; generated code for functions
 ;;;; generated code for Action2
 _action_2:
 
@@ -68,11 +70,7 @@ _action_2:
 	;; moves DISPLAY to PORTC
 	movf  DISPLAY, W
 	movwf PORTC
-
-	goto _loop_1
-
-;;;; generated code for functions
-
+    return ;; from _action_2
 
 ;;;; generated code for end-of-file
 	end
