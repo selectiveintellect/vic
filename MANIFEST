@@ -18,6 +18,7 @@ share/examples/blinker.vic
 share/examples/debouncer.vic
 share/examples/helloworld.vic
 share/examples/rotater.vic
+share/examples/timer.vic
 share/examples/varrotate.vic
 share/rebuild-grammar
 share/rebuild-grammar.PL
@@ -30,4 +31,5 @@ t/03_rotater.t
 t/04_debouncer.t
 t/05_adctest.t
 t/06_fail_instruction.t
+t/07_timer.t
 t/TestVIC.pm
