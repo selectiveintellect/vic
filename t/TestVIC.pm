@@ -2,6 +2,7 @@ package t::TestVIC;
 use strict;
 use warnings;
 
+use Carp;
 use Test::Builder;
 use VIC;
 use base qw(Exporter);
@@ -41,12 +42,10 @@ sub sanitize {
 sub compiles_ok {
     my ($input, $output, $msg) = @_;
     unless (defined $input) {
-        require Carp;
-        Carp::croak("compiles_ok: must pass an input code to compile");
+        croak("compiles_ok: must pass an input code to compile");
     }
     unless (defined $output) {
-        require Carp;
-        Carp::croak("compiles_ok: must pass an output code to compare with");
+        croak("compiles_ok: must pass an output code to compare with");
     }
     my $compiled = VIC::compile($input);
     $compiled = sanitize($compiled);
@@ -69,8 +68,7 @@ sub compiles_ok {
 sub compile_fails_ok {
     my ($input, $msg) = @_;
     unless (defined $input) {
-        require Carp;
-        Carp::croak("compile_fails_ok: must pass an input code to compile");
+        croak("compile_fails_ok: must pass an input code to compile");
     }
     eval { VIC::compile($input); };
     $Tester->ok($@, $@);
