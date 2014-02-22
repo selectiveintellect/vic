@@ -81,3 +81,5 @@ TODO
 \bpegex-pm
 \binstaller
 \.log$
+\.swp$
+compile_into_module$

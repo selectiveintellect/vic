@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 # XXX Development only:
-use lib 'lib', 'pegex-pm/lib';
+use lib 'lib', 'ext/pegex-pm/lib';
 
 use VIC::Command;
 

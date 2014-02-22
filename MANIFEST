@@ -17,6 +17,7 @@ share/examples/adctest.vic
 share/examples/blinker.vic
 share/examples/debouncer.vic
 share/examples/helloworld.vic
+share/examples/reversible.vic
 share/examples/rotater.vic
 share/examples/timer.vic
 share/examples/varrotate.vic
