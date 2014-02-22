@@ -85,6 +85,22 @@ sub make_tree {
         }
       ]
     },
+    'compare_operator' => {
+      '.rgx' => qr/\G((?:!|=|<|>)=|(?:<|>))/
+    },
+    'comparison' => {
+      '.all' => [
+        {
+          '.ref' => 'expr_value'
+        },
+        {
+          '.ref' => 'compare_operator'
+        },
+        {
+          '.ref' => 'expr_value'
+        }
+      ]
+    },
     'complement' => {
       '.all' => [
         {
@@ -106,6 +122,105 @@ sub make_tree {
     },
     'complement_operator' => {
       '.rgx' => qr/\G(\~|!)/
+    },
+    'conditional' => {
+      '.all' => [
+        {
+          '.ref' => 'conditional_subject'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'COMMA'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'conditional_predicate'
+        }
+      ]
+    },
+    'conditional_predicate' => {
+      '.any' => [
+        {
+          '.ref' => 'conditional_predicate_double'
+        },
+        {
+          '.ref' => 'conditional_predicate_single'
+        }
+      ]
+    },
+    'conditional_predicate_double' => {
+      '.all' => [
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'block'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'COMMA'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'block'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'SEMI'
+        },
+        {
+          '+max' => 1,
+          '.ref' => 'EOL'
+        }
+      ]
+    },
+    'conditional_predicate_single' => {
+      '.all' => [
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'block'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'SEMI'
+        },
+        {
+          '+max' => 1,
+          '.ref' => 'EOL'
+        }
+      ]
+    },
+    'conditional_subject' => {
+      '.all' => [
+        {
+          '+min' => 0,
+          '.all' => [
+            {
+              '.ref' => 'single_conditional'
+            },
+            {
+              '.ref' => 'logic_operator'
+            }
+          ]
+        },
+        {
+          '.ref' => 'single_conditional'
+        }
+      ]
     },
     'config_expression' => {
       '.all' => [
@@ -189,6 +304,9 @@ sub make_tree {
         },
         {
           '.ref' => 'op_rhs'
+        },
+        {
+          '.ref' => 'conditional'
         }
       ]
     },
@@ -287,6 +405,9 @@ sub make_tree {
           '.ref' => 'EOL'
         }
       ]
+    },
+    'logic_operator' => {
+      '.rgx' => qr/\G((?:&|\|){2})/
     },
     'math_operator' => {
       '.rgx' => qr/\G(\+|\-|\*|\/|%)/
@@ -390,6 +511,16 @@ sub make_tree {
         },
         {
           '.ref' => 'bit_operator'
+        }
+      ]
+    },
+    'single_conditional' => {
+      '.any' => [
+        {
+          '.ref' => 'comparison'
+        },
+        {
+          '.ref' => 'complement'
         }
       ]
     },

@@ -33,7 +33,7 @@ values: value-comma* value
 value-comma: value COMMA
 value: - (string | number-units | number | variable | block | validated-variable) -
 
-expression: lhs-op-rhs | lhs-op | op-rhs #| conditional
+expression: lhs-op-rhs | lhs-op | op-rhs | conditional
 lhs-op: - variable - incdec-operator - SEMI? EOL?
 op-rhs: - incdec-operator - variable - SEMI? EOL?
 complement: - complement-operator - variable -
@@ -43,7 +43,11 @@ lhs-op-rhs: - variable - assign-operator - rhs-expr - SEMI EOL?
 
 comparison: expr-value compare-operator expr-value
 single-conditional: comparison | complement
-conditional: (single-conditional logic-operator)* single-conditional
+conditional-predicate-double: - block - COMMA - block - SEMI EOL?
+conditional-predicate-single: - block - SEMI EOL?
+conditional-predicate: conditional-predicate-double | conditional-predicate-single
+conditional-subject: (single-conditional logic-operator)* single-conditional
+conditional: conditional-subject - COMMA - conditional-predicate
 
 string: single-quoted-string | double-quoted-string
 
