@@ -16,9 +16,9 @@ config-expression: name <EQUAL> - (number-units | number) -
 comment: /- <HASH> <ANY>* <EOL>/ | blank-line
 blank-line: - EOL
 
-ws: /<BLANK>/
-_: /<ws>*/
-__: /<ws>+/
+##FIXME: this needs to be removed really but Pegex has a bug
+_: /<BLANK>*/
+__: /<BLANK>+/
 
 statement: comment | instruction | expression | block
 
@@ -33,10 +33,17 @@ values: value-comma* value
 value-comma: value COMMA
 value: - (string | number-units | number | variable | block | validated-variable) -
 
-expression: lhs-op-rhs | lhs-op | op-rhs
-lhs-op: - variable - operator SEMI? EOL?
-op-rhs: - operator - variable SEMI? EOL?
-lhs-op-rhs: - variable - operator value SEMI EOL?
+expression: lhs-op-rhs | lhs-op | op-rhs #| conditional
+lhs-op: - variable - incdec-operator - SEMI? EOL?
+op-rhs: - incdec-operator - variable - SEMI? EOL?
+complement: - complement-operator - variable -
+expr-value: - (number | variable | number-units | complement) -
+rhs-expr: (expr-value rhs-operator)* expr-value
+lhs-op-rhs: - variable - assign-operator - rhs-expr - SEMI EOL?
+
+comparison: expr-value compare-operator expr-value
+single-conditional: comparison | complement
+conditional: (single-conditional logic-operator)* single-conditional
 
 string: single-quoted-string | double-quoted-string
 
@@ -50,10 +57,17 @@ validated-variable: identifier
 variable: DOLLAR identifier
 identifier: /(<ALPHA>[<WORDS>]*)/
 
-operator: /((:
-    <BANG> | <EQUAL> | <PERCENT> | <CARET> | <AMP> | <STAR> | <TILDE> | <DASH> |
-    <PLUS> | <PIPE> | <SLASH> | <LANGLE> | <RANGLE>){1,2})/
-
+complement-operator: /(<TILDE> | <BANG>)/
+incdec-operator: /((:<PLUS> | <DASH>){1,2})/
+assign-operator: /((: <PLUS>| <DASH> | <PERCENT> | <CARET> | <STAR> | <PIPE> | <AMP> | <SLASH>)? <EQUAL>)/
+compare-operator: /((: <BANG> | <EQUAL> | <LANGLE> | <RANGLE>) <EQUAL> | (: <LANGLE> | <RANGLE> ))/
+logic-operator: /((:<AMP> | <PIPE>){2})/
+math-operator: /(<PLUS> | <DASH> | <STAR> | <SLASH> | <PERCENT>)/
+bit-operator: /(<PIPE> | <CARET> | <AMP>)/
+rhs-operator: math-operator | bit-operator
+# parentheses
+start-expr-block: - LPAREN -
+end-expr-block: - RPAREN -
 
 single_quoted_string:
     /(:

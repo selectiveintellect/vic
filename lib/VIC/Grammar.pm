@@ -45,6 +45,12 @@ sub make_tree {
     '__' => {
       '.rgx' => qr/\G[\ \t]+/
     },
+    'assign_operator' => {
+      '.rgx' => qr/\G((?:\+|\-|%|\^|\*|\||&|\/)?=)/
+    },
+    'bit_operator' => {
+      '.rgx' => qr/\G(\||\^|&)/
+    },
     'blank_line' => {
       '.all' => [
         {
@@ -78,6 +84,28 @@ sub make_tree {
           '.ref' => 'blank_line'
         }
       ]
+    },
+    'complement' => {
+      '.all' => [
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'complement_operator'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'variable'
+        },
+        {
+          '.ref' => '_'
+        }
+      ]
+    },
+    'complement_operator' => {
+      '.rgx' => qr/\G(\~|!)/
     },
     'config_expression' => {
       '.all' => [
@@ -125,6 +153,32 @@ sub make_tree {
         }
       ]
     },
+    'expr_value' => {
+      '.all' => [
+        {
+          '.ref' => '_'
+        },
+        {
+          '.any' => [
+            {
+              '.ref' => 'number'
+            },
+            {
+              '.ref' => 'variable'
+            },
+            {
+              '.ref' => 'number_units'
+            },
+            {
+              '.ref' => 'complement'
+            }
+          ]
+        },
+        {
+          '.ref' => '_'
+        }
+      ]
+    },
     'expression' => {
       '.any' => [
         {
@@ -150,6 +204,9 @@ sub make_tree {
     },
     'identifier' => {
       '.rgx' => qr/\G([a-zA-Z][0-9A-Za-z_]*)/
+    },
+    'incdec_operator' => {
+      '.rgx' => qr/\G((?:\+|\-){1,2})/
     },
     'instruction' => {
       '.all' => [
@@ -184,7 +241,10 @@ sub make_tree {
           '.ref' => '_'
         },
         {
-          '.ref' => 'operator'
+          '.ref' => 'incdec_operator'
+        },
+        {
+          '.ref' => '_'
         },
         {
           '+max' => 1,
@@ -208,10 +268,16 @@ sub make_tree {
           '.ref' => '_'
         },
         {
-          '.ref' => 'operator'
+          '.ref' => 'assign_operator'
         },
         {
-          '.ref' => 'value'
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'rhs_expr'
+        },
+        {
+          '.ref' => '_'
         },
         {
           '.ref' => 'SEMI'
@@ -221,6 +287,9 @@ sub make_tree {
           '.ref' => 'EOL'
         }
       ]
+    },
+    'math_operator' => {
+      '.rgx' => qr/\G(\+|\-|\*|\/|%)/
     },
     'name' => {
       '.all' => [
@@ -257,13 +326,16 @@ sub make_tree {
           '.ref' => '_'
         },
         {
-          '.ref' => 'operator'
+          '.ref' => 'incdec_operator'
         },
         {
           '.ref' => '_'
         },
         {
           '.ref' => 'variable'
+        },
+        {
+          '.ref' => '_'
         },
         {
           '+max' => 1,
@@ -274,9 +346,6 @@ sub make_tree {
           '.ref' => 'EOL'
         }
       ]
-    },
-    'operator' => {
-      '.rgx' => qr/\G((?:!|=|%|\^|&|\*|\~|\-|\+|\||\/|<|>){1,2})/
     },
     'program' => {
       '.all' => [
@@ -293,6 +362,34 @@ sub make_tree {
         },
         {
           '.ref' => 'EOS'
+        }
+      ]
+    },
+    'rhs_expr' => {
+      '.all' => [
+        {
+          '+min' => 0,
+          '.all' => [
+            {
+              '.ref' => 'expr_value'
+            },
+            {
+              '.ref' => 'rhs_operator'
+            }
+          ]
+        },
+        {
+          '.ref' => 'expr_value'
+        }
+      ]
+    },
+    'rhs_operator' => {
+      '.any' => [
+        {
+          '.ref' => 'math_operator'
+        },
+        {
+          '.ref' => 'bit_operator'
         }
       ]
     },
