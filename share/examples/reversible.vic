@@ -22,7 +22,7 @@ Main {
         $dirxn == 0, True {
             rol $display, 1;
         }, False {
-            ror $display, 1;        
+            ror $display, 1;
         };
     }
 }

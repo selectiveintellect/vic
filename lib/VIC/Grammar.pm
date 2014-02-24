@@ -205,22 +205,11 @@ sub make_tree {
       ]
     },
     'conditional_subject' => {
-      '.all' => [
-        {
-          '+min' => 0,
-          '.all' => [
-            {
-              '.ref' => 'single_conditional'
-            },
-            {
-              '.ref' => 'logic_operator'
-            }
-          ]
-        },
-        {
-          '.ref' => 'single_conditional'
-        }
-      ]
+      '+min' => 0,
+      '.ref' => 'single_conditional',
+      '.sep' => {
+        '.ref' => 'logic_operator'
+      }
     },
     'config_expression' => {
       '.all' => [
@@ -324,7 +313,7 @@ sub make_tree {
       '.rgx' => qr/\G([a-zA-Z][0-9A-Za-z_]*)/
     },
     'incdec_operator' => {
-      '.rgx' => qr/\G((?:\+|\-){1,2})/
+      '.rgx' => qr/\G(\+\+|\-\-)/
     },
     'instruction' => {
       '.all' => [
@@ -332,7 +321,6 @@ sub make_tree {
           '.ref' => 'name'
         },
         {
-          '+min' => 0,
           '.ref' => 'values'
         },
         {
@@ -487,22 +475,11 @@ sub make_tree {
       ]
     },
     'rhs_expr' => {
-      '.all' => [
-        {
-          '+min' => 0,
-          '.all' => [
-            {
-              '.ref' => 'expr_value'
-            },
-            {
-              '.ref' => 'rhs_operator'
-            }
-          ]
-        },
-        {
-          '.ref' => 'expr_value'
-        }
-      ]
+      '+min' => 0,
+      '.ref' => 'expr_value',
+      '.sep' => {
+        '.ref' => 'rhs_operator'
+      }
     },
     'rhs_operator' => {
       '.any' => [
@@ -636,26 +613,12 @@ sub make_tree {
         }
       ]
     },
-    'value_comma' => {
-      '.all' => [
-        {
-          '.ref' => 'value'
-        },
-        {
-          '.ref' => 'COMMA'
-        }
-      ]
-    },
     'values' => {
-      '.all' => [
-        {
-          '+min' => 0,
-          '.ref' => 'value_comma'
-        },
-        {
-          '.ref' => 'value'
-        }
-      ]
+      '+min' => 0,
+      '.ref' => 'value',
+      '.sep' => {
+        '.ref' => 'COMMA'
+      }
     },
     'variable' => {
       '.all' => [

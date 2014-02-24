@@ -26,11 +26,10 @@ block: start-block statement* end-block
 start-block: name - LCURLY - EOL?
 end-block: - RCURLY - EOL?
 
-instruction: name values* - SEMI EOL?
+instruction: name values - SEMI EOL?
 
 name: - identifier -
-values: value-comma* value
-value-comma: value COMMA
+values: (value % COMMA)*
 value: - (string | number-units | number | variable | block | validated-variable) -
 
 expression: lhs-op-rhs | lhs-op | op-rhs | conditional
@@ -38,7 +37,7 @@ lhs-op: - variable - incdec-operator - SEMI? EOL?
 op-rhs: - incdec-operator - variable - SEMI? EOL?
 complement: - complement-operator - variable -
 expr-value: - (number | variable | number-units | complement) -
-rhs-expr: (expr-value rhs-operator)* expr-value
+rhs-expr: (expr-value % rhs-operator)*
 lhs-op-rhs: - variable - assign-operator - rhs-expr - SEMI EOL?
 
 comparison: expr-value compare-operator expr-value
@@ -46,7 +45,7 @@ single-conditional: comparison | complement
 conditional-predicate-double: - block - COMMA - block - SEMI EOL?
 conditional-predicate-single: - block - SEMI EOL?
 conditional-predicate: conditional-predicate-double | conditional-predicate-single
-conditional-subject: (single-conditional logic-operator)* single-conditional
+conditional-subject: (single-conditional % logic-operator)*
 conditional: conditional-subject - COMMA - conditional-predicate
 
 string: single-quoted-string | double-quoted-string
@@ -62,7 +61,7 @@ variable: DOLLAR identifier
 identifier: /(<ALPHA>[<WORDS>]*)/
 
 complement-operator: /(<TILDE> | <BANG>)/
-incdec-operator: /((:<PLUS> | <DASH>){1,2})/
+incdec-operator: /(<PLUS><PLUS> | <DASH><DASH>)/
 assign-operator: /((: <PLUS>| <DASH> | <PERCENT> | <CARET> | <STAR> | <PIPE> | <AMP> | <SLASH>)? <EQUAL>)/
 compare-operator: /((: <BANG> | <EQUAL> | <LANGLE> | <RANGLE>) <EQUAL> | (: <LANGLE> | <RANGLE> ))/
 logic-operator: /((:<AMP> | <PIPE>){2})/

@@ -893,6 +893,36 @@ sub assign_variable {
 ...
 }
 
+sub assign_expression {
+    my $self = shift;
+    my $var1 = shift;
+    return unless scalar @_;
+    my @code = ("\tclrw\n");
+    foreach my $expr (@_) {
+        if ($expr =~ /^OP::(NOT|COMP)::(\w+)$/) {
+            # this is a unary operation
+            my $op = $1;
+            my $var2 = uc $2;
+            my $comp_code = << "...";
+;; generate code for ~$var2
+\tcomf $var2, W
+...
+            my $not_code = << "...";
+;; generate code for !$var2
+\tcomf $var2, W
+\tbtfss STATUS, Z
+\tmovlw 1
+...
+            push @code, $comp_code if $op eq 'COMP';
+            push @code, $not_code if $op eq 'NOT';
+        } else {
+            carp "Unable to handle $expr\n";
+        }
+    }
+    push @code, "\tmovwf $var1\n";
+    return join("\n", @code);
+}
+
 ## FIXME: handle carry bit
 sub selfadd_literal {
     my ($self, $var, $val) = @_;
@@ -929,6 +959,80 @@ sub decrement {
 \tdecf $var, 1
 ...
 }
+
+sub check_eq {
+    my ($self, $lhs, $rhs, $predicate, $ccount) = @_;
+    my $pred = '';
+    my $end_label = "_end_conditional_$ccount";
+    if (ref $predicate eq 'ARRAY') {
+        my ($false_label, $true_label);
+        foreach my $p (@$predicate) {
+            $false_label = $1 if $p =~ /LABEL::(\w+)::False/;
+            $true_label = $1 if $p =~ /LABEL::(\w+)::True/;
+            last if (defined $false_label and defined $true_label);
+        }
+        if (defined $false_label) {
+            $pred .= "\tgoto $false_label\n";
+        } else {
+            $pred .= "\tgoto $end_label\n";
+        }
+        if (defined $true_label) {
+            $pred .= "\tgoto $true_label\n";
+        } else {
+            $pred .= "\tgoto $end_label\n";
+        }
+    } else {
+        carp "Predicate has to be an array";
+        return;
+    }
+    $pred .= "$end_label:\n";
+    if ($lhs =~ /OP::/ || $rhs =~ /OP::/) {
+
+    } else {
+        if ($lhs !~ /^\d+$/ and $rhs !~ /^\d+$/) {
+            # lhs and rhs are variables
+            $rhs = uc $rhs;
+            $lhs = uc $lhs;
+            return << "...";
+\tbcf STATUS, C
+\tmovf $rhs, W
+\txorwf $lhs, W
+\tbtfss STATUS, Z ;; they are equal
+$pred
+...
+        } elsif ($rhs !~ /^\d+$/ and $lhs =~ /^\d+$/) {
+            # rhs is variable and lhs is a literal
+            $rhs = uc $rhs;
+            return << "...";
+\tbcf STATUS, C
+\tmovf $rhs, W
+\txorlw $lhs
+\tbtfss STATUS, Z ;; they are equal
+$pred
+...
+        } elsif ($rhs =~ /^\d+$/ and $lhs !~ /^\d+$/) {
+            # rhs is a literal and lhs is a variable
+            $lhs = uc $lhs;
+            return << "...";
+\tbcf STATUS, C
+\tmovf $lhs, W
+\txorlw $rhs
+\tbtfss STATUS, Z ;; they are equal
+$pred
+...
+        } else {
+            # both rhs and lhs are literals
+            return << "...";
+\tbcf STATUS, C
+\tmovlw $lhs
+\txorlw $rhs
+\tbtfss STATUS, Z ;; they are equal
+$pred
+...
+        }
+    }
+}
+
 
 sub m_debounce_var {
     return <<'...';

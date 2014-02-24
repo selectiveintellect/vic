@@ -19,11 +19,12 @@ has ast => {
     block_stack_top => 0,
     funcs => {},
     variables => {},
+    conditionals => 0,
 };
 
 sub throw_error { shift->parser->throw_error(@_); }
 
-sub stack { shift->parser->stack; }
+sub stack { reverse @{shift->parser->stack}; }
 
 sub got_uc_select {
     my ($self, $type) = @_;
@@ -68,6 +69,8 @@ sub got_block {
                     $block_label .= "::$plabel" if $plabel;
                 }
             }
+            my $ccount = $self->ast->{conditionals};
+            $block_label .= "::_end_conditional_$ccount" if $block_label =~ /True|False/i;
             push @{$self->ast->{$parent}}, $block_label;
         }
         return $block_label;
@@ -79,7 +82,7 @@ sub got_start_block {
     $self->flatten($list); # we flatten because we only want the name out
     my $block = shift @$list;
     my $id = $self->ast->{block_stack_top};
-    $block = "$block$id" if $block =~ /^(?:Loop|Action)/;
+    $block = "$block$id" if $block =~ /^(?:Loop|Action|True|False)/;
     push @{$self->ast->{block_stack}}, $block;
     $self->ast->{block_stack_top} = scalar @{$self->ast->{block_stack}};
     my $stack = [];
@@ -89,6 +92,13 @@ sub got_start_block {
         push @$stack, "_loop_$id:\n";
     } elsif ($block =~ /^Action/) {
         push @$stack, "_action_$id:\n";
+    } elsif ($block =~ /^True/) {
+        push @$stack, "_true_$id:\n";
+    } elsif ($block =~ /^False/) {
+        push @$stack, "_false_$id:\n";
+    } else {
+        my $lcb = lc "_$block";
+        push @$stack, "$lcb:\n";
     }
     $self->ast->{$block} = $stack;
     return $block;
@@ -175,15 +185,65 @@ sub got_lhs_op_rhs {
     my $rhs = shift @$list;
     my $method = 'assign_' if $op eq '=';
     $method = 'selfadd_' if $op eq '+=';
-    $method .= exists $self->ast->{variables}->{$rhs} ? 'variable' : 'literal';
-
+    my $suffix = 'expression';
+    $suffix = 'literal' if $rhs =~ /^\d+$/;
+    $suffix = 'variable' if exists $self->ast->{variables}->{$rhs};
+    $method .= $suffix if $suffix;
+#    YYY $rhs, $list;
     return $self->throw_error("Operator '$op' not supported") unless $method;
-    return $self->throw_error("Unknown instruction '$method'") unless $self->pic->can($method);
+    return $self->throw_error("Unknown method '$method'") unless $self->pic->can($method);
     my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
-    my $code = $self->pic->$method($nvar, $rhs);
+    my $code = $self->pic->$method($nvar, $rhs, @$list);
     return $self->throw_error("Invalid expression '$varname $op $rhs'") unless $code;
     $self->_update_block($code);
     return;
+}
+
+sub got_conditional {
+    my ($self, $list) = @_;
+    my ($subject, $predicate) = @$list;
+    $self->flatten($predicate);
+    return unless scalar @$predicate;
+    #YYY $self->stack;
+    $self->flatten($subject);
+    my ($lhs, $method, $rhs) = @$subject; #FIXME: does this work with multiple?
+    return $self->throw_error("Unknown method '$method'") unless $self->pic->can($method);
+    my $ccount = $self->ast->{conditionals};
+    my ($code, $funcs, $macros) = $self->pic->$method($lhs, $rhs, $predicate, $ccount);
+    $self->throw_error("Unable to generate code for comparison expression"), return unless $code;
+    $self->_update_block($code, $funcs, $macros);
+    $self->ast->{conditionals}++;
+    return;
+}
+
+sub got_compare_operator {
+    my ($self, $op) = @_;
+    my $method = 'check_eq' if $op eq '==';
+    $method = 'check_ne' if $op eq '!=';
+    $method = 'check_le' if $op eq '<=';
+    $method = 'check_ge' if $op eq '>=';
+    $method = 'check_lt' if $op eq '<';
+    $method = 'check_gt' if $op eq '>';
+    return $self->throw_error("Operator '$op' not supported") unless $method;
+    return $method;
+}
+
+sub got_expr_value {
+    my ($self, $list) = @_;
+    if (ref $list eq 'ARRAY') {
+        $self->flatten($list);
+        if (scalar @$list > 1) {
+            my ($op, $varname) = @$list;
+            return "OP::NOT::$varname" if $op eq '!';
+            return "OP::COMP::$varname" if $op eq '~';
+            $self->throw_error("Unary operator '$op' not supported");
+            return;
+        } else {
+            return shift @$list;
+        }
+    } else {
+        return $list;
+    }
 }
 
 sub got_validated_variable {
@@ -247,16 +307,18 @@ sub _generate_code {
     $ast->{generated_blocks} = {} unless defined $ast->{generated_blocks};
     push @code, ";;;; generated code for $block";
     foreach my $line (@{$ast->{$block}}) {
-        if ($line =~ /LABEL::(\w+)::(\w+)(?:::(\w+))?/) {
-            my $label = $1;
-            my $child = $2;
-            my $parent = $3;
+        if ($line =~ /LABEL::([\w\:]+)/) {
+            my ($label, $child, $parent, $parent_label, $end_cond_label) = split/::/, $1;
             next if $child eq $parent; # bug - FIXME
             next if $child eq $block; # bug - FIXME
             next if exists $ast->{generated_blocks}->{$child};
             my @newcode = _generate_code($ast, $child);
             if ($child =~ /^Action/) {
                 push @newcode, "\treturn ;; from $label\n" if @newcode;
+                $ast->{funcs}->{$label} = [@newcode] if @newcode;
+            } elsif ($child =~ /True|False/) {
+                push @newcode, "\tgoto $end_cond_label;; go back to end of conditional\n" if @newcode;
+                # hack into the function list
                 $ast->{funcs}->{$label} = [@newcode] if @newcode;
             } else {
                 push @code, @newcode if @newcode;
@@ -278,6 +340,7 @@ sub _generate_code {
     }
     return wantarray ? @code : [@code];
 }
+
 sub final {
     my ($self, $got) = @_;
     my $ast = $self->ast;
