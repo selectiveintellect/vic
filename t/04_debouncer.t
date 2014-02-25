@@ -122,14 +122,15 @@ _debounce_state_check:
 	xorlw   5
 	;; is counter == 5 ?
 	btfss   STATUS, Z
-	goto    _loop_1
+	goto _end_action_2
 	;; after 5 straight, flip direction
 	comf    DEBOUNCESTATE, 1
 	clrf    DEBOUNCECOUNTER
 	;; was it a key-down
 	btfss   DEBOUNCESTATE, 0
-	goto    _loop_1
-	call _action_2
+	goto _end_action_2
+	goto _action_2
+_end_action_2:
 
 	goto _loop_1
 
@@ -143,7 +144,7 @@ _action_2:
 	;; moves DISPLAY to PORTC
 	movf  DISPLAY, W
 	movwf PORTC
-    return ;; from _action_2
+	goto _end_action_2 ;; go back
 
 _delay_1ms:
 	m_delay_ms D'1'

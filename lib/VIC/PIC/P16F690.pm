@@ -964,8 +964,8 @@ sub check_eq {
     my ($self, $lhs, $rhs, $predicate, $ccount) = @_;
     my $pred = '';
     my $end_label = "_end_conditional_$ccount";
+    my ($false_label, $true_label);
     if (ref $predicate eq 'ARRAY') {
-        my ($false_label, $true_label);
         foreach my $p (@$predicate) {
             $false_label = $1 if $p =~ /LABEL::(\w+)::False/;
             $true_label = $1 if $p =~ /LABEL::(\w+)::True/;
@@ -1004,31 +1004,33 @@ $pred
             # rhs is variable and lhs is a literal
             $rhs = uc $rhs;
             return << "...";
-\tbcf STATUS, C
 \tmovf $rhs, W
 \txorlw $lhs
-\tbtfss STATUS, Z ;; they are equal
+\tbtfss STATUS, Z ;; $rhs == $lhs ?
 $pred
 ...
         } elsif ($rhs =~ /^\d+$/ and $lhs !~ /^\d+$/) {
             # rhs is a literal and lhs is a variable
             $lhs = uc $lhs;
             return << "...";
-\tbcf STATUS, C
 \tmovf $lhs, W
 \txorlw $rhs
-\tbtfss STATUS, Z ;; they are equal
+\tbtfss STATUS, Z ;; $lhs == $rhs ?
 $pred
 ...
         } else {
             # both rhs and lhs are literals
-            return << "...";
-\tbcf STATUS, C
-\tmovlw $lhs
-\txorlw $rhs
-\tbtfss STATUS, Z ;; they are equal
-$pred
+            if ($lhs == $rhs) {
+                return << "...";
+\tgoto $true_label\n
+$end_label:
 ...
+            } else {
+                return << "...";
+\tgoto $false_label\n
+$end_label:
+...
+            }
         }
     }
 }
@@ -1048,13 +1050,13 @@ DEBOUNCECOUNTER db 0x00
 }
 sub debounce {
     my ($self, $inp, $action) = @_;
-    my ($parent_label, $action_label);
-    if ($action =~ /LABEL::(\w+)::\w+::\w+::(\w+)/) {
+    my ($end_label, $action_label);
+    if ($action =~ /LABEL::(\w+)::\w+::\w+::\w+::(\w+)/) {
         $action_label = $1;
-        $parent_label = $2;
+        $end_label = $2;
     }
     return unless $action_label;
-    return unless $parent_label;
+    return unless $end_label;
     my ($port, $portbit);
     if (exists $self->pins->{$inp}) {
         ($port, $portbit) = @{$self->pins->{$inp}};
@@ -1101,14 +1103,15 @@ _debounce_state_check:
 \txorlw   $debounce_count
 \t;; is counter == $debounce_count ?
 \tbtfss   STATUS, Z
-\tgoto    $parent_label
+\tgoto    $end_label
 \t;; after $debounce_count straight, flip direction
 \tcomf    DEBOUNCESTATE, 1
 \tclrf    DEBOUNCECOUNTER
 \t;; was it a key-down
 \tbtfss   DEBOUNCESTATE, 0
-\tgoto    $parent_label
-\tcall    $action_label
+\tgoto    $end_label
+\tgoto    $action_label
+$end_label:\n
 ...
     return wantarray ? ($code, $funcs, $macros) : $code;
 }
@@ -1197,18 +1200,19 @@ sub timer_enable {
 
 sub timer {
     my ($self, $action) = @_;
-    my ($parent_label, $action_label);
-    if ($action =~ /LABEL::(\w+)::\w+::\w+::(\w+)/) {
+    my ($end_label, $action_label);
+    if ($action =~ /LABEL::(\w+)::\w+::\w+::\w+::(\w+)/) {
         $action_label = $1;
-        $parent_label = $2;
+        $end_label = $2;
     }
     return unless $action_label;
-    return unless $parent_label;
+    return unless $end_label;
     return << "...";
 \tbtfss INTCON, T0IF
-\tgoto $parent_label
+\tgoto $end_label
 \tbcf INTCON, T0IF
-\tcall $action_label
+\tgoto $action_label
+$end_label:
 ...
 }
 

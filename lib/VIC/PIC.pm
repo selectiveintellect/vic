@@ -57,7 +57,8 @@ sub got_block {
     my $parent = shift @$list;
     if (exists $self->ast->{$block} and ref $self->ast->{$block} eq 'ARRAY') {
         my $block_label = $self->ast->{$block}->[0];
-        $block_label = "LABEL::$1::$block" if $block_label =~ /^\s*(\w+):/;
+        my $label = $1 if $block_label =~ /^\s*(\w+):/;
+        $block_label = "LABEL::${label}::$block" if $label;
         ## do not allow the parent to be a label
         if (defined $parent) {
             unless ($parent =~ /LABEL::/) {
@@ -71,6 +72,7 @@ sub got_block {
             }
             my $ccount = $self->ast->{conditionals};
             $block_label .= "::_end_conditional_$ccount" if $block_label =~ /True|False/i;
+            $block_label .= "::_end$label" if $block_label !~ /True|False/i;
             push @{$self->ast->{$parent}}, $block_label;
         }
         return $block_label;
@@ -308,16 +310,13 @@ sub _generate_code {
     push @code, ";;;; generated code for $block";
     foreach my $line (@{$ast->{$block}}) {
         if ($line =~ /LABEL::([\w\:]+)/) {
-            my ($label, $child, $parent, $parent_label, $end_cond_label) = split/::/, $1;
+            my ($label, $child, $parent, $parent_label, $end_label) = split/::/, $1;
             next if $child eq $parent; # bug - FIXME
             next if $child eq $block; # bug - FIXME
             next if exists $ast->{generated_blocks}->{$child};
             my @newcode = _generate_code($ast, $child);
-            if ($child =~ /^Action/) {
-                push @newcode, "\treturn ;; from $label\n" if @newcode;
-                $ast->{funcs}->{$label} = [@newcode] if @newcode;
-            } elsif ($child =~ /True|False/) {
-                push @newcode, "\tgoto $end_cond_label;; go back to end of conditional\n" if @newcode;
+            if ($child =~ /^Action|True|False/) {
+                push @newcode, "\tgoto $end_label;; go back to end of conditional\n" if @newcode;
                 # hack into the function list
                 $ast->{funcs}->{$label} = [@newcode] if @newcode;
             } else {
