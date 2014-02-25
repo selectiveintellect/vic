@@ -1181,21 +1181,112 @@ sub adc_read {
     return $code;
 }
 
+sub isr_var {
+    return << "...";
+cblock 0x70 ;; unbanked RAM
+ISR_STATUS
+ISR_W
+endc
+...
+}
+
+sub isr_entry {
+    my $self = shift;
+    my $isr_addr = $self->isr_address;
+    my $org_addr = $self->org;
+    my $count = $isr_addr - $org_addr - 1;
+    my $nops = '';
+    for my $i (1 .. $count) {
+        $nops .= "\tnop\n";
+    }
+    return << "...";
+$nops
+\torg $isr_addr
+ISR:
+_isr_entry:
+\tmovwf ISR_W
+\tmovf STATUS, W
+\tmovwf ISR_STATUS
+...
+}
+
+sub isr_exit {
+    return << "...";
+_isr_exit:
+\tmovf ISR_STATUS, W
+\tmovwf STATUS
+\tswapf ISR_W, F
+\tswapf ISR_W, W
+\tretfie
+...
+}
+
 sub timer_enable {
-    my ($self, $tmr, $scale) = @_;
+    my ($self, $tmr, $scale, $isr) = @_;
     unless (exists $self->timer_pins->{$tmr}) {
         carp "$tmr is not a timer.";
         return;
     }
     my $psx = $self->timer_prescaler->{$scale} || $self->timer_prescaler->{256};
-    return << "...";
+    my $code = << "...";
+;; timer prescaling
 \tbanksel OPTION_REG
 \tclrw
 \tiorlw B'00000$psx'
 \tmovwf OPTION_REG
+...
+    my $isr_code = << "...";
+;; enable interrupt servicing
+\tbanksel INTCON
+\tclrf INTCON
+\tbsf INTCON, GIE
+\tbsf INTCON, T0IE
+...
+    my $end_code = << "...";
+;; clear the timer
 \tbanksel $tmr
 \tclrf $tmr
 ...
+    $code .= "\n$isr_code\n" if $isr;
+    $code .= "\n$end_code\n";
+    my $funcs = {};
+    my $macros = {};
+    if ($isr) {
+        my ($end_label, $action_label);
+        if ($isr =~ /LABEL::(\w+)::\w+::\w+::\w+::(\w+)/) {
+            $action_label = $1;
+            $end_label = $2;
+        }
+        return unless $action_label;
+        return unless $end_label;
+        $funcs->{isr_timer} = << "..."
+_isr_timer:
+\tbtfss INTCON, T0IF
+\tgoto $end_label
+\tbcf   INTCON, T0IF
+\tgoto $action_label
+$end_label:
+...
+    }
+    return wantarray ? ($code, $funcs, $macros) : $code;
+}
+
+sub timer_disable {
+    my ($self, $tmr) = @_;
+    unless (exists $self->timer_pins->{$tmr}) {
+        carp "$tmr is not a timer.";
+        return;
+    }
+    return << "...";
+\tbanksel INTCON
+\tbcf INTCON, T0IE ;; disable only the timer bit
+\tbanksel OPTION_REG
+\tmovlw B'00001000'
+\tmovwf OPTION_REG
+\tbanksel $tmr
+\tclrf $tmr
+...
+
 }
 
 sub timer {

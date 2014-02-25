@@ -1,0 +1,30 @@
+PIC P16F690;
+
+config debounce count = 2;
+config debounce delay = 1ms;
+config adc right_justify = 0;
+
+Main {
+    digital_output PORTC;
+    analog_input RA0;
+    digital_input RA3;
+    adc_enable 500kHz, AN0;
+    $display = 0x08; # create a 8-bit register
+    $dirxn = 0;
+    timer_enable TMR0, 256, ISR { #set the interrupt service routine
+        adc_read $userval;
+        $userval += 100;
+    };
+    Loop {
+        write PORTC, $display;
+        delay_ms $userval;
+        debounce RA3, Action {
+            $dirxn = !$dirxn;
+        };
+        $dirxn == 1, True {
+            rol $display, 1;
+        }, False { 
+            ror $display, 1;
+        };
+    }
+}

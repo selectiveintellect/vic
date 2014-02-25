@@ -98,6 +98,8 @@ sub got_start_block {
         push @$stack, "_true_$id:\n";
     } elsif ($block =~ /^False/) {
         push @$stack, "_false_$id:\n";
+    } elsif ($block =~ /^ISR/) {
+        push @$stack, "_isr_$id:\n";
     } else {
         my $lcb = lc "_$block";
         push @$stack, "$lcb:\n";
@@ -315,7 +317,7 @@ sub _generate_code {
             next if $child eq $block; # bug - FIXME
             next if exists $ast->{generated_blocks}->{$child};
             my @newcode = _generate_code($ast, $child);
-            if ($child =~ /^Action|True|False/) {
+            if ($child =~ /^Action|True|False|ISR/) {
                 push @newcode, "\tgoto $end_label;; go back to end of conditional\n" if @newcode;
                 # hack into the function list
                 $ast->{funcs}->{$label} = [@newcode] if @newcode;
@@ -364,16 +366,42 @@ sub final {
         $macros .= $ast->{macros}->{$mac};
         $macros .= "\n";
     }
+    my $isr_checks = '';
+    my $isr_code = '';
     my $funcs = '';
     foreach my $fn (sort(keys %{$ast->{funcs}})) {
         my $fn_val = $ast->{funcs}->{$fn};
-        if (ref $fn_val eq 'ARRAY') {
-            $funcs .= join("\n", @$fn_val);
+        # the default ISR checks to be done first
+        if ($fn =~ /^isr_\w+$/) {
+            if (ref $fn_val eq 'ARRAY') {
+                $isr_checks .= join("\n", @$fn_val);
+            } else {
+                $isr_checks .= $fn_val . "\n";
+            }
+        # the user ISR code to be handled next
+        } elsif ($fn =~ /^_isr_\w+$/) {
+            if (ref $fn_val eq 'ARRAY') {
+                $isr_code .= join("\n", @$fn_val);
+            } else {
+                $isr_code .= $fn_val . "\n";
+            }
         } else {
-            $funcs .= "$fn:\n";
-            $funcs .= $fn_val unless ref $fn_val eq 'ARRAY';
+            if (ref $fn_val eq 'ARRAY') {
+                $funcs .= join("\n", @$fn_val);
+            } else {
+                $funcs .= "$fn:\n";
+                $funcs .= $fn_val unless ref $fn_val eq 'ARRAY';
+            }
+            $funcs .= "\n";
         }
-        $funcs .= "\n";
+    }
+    if (length $isr_code) {
+        my $isr_entry = $self->pic->isr_entry;
+        my $isr_exit = $self->pic->isr_exit;
+        my $isr_var = $self->pic->isr_var;
+        $isr_checks .= "\tgoto _isr_exit\n";
+        $isr_code = "\tgoto _start\n$isr_entry\n$isr_checks\n$isr_code\n$isr_exit\n";
+        $variables .= "\n$isr_var\n";
     }
     my $pic = <<"...";
 ;;;; generated code for PIC header file
@@ -387,6 +415,8 @@ $macros
 $ast->{config}
 
 \torg $ast->{org}
+
+$isr_code
 
 $main_code
 
