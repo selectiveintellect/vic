@@ -906,8 +906,6 @@ sub assign_expression {
             my $comp_code = << "...";
 ;; generate code for ~$var2
 \tcomf $var2, W
-\tbtfsc STATUS, Z
-\tincf $var2, W
 ...
             my $not_code = << "...";
 ;; generate code for !$var2
