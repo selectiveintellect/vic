@@ -4,8 +4,9 @@ use t::TestVIC tests => 1, debug => 0;
 my $input = <<'...';
 PIC P16F690;
 
-config debouncer count = 2;
-config debouncer delay = 1ms;
+
+config debounce count = 2;
+config debounce delay = 1ms;
 
 Main {
     digital_output PORTC;
@@ -18,12 +19,12 @@ Main {
     Loop {
         write PORTC, $display;
         debounce RA3, Action {
-            $dirxn = !$dirxn;
+            $dirxn = ~$dirxn;
         };
         adc_read $userval;
-        $userval += 10;
+        $userval += 100;
         delay_ms $userval;
-        $dirxn == 0, True {
+        $dirxn == 1, True {
             rol $display, 1;
         }, False {
             ror $display, 1;
@@ -171,17 +172,19 @@ _debounce_state_up:
 
 _debounce_state_check:
 	movf    DEBOUNCECOUNTER, W
-	xorlw   5
-	;; is counter == 5 ?
+	xorlw   2
+	;; is counter == 2 ?
 	btfss   STATUS, Z
-	goto    _loop_1
-	;; after 5 straight, flip direction
+	goto    _end_action_2
+	;; after 2 straight, flip direction
 	comf    DEBOUNCESTATE, 1
 	clrf    DEBOUNCECOUNTER
 	;; was it a key-down
 	btfss   DEBOUNCESTATE, 0
-	goto    _loop_1
-	call    _action_2
+	goto    _end_action_2
+	goto    _action_2
+_end_action_2:
+
 
 	;;;delay 5us
 	nop
@@ -195,17 +198,16 @@ _debounce_state_check:
 	movf ADRESH, W
 	movwf USERVAL
 
-	;;moves 10 to W
-	movlw D'10'
+	;;moves 100 to W
+	movlw D'100'
 	addwf USERVAL, F
 
 	movf USERVAL, W
 	call _delay_wms
 
-	bcf STATUS, C
 	movf DIRXN, W
-	xorlw 0
-	btfss STATUS, Z ;; they are equal
+	xorlw 1
+	btfss STATUS, Z ;; DIRXN == 1 ?
 	goto _false_2
 	goto _true_2
 _end_conditional_0:
@@ -219,14 +221,12 @@ _action_2:
 
 	clrw
 
-;; generate code for !DIRXN
+;; generate code for ~DIRXN
 	comf DIRXN, W
-	btfss STATUS, Z
-	movlw 1
 
 	movwf DIRXN
 
-	return ;; from _action_2
+	goto _end_action_2;; go back to end of conditional
 
 _delay_1ms:
 	m_delay_ms D'1'

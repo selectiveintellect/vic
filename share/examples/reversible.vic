@@ -1,7 +1,7 @@
 PIC P16F690;
 
-config debouncer count = 2;
-config debouncer delay = 1ms;
+config debounce count = 2;
+config debounce delay = 1ms;
 
 Main {
     digital_output PORTC;
@@ -14,12 +14,12 @@ Main {
     Loop {
         write PORTC, $display;
         debounce RA3, Action {
-            $dirxn = !$dirxn;
+            $dirxn = ~$dirxn;
         };
         adc_read $userval;
-        $userval += 10;
+        $userval += 100;
         delay_ms $userval;
-        $dirxn == 0, True {
+        $dirxn == 1, True {
             rol $display, 1;
         }, False {
             ror $display, 1;
