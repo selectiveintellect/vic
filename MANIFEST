@@ -17,6 +17,7 @@ share/examples/adctest.vic
 share/examples/blinker.vic
 share/examples/debouncer.vic
 share/examples/helloworld.vic
+share/examples/interrupt.vic
 share/examples/reversible.vic
 share/examples/rotater.vic
 share/examples/timer.vic
@@ -33,4 +34,6 @@ t/04_debouncer.t
 t/05_adctest.t
 t/06_fail_instruction.t
 t/07_timer.t
+t/08_reversible.t
+t/09_interrupt.t
 t/TestVIC.pm
