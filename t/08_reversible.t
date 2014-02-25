@@ -4,9 +4,9 @@ use t::TestVIC tests => 1, debug => 0;
 my $input = <<'...';
 PIC P16F690;
 
-
 config debounce count = 2;
 config debounce delay = 1ms;
+config adc right_justify = 0;
 
 Main {
     digital_output PORTC;
@@ -18,12 +18,12 @@ Main {
     $dirxn = 0;
     Loop {
         write PORTC, $display;
-        debounce RA3, Action {
-            $dirxn = ~$dirxn;
-        };
         adc_read $userval;
         $userval += 100;
         delay_ms $userval;
+        debounce RA3, Action {
+            $dirxn = !$dirxn;
+        };
         $dirxn == 1, True {
             rol $display, 1;
         }, False {
@@ -34,7 +34,6 @@ Main {
 ...
 
 my $output = <<'...';
-;;;; generated code for PIC header file
 #include <p16f690.inc>
 
 ;;;; generated code for variables
@@ -132,7 +131,7 @@ _start:
 	movlw B'00000000'
 	movwf ADCON1
 	banksel ADCON0
-	movlw B'10000001'
+	movlw B'00000001'
 	movwf ADCON0
 
 	;; moves 8 to DISPLAY
@@ -147,6 +146,25 @@ _loop_1:
 	;; moves DISPLAY to PORTC
 	movf  DISPLAY, W
 	movwf PORTC
+
+	;;;delay 5us
+	nop
+	nop
+	nop
+	nop
+	nop
+	bsf ADCON0, GO
+	btfss ADCON0, GO
+	goto $ - 1
+	movf ADRESH, W
+	movwf USERVAL
+
+	;;moves 100 to W
+	movlw D'100'
+	addwf USERVAL, F
+
+	movf USERVAL, W
+	call _delay_wms
 
 	;;; generate code for debounce A<3>
 	call _delay_1ms
@@ -186,25 +204,6 @@ _debounce_state_check:
 _end_action_2:
 
 
-	;;;delay 5us
-	nop
-	nop
-	nop
-	nop
-	nop
-	bsf ADCON0, GO
-	btfss ADCON0, GO
-	goto $ - 1
-	movf ADRESH, W
-	movwf USERVAL
-
-	;;moves 100 to W
-	movlw D'100'
-	addwf USERVAL, F
-
-	movf USERVAL, W
-	call _delay_wms
-
 	movf DIRXN, W
 	xorlw 1
 	btfss STATUS, Z ;; DIRXN == 1 ?
@@ -221,8 +220,10 @@ _action_2:
 
 	clrw
 
-;; generate code for ~DIRXN
+;; generate code for !DIRXN
 	comf DIRXN, W
+	btfsc STATUS, Z
+	movlw 1
 
 	movwf DIRXN
 

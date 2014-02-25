@@ -906,11 +906,13 @@ sub assign_expression {
             my $comp_code = << "...";
 ;; generate code for ~$var2
 \tcomf $var2, W
+\tbtfsc STATUS, Z
+\tincf $var2, W
 ...
             my $not_code = << "...";
 ;; generate code for !$var2
 \tcomf $var2, W
-\tbtfss STATUS, Z
+\tbtfsc STATUS, Z
 \tmovlw 1
 ...
             push @code, $comp_code if $op eq 'COMP';
