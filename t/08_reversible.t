@@ -1,0 +1,265 @@
+use lib 'ext/pegex-pm/lib';
+use t::TestVIC tests => 1, debug => 0;
+
+my $input = <<'...';
+PIC P16F690;
+
+config debouncer count = 2;
+config debouncer delay = 1ms;
+
+Main {
+    digital_output PORTC;
+    digital_input RA3;
+    analog_input RA0;
+    # adc_enable clock, channel
+    adc_enable 500kHz, AN0;
+    $display = 0x08; # create a 8-bit register
+    $dirxn = 0;
+    Loop {
+        write PORTC, $display;
+        debounce RA3, Action {
+            $dirxn = !$dirxn;
+        };
+        adc_read $userval;
+        $userval += 10;
+        delay_ms $userval;
+        $dirxn == 0, True {
+            rol $display, 1;
+        }, False {
+            ror $display, 1;
+        };
+    }
+}
+...
+
+my $output = <<'...';
+;;;; generated code for PIC header file
+#include <p16f690.inc>
+
+;;;; generated code for variables
+GLOBAL_VAR_UDATA udata
+DIRXN res 1
+DISPLAY res 1
+USERVAL res 1
+
+;;;;;; DEBOUNCE VARIABLES ;;;;;;;
+
+DEBOUNCE_VAR_IDATA idata
+;; initialize state to 1
+DEBOUNCESTATE db 0x01
+;; initialize counter to 0
+DEBOUNCECOUNTER db 0x00
+
+
+
+;;;;;; DELAY FUNCTIONS ;;;;;;;
+
+DELAY_VAR_UDATA udata
+DELAY_VAR   res 3
+
+
+
+;;;; generated code for macros
+;; 1MHz => 1us per instruction
+;; each loop iteration is 3us each
+;; there are 2 loops, one for (768 + 3) us
+;; and one for the rest in ms
+;; we add 3 instructions for the outer loop
+;; number of outermost loops = msecs * 1000 / 771 = msecs * 13 / 10
+m_delay_ms macro msecs
+    local _delay_msecs_loop_0, _delay_msecs_loop_1
+    variable msecs_1 = 0
+msecs_1 = (msecs * D'13') / D'10'
+    movlw   msecs_1
+    movwf   DELAY_VAR + 1
+_delay_msecs_loop_1:
+    clrf   DELAY_VAR   ;; set to 0 which gets decremented to 0xFF
+_delay_msecs_loop_0:
+    decfsz  DELAY_VAR, F
+    goto    _delay_msecs_loop_0
+    decfsz  DELAY_VAR + 1, F
+    goto    _delay_msecs_loop_1
+    endm
+
+m_delay_wms macro
+    local _delayw_msecs_loop_0, _delayw_msecs_loop_1
+    movwf   DELAY_VAR + 1
+_delayw_msecs_loop_1:
+    clrf   DELAY_VAR   ;; set to 0 which gets decremented to 0xFF
+_delayw_msecs_loop_0:
+    decfsz  DELAY_VAR, F
+    goto    _delayw_msecs_loop_0
+    decfsz  DELAY_VAR + 1, F
+    goto    _delayw_msecs_loop_1
+    endm
+
+
+
+	__config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _BOR_OFF & _IESO_OFF & _FCMEN_OFF)
+
+
+
+	org 0
+
+;;;; generated code for Main
+_start:
+
+	banksel TRISC
+	clrf TRISC
+	banksel PORTC
+	clrf PORTC
+
+	banksel TRISA
+	bcf TRISA, TRISA3
+	banksel ANSEL
+	movlw 0xFF
+	movwf ANSEL
+	movlw 0xFF
+	movwf ANSELH
+	banksel PORTA
+
+	banksel TRISA
+	bsf TRISA, TRISA0
+	banksel ANSEL
+	movlw 0x01
+	movwf ANSEL
+	movlw 0x00
+	movwf ANSELH
+	banksel PORTA
+
+	banksel ADCON1
+	movlw B'00000000'
+	movwf ADCON1
+	banksel ADCON0
+	movlw B'10000001'
+	movwf ADCON0
+
+	;; moves 8 to DISPLAY
+	movlw D'8'
+	movwf DISPLAY
+
+	clrf DIRXN
+
+;;;; generated code for Loop1
+_loop_1:
+
+	;; moves DISPLAY to PORTC
+	movf  DISPLAY, W
+	movwf PORTC
+
+	;;; generate code for debounce A<3>
+	call _delay_1ms
+
+	;; has debounce state changed to down (bit 0 is 0)
+	;; if yes go to debounce-state-down
+	btfsc   DEBOUNCESTATE, 0
+	goto    _debounce_state_up
+_debounce_state_down:
+	clrw
+	btfss   PORTA, 3
+	;; increment and move into counter
+	incf    DEBOUNCECOUNTER, 0
+	movwf   DEBOUNCECOUNTER
+	goto    _debounce_state_check
+
+_debounce_state_up:
+	clrw
+	btfsc   PORTA, 3
+	incf    DEBOUNCECOUNTER, 0
+	movwf   DEBOUNCECOUNTER
+	goto    _debounce_state_check
+
+_debounce_state_check:
+	movf    DEBOUNCECOUNTER, W
+	xorlw   5
+	;; is counter == 5 ?
+	btfss   STATUS, Z
+	goto    _loop_1
+	;; after 5 straight, flip direction
+	comf    DEBOUNCESTATE, 1
+	clrf    DEBOUNCECOUNTER
+	;; was it a key-down
+	btfss   DEBOUNCESTATE, 0
+	goto    _loop_1
+	call    _action_2
+
+	;;;delay 5us
+	nop
+	nop
+	nop
+	nop
+	nop
+	bsf ADCON0, GO
+	btfss ADCON0, GO
+	goto $ - 1
+	movf ADRESH, W
+	movwf USERVAL
+
+	;;moves 10 to W
+	movlw D'10'
+	addwf USERVAL, F
+
+	movf USERVAL, W
+	call _delay_wms
+
+	bcf STATUS, C
+	movf DIRXN, W
+	xorlw 0
+	btfss STATUS, Z ;; they are equal
+	goto _false_2
+	goto _true_2
+_end_conditional_0:
+
+
+	goto _loop_1
+
+;;;; generated code for functions
+;;;; generated code for Action2
+_action_2:
+
+	clrw
+
+;; generate code for !DIRXN
+	comf DIRXN, W
+	btfss STATUS, Z
+	movlw 1
+
+	movwf DIRXN
+
+	return ;; from _action_2
+
+_delay_1ms:
+	m_delay_ms D'1'
+	return
+
+_delay_wms:
+	m_delay_wms
+	return
+
+;;;; generated code for False2
+_false_2:
+
+	bcf STATUS, C
+	rrf DISPLAY, 1
+	btfsc STATUS, C
+	bsf DISPLAY, 7
+
+	goto _end_conditional_0;; go back to end of conditional
+
+;;;; generated code for True2
+_true_2:
+
+	bcf STATUS, C
+	rlf DISPLAY, 1
+	btfsc STATUS, C
+	bsf DISPLAY, 0
+
+	goto _end_conditional_0;; go back to end of conditional
+
+
+
+;;;; generated code for end-of-file
+	end
+...
+
+compiles_ok($input, $output);
