@@ -21,23 +21,8 @@ sub make_tree {
     'DOLLAR' => {
       '.rgx' => qr/\G\$/
     },
-    'EOL' => {
-      '.rgx' => qr/\G\r?\n/
-    },
     'EOS' => {
       '.rgx' => qr/\G\z/
-    },
-    'EQUAL' => {
-      '.rgx' => qr/\G=/
-    },
-    'LCURLY' => {
-      '.rgx' => qr/\G\{/
-    },
-    'RCURLY' => {
-      '.rgx' => qr/\G\}/
-    },
-    'SEMI' => {
-      '.rgx' => qr/\G;/
     },
     '_' => {
       '.rgx' => qr/\G[\ \t]*/
@@ -46,20 +31,13 @@ sub make_tree {
       '.rgx' => qr/\G[\ \t]+/
     },
     'assign_operator' => {
-      '.rgx' => qr/\G((?:\+|\-|%|\^|\*|\||&|\/)?=)/
+      '.rgx' => qr/\G([\+\-%\^\*\|&\/]?=)/
     },
     'bit_operator' => {
-      '.rgx' => qr/\G(\||\^|&)/
+      '.rgx' => qr/\G([\|\^&])/
     },
     'blank_line' => {
-      '.all' => [
-        {
-          '.ref' => '_'
-        },
-        {
-          '.ref' => 'EOL'
-        }
-      ]
+      '.rgx' => qr/\G[\ \t]*\r?\n/
     },
     'block' => {
       '.all' => [
@@ -86,7 +64,7 @@ sub make_tree {
       ]
     },
     'compare_operator' => {
-      '.rgx' => qr/\G((?:!|=|<|>)=|(?:<|>))/
+      '.rgx' => qr/\G([!=<>]=|(?:<|>))/
     },
     'comparison' => {
       '.all' => [
@@ -203,10 +181,7 @@ sub make_tree {
           '.ref' => 'name'
         },
         {
-          '.ref' => 'EQUAL'
-        },
-        {
-          '.ref' => '_'
+          '.rgx' => qr/\G=[\ \t]*/
         },
         {
           '.any' => [
@@ -227,21 +202,7 @@ sub make_tree {
       '.rgx' => qr/\G(?:"((?:[^\n\\"]|\\"|\\\\|\\[0nt])*?)")/
     },
     'end_block' => {
-      '.all' => [
-        {
-          '.ref' => '_'
-        },
-        {
-          '.ref' => 'RCURLY'
-        },
-        {
-          '.ref' => '_'
-        },
-        {
-          '+max' => 1,
-          '.ref' => 'EOL'
-        }
-      ]
+      '.rgx' => qr/\G[\ \t]*\}[\ \t]*\r?\n?/
     },
     'expr_value' => {
       '.all' => [
@@ -329,15 +290,7 @@ sub make_tree {
           '.ref' => 'incdec_operator'
         },
         {
-          '.ref' => '_'
-        },
-        {
-          '+max' => 1,
-          '.ref' => 'SEMI'
-        },
-        {
-          '+max' => 1,
-          '.ref' => 'EOL'
+          '.rgx' => qr/\G[\ \t]*;?\r?\n?/
         }
       ]
     },
@@ -370,10 +323,10 @@ sub make_tree {
       '.rgx' => qr/\G[\ \t]*;\r?\n?/
     },
     'logic_operator' => {
-      '.rgx' => qr/\G((?:&|\|){2})/
+      '.rgx' => qr/\G([&\|]{2})/
     },
     'math_operator' => {
-      '.rgx' => qr/\G(\+|\-|\*|\/|%)/
+      '.rgx' => qr/\G([\+\-\*\/%])/
     },
     'name' => {
       '.all' => [
@@ -419,15 +372,7 @@ sub make_tree {
           '.ref' => 'variable'
         },
         {
-          '.ref' => '_'
-        },
-        {
-          '+max' => 1,
-          '.ref' => 'SEMI'
-        },
-        {
-          '+max' => 1,
-          '.ref' => 'EOL'
+          '.rgx' => qr/\G[\ \t]*;?\r?\n?/
         }
       ]
     },
@@ -485,17 +430,7 @@ sub make_tree {
           '.ref' => 'name'
         },
         {
-          '.ref' => '_'
-        },
-        {
-          '.ref' => 'LCURLY'
-        },
-        {
-          '.ref' => '_'
-        },
-        {
-          '+max' => 1,
-          '.ref' => 'EOL'
+          '.rgx' => qr/\G[\ \t]*\{[\ \t]*\r?\n?/
         }
       ]
     },
@@ -540,15 +475,12 @@ sub make_tree {
           '.ref' => 'config_expression'
         },
         {
-          '.ref' => 'SEMI'
-        },
-        {
-          '.ref' => 'EOL'
+          '.ref' => 'line_ending'
         }
       ]
     },
     'uc_select' => {
-      '.rgx' => qr/\GPIC[\ \t]+((?i:P16F690|P16F690X));\r?\n/
+      '.rgx' => qr/\GPIC[\ \t]+((?i:P16F690|P16F690X))[\ \t]*;\r?\n?/
     },
     'units' => {
       '.rgx' => qr/\G(s|ms|us|kHz|Hz|MHz)/
