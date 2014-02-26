@@ -28,20 +28,21 @@ has stack_size => 8; # 8-level x 13-bit wide
 
 has banks => {
     # general purpose registers
-    gpr => {
+    gpr => [
         [ 0x20, 0x7F ],
         [ 0xA0, 0xEF ],
         [ 0x120, 0x16F ],
         [ ], # no GPRs in bank 4
-    },
+    ],
     # special function registers
-    sfr => {
+    sfr => [
         [ 0x00, 0x1F ],
         [ 0x80, 0x9F ],
         [ 0x100, 0x11F ],
         [ 0x180, 0x19F ],
-    },
+    ],
     bank_size => 0x80,
+    common_bank => [ 0x70, 0x7F ],
 };
 
 has register_banks => {
@@ -1210,8 +1211,12 @@ sub adc_read {
 }
 
 sub isr_var {
+    my $self = shift;
+    my ($cb_start, $cb_end) = @{$self->banks->{common_bank}};
+    $cb_start = 0x70 unless $cb_start;
+    $cb_start = sprintf "0x%02X", $cb_start;
     return << "...";
-cblock 0x70 ;; unbanked RAM
+cblock $cb_start ;; unbanked RAM that is common across all banks
 ISR_STATUS
 ISR_W
 endc
