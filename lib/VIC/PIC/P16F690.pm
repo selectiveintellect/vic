@@ -842,6 +842,20 @@ sub delay {
     return wantarray ? ($code, $funcs, $macros) : $code;
 }
 
+sub shl {
+    my ($self, $var, $bits) = @_;
+    $var = uc $var;
+    my $code = '';
+    for (1 .. $bits) {
+        $code .= << "...";
+\trlf $var, 1
+...
+    }
+    $code .= << "...";
+\tbcf STATUS, C
+...
+}
+
 sub rol {
     my ($self, $var, $bits) = @_;
     $var = uc $var;
@@ -856,6 +870,20 @@ sub rol {
 ...
     }
     return $code;
+}
+
+sub shr {
+    my ($self, $var, $bits) = @_;
+    $var = uc $var;
+    my $code = '';
+    for (1 .. $bits) {
+        $code .= << "...";
+\trrf $var, 1
+...
+    }
+    $code .= << "...";
+\tbcf STATUS, C
+...
 }
 
 sub ror {
