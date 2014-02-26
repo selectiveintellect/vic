@@ -5,7 +5,7 @@ use Carp;
 use POSIX ();
 use Pegex::Base; # use this instead of Mo
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 $VERSION = eval $VERSION;
 
 has type => 'p16f690';
