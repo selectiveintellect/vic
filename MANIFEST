@@ -24,6 +24,7 @@ share/examples/timer.vic
 share/examples/varrotate.vic
 share/rebuild-grammar
 share/rebuild-grammar.PL
+share/vic.new-pegex-syntax.pgx
 share/vic.pgx
 share/vic.vim
 t/00_use.t
