@@ -53,7 +53,7 @@ string: single-quoted-string | double-quoted-string
 number-units: number - units
 # number handles both hex and non-hex values for ease of use
 number: /('0'[xX] HEX+ | DIGIT+)/
-units: /(s | ms | us | kHz | Hz | MHz)/
+units: /('s' | 'ms' | 'us' | 'kHz' | 'Hz' | 'MHz')/
 
 validated-variable: identifier
 variable: DOLLAR identifier
