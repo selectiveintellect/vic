@@ -19,6 +19,7 @@ blank-line: - EOL
 ##FIXME: this needs to be removed really but Pegex has a bug
 _: /<BLANK>*/
 __: /<BLANK>+/
+line-ending: /- <SEMI> <EOL>?/
 
 statement: comment | instruction | expression | block
 
@@ -26,7 +27,7 @@ block: start-block statement* end-block
 start-block: name - LCURLY - EOL?
 end-block: - RCURLY - EOL?
 
-instruction: name values - SEMI EOL?
+instruction: name values line-ending
 
 name: - identifier -
 values: (value % COMMA)*
@@ -38,12 +39,12 @@ op-rhs: - incdec-operator - variable - SEMI? EOL?
 complement: - complement-operator - variable -
 expr-value: - (number | variable | number-units | complement) -
 rhs-expr: (expr-value % rhs-operator)*
-lhs-op-rhs: - variable - assign-operator - rhs-expr - SEMI EOL?
+lhs-op-rhs: - variable - assign-operator - rhs-expr line-ending
 
 comparison: expr-value compare-operator expr-value
 single-conditional: comparison | complement
-conditional-predicate-double: - block - COMMA - block - SEMI EOL?
-conditional-predicate-single: - block - SEMI EOL?
+conditional-predicate-double: - block - COMMA - block line-ending
+conditional-predicate-single: - block line-ending
 conditional-predicate: conditional-predicate-double | conditional-predicate-single
 conditional-subject: (single-conditional % logic-operator)*
 conditional: conditional-subject - COMMA - conditional-predicate
@@ -53,7 +54,7 @@ string: single-quoted-string | double-quoted-string
 # most microcontrollers cannot do floating point math so ignore real numbers
 number-units: number - units
 # number handles both hex and non-hex values for ease of use
-number: /(0x<HEX>+ | 0X<HEX>+ | <DIGIT>+)/
+number: /(0[xX]<HEX>+ | <DIGIT>+)/
 units: /(s | ms | us | kHz | Hz | MHz)/
 
 validated-variable: identifier

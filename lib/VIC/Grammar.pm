@@ -173,14 +173,7 @@ sub make_tree {
           '.ref' => 'block'
         },
         {
-          '.ref' => '_'
-        },
-        {
-          '.ref' => 'SEMI'
-        },
-        {
-          '+max' => 1,
-          '.ref' => 'EOL'
+          '.ref' => 'line_ending'
         }
       ]
     },
@@ -193,14 +186,7 @@ sub make_tree {
           '.ref' => 'block'
         },
         {
-          '.ref' => '_'
-        },
-        {
-          '.ref' => 'SEMI'
-        },
-        {
-          '+max' => 1,
-          '.ref' => 'EOL'
+          '.ref' => 'line_ending'
         }
       ]
     },
@@ -324,14 +310,7 @@ sub make_tree {
           '.ref' => 'values'
         },
         {
-          '.ref' => '_'
-        },
-        {
-          '.ref' => 'SEMI'
-        },
-        {
-          '+max' => 1,
-          '.ref' => 'EOL'
+          '.ref' => 'line_ending'
         }
       ]
     },
@@ -383,16 +362,12 @@ sub make_tree {
           '.ref' => 'rhs_expr'
         },
         {
-          '.ref' => '_'
-        },
-        {
-          '.ref' => 'SEMI'
-        },
-        {
-          '+max' => 1,
-          '.ref' => 'EOL'
+          '.ref' => 'line_ending'
         }
       ]
+    },
+    'line_ending' => {
+      '.rgx' => qr/\G[\ \t]*;\r?\n?/
     },
     'logic_operator' => {
       '.rgx' => qr/\G((?:&|\|){2})/
@@ -414,7 +389,7 @@ sub make_tree {
       ]
     },
     'number' => {
-      '.rgx' => qr/\G(0x[0-9a-fA-F]+|0X[0-9a-fA-F]+|[0-9]+)/
+      '.rgx' => qr/\G(0[xX][0-9a-fA-F]+|[0-9]+)/
     },
     'number_units' => {
       '.all' => [
