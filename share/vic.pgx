@@ -19,7 +19,7 @@ blank-line: /- <EOL>/
 ##FIXME: this needs to be removed really but Pegex has a bug
 _: /<BLANK>*/
 __: /<BLANK>+/
-line-ending: /- <SEMI> <EOL>?/
+line-ending: /- <SEMI> - <EOL>?/
 
 statement: comment | instruction | expression | block
 
@@ -34,8 +34,8 @@ values: (value % COMMA)*
 value: - (string | number-units | number | variable | block | validated-variable) -
 
 expression: lhs-op-rhs | lhs-op | op-rhs | conditional
-lhs-op: - variable - incdec-operator /- <SEMI>? <EOL>?/
-op-rhs: - incdec-operator - variable /- <SEMI>? <EOL>?/
+lhs-op: - variable - incdec-operator /- <SEMI>? - <EOL>?/
+op-rhs: - incdec-operator - variable /- <SEMI>? - <EOL>?/
 complement: - complement-operator - variable -
 expr-value: - (number | variable | number-units | complement) -
 rhs-expr: (expr-value % rhs-operator)*

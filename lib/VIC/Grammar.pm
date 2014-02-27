@@ -290,7 +290,7 @@ sub make_tree {
           '.ref' => 'incdec_operator'
         },
         {
-          '.rgx' => qr/\G[\ \t]*;?\r?\n?/
+          '.rgx' => qr/\G[\ \t]*;?[\ \t]*\r?\n?/
         }
       ]
     },
@@ -320,7 +320,7 @@ sub make_tree {
       ]
     },
     'line_ending' => {
-      '.rgx' => qr/\G[\ \t]*;\r?\n?/
+      '.rgx' => qr/\G[\ \t]*;[\ \t]*\r?\n?/
     },
     'logic_operator' => {
       '.rgx' => qr/\G([&\|]{2})/
@@ -372,7 +372,7 @@ sub make_tree {
           '.ref' => 'variable'
         },
         {
-          '.rgx' => qr/\G[\ \t]*;?\r?\n?/
+          '.rgx' => qr/\G[\ \t]*;?[\ \t]*\r?\n?/
         }
       ]
     },
@@ -480,7 +480,7 @@ sub make_tree {
       ]
     },
     'uc_select' => {
-      '.rgx' => qr/\GPIC[\ \t]+((?i:P16F690|P16F690X))[\ \t]*;\r?\n?/
+      '.rgx' => qr/\GPIC[\ \t]+((?i:P16F690|P16F690X))[\ \t]*;[\ \t]*\r?\n?/
     },
     'units' => {
       '.rgx' => qr/\G(s|ms|us|kHz|Hz|MHz)/
