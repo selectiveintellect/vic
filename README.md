@@ -106,6 +106,8 @@ To erase the code from the microcontroller,
 
     $ pk2cmd -PP16F690 -E
 
+*NOTE*: All the above have been implemented in a `Makefile` present under
+`share/examples/Makefile`.
 
 #Testing on PIC microcontrollers on Windows
 
