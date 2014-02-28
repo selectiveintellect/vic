@@ -16,6 +16,7 @@ README.md
 share/examples/adctest.vic
 share/examples/blinker.vic
 share/examples/debouncer.vic
+share/examples/GNUmakefile
 share/examples/helloworld.vic
 share/examples/interrupt.vic
 share/examples/reversible.vic
