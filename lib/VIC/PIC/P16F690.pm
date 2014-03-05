@@ -14,8 +14,6 @@ has include => 'p16f690.inc';
 
 has org => 0;
 
-has address_bits => 8;
-
 has address_range => [ 0x0000, 0x0FFF ]; # 4K
 
 has reset_address => 0x0000;
@@ -435,6 +433,9 @@ has code_config => {
         vref => 0,
         internal => 0,
     },
+    variable => {
+        bits => 8, # bits
+    },
 };
 
 sub update_config {
@@ -448,6 +449,8 @@ sub update_config {
         warn "Unsupported type for $grp\n";
     }
 }
+
+sub address_bits { shift->code_config->{variable}->{bits}; }
 
 sub validate {
     my ($self, $var) = @_;
