@@ -268,10 +268,16 @@ sub got_variable {
     my ($self, $list) = @_;
     $self->flatten($list);
     my $varname = shift @$list;
+    my ($current, $parent) = $self->stack;
+    # if the variable is used from the uc-config grammar rule
+    # we do not want to store it yet and definitely not store the size yet
+    # we could remove this if we set the size after the code generation or so
+    # but that may lead to more complexity. this is much easier
+    return $varname if $parent eq 'uc_config';
     $self->ast->{variables}->{$varname} = {
         name => uc $varname,
         scope => $self->ast->{block_stack_top},
-        size => POSIX::ceil($self->pic->address_bits / 8),
+        size => POSIX::ceil($self->pic->address_bits($varname) / 8),
     } unless exists $self->ast->{variables}->{$varname};
     return $varname;
 }

@@ -446,11 +446,17 @@ sub update_config {
     if (ref $grpref eq 'HASH') {
         $grpref->{$key} = $val;
     } else {
-        warn "Unsupported type for $grp\n";
+        $self->code_config->{$grp} = { $key => $val };
     }
 }
 
-sub address_bits { shift->code_config->{variable}->{bits}; }
+sub address_bits {
+    my ($self, $varname) = @_;
+    my $bits = $self->code_config->{variable}->{bits};
+    return $bits unless $varname;
+    $bits = $self->code_config->{lc $varname}->{bits} || $bits;
+    return $bits;
+}
 
 sub validate {
     my ($self, $var) = @_;
