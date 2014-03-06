@@ -222,6 +222,9 @@ sub make_tree {
             },
             {
               '.ref' => 'complement'
+            },
+            {
+              '.ref' => 'modifier_variable'
             }
           ]
         },
@@ -327,6 +330,19 @@ sub make_tree {
     },
     'math_operator' => {
       '.rgx' => qr/\G([\+\-\*\/%])/
+    },
+    'modifier_variable' => {
+      '.all' => [
+        {
+          '.ref' => 'identifier'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'variable'
+        }
+      ]
     },
     'name' => {
       '.all' => [
@@ -469,7 +485,14 @@ sub make_tree {
           '.ref' => '__'
         },
         {
-          '.ref' => 'name'
+          '.any' => [
+            {
+              '.ref' => 'name'
+            },
+            {
+              '.ref' => 'variable'
+            }
+          ]
         },
         {
           '.ref' => 'config_expression'
@@ -512,6 +535,9 @@ sub make_tree {
             },
             {
               '.ref' => 'validated_variable'
+            },
+            {
+              '.ref' => 'modifier_variable'
             }
           ]
         },
