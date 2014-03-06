@@ -1,0 +1,18 @@
+PIC P16F690;
+
+config USART baud = 9600;
+
+Main {
+    digital_output USART; # is this necessary ?
+    digital_input USART;
+    $display = 0;
+    Loop {
+        $display++;
+        # modifiers like char/int act on 1 variable
+        # unicode ?
+        write USART, char $display;
+        # should there be a delay here ?
+        # does one convert ascii to binary ?
+        read USART, int $display;
+    }
+}
