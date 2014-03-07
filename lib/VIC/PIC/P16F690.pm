@@ -931,28 +931,37 @@ sub assign_variable {
 ...
 }
 
+sub get_not_code {
+    my ($self, $var2) = @_;
+    return << "...";
+;; generate code for !$var2
+\tcomf $var2, W
+\tbtfsc STATUS, Z
+\tmovlw 1
+...
+}
+
+sub get_comp_code {
+    my ($self, $var2) = @_;
+    return << "...";
+;; generate code for ~$var2
+\tcomf $var2, W
+...
+}
+
 sub assign_expression {
     my $self = shift;
     my $var1 = shift;
     return unless scalar @_;
     my @code = ("\tclrw\n");
     foreach my $expr (@_) {
-        if ($expr =~ /^OP::(NOT|COMP)::(\w+)$/) {
+        if ($expr =~ /^OP::(\w+)::(\w+)$/) {
             # this is a unary operation
-            my $op = $1;
+            my $op = lc $1;
             my $var2 = uc $2;
-            my $comp_code = << "...";
-;; generate code for ~$var2
-\tcomf $var2, W
-...
-            my $not_code = << "...";
-;; generate code for !$var2
-\tcomf $var2, W
-\tbtfsc STATUS, Z
-\tmovlw 1
-...
-            push @code, $comp_code if $op eq 'COMP';
-            push @code, $not_code if $op eq 'NOT';
+            my $method = "get_$op\_code";
+            carp "Unable to handle operator '$op'\n" unless $self->can($method);
+            push @code, $self->$method($var2);
         } else {
             carp "Unable to handle $expr\n";
         }
@@ -1025,7 +1034,7 @@ sub check_eq {
     }
     $pred .= "$end_label:\n";
     if ($lhs =~ /OP::/ || $rhs =~ /OP::/) {
-
+        #TODO
     } else {
         if ($lhs !~ /^\d+$/ and $rhs !~ /^\d+$/) {
             # lhs and rhs are variables

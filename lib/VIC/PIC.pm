@@ -250,6 +250,18 @@ sub got_expr_value {
     }
 }
 
+sub got_modifier_variable {
+    my ($self, $list) = @_;
+    my ($modifier, $varname);
+    $self->flatten($list) if ref $list eq 'ARRAY';
+    $modifier = shift @$list;
+    $varname = shift @$list;
+    $self->throw_error("Modifying operator '$modifier' not supported") unless
+        $self->pic->validate_modifier($modifier);
+    $modifier = uc $modifier;
+    return "OP::$modifier\::$varname";
+}
+
 sub got_validated_variable {
     my ($self, $list) = @_;
     my $varname;
