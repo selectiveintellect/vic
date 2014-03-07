@@ -1,5 +1,6 @@
 bin/vic
 Build.PL
+doc/philosophy.md
 lib/VIC.pm
 lib/VIC/Command.pm
 lib/VIC/Grammar.pm
@@ -19,9 +20,11 @@ share/examples/debouncer.vic
 share/examples/GNUmakefile
 share/examples/helloworld.vic
 share/examples/interrupt.vic
+share/examples/math.vic
 share/examples/reversible.vic
 share/examples/rotater.vic
 share/examples/timer.vic
+share/examples/uart.vic
 share/examples/varrotate.vic
 share/rebuild-grammar
 share/rebuild-grammar.PL
