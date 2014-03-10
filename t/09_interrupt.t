@@ -194,7 +194,7 @@ _start:
 	movwf ADCON0
 
 	;; moves 8 to DISPLAY
-	movlw D'8'
+	movlw 0x08
 	movwf DISPLAY
 
 	clrf DIRXN

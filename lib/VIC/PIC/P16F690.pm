@@ -925,42 +925,33 @@ sub ror {
 sub assign_literal {
     my ($self, $var, $val) = @_;
     my $bits = $self->address_bits($var);
-    my $code = "\t;; moves $val to $var\n";
+    my $bytes = POSIX::ceil($bits / 8);
+    my $nibbles = 2 * $bytes;
+    my $code = sprintf "\t;; moves $val (0x%0${nibbles}X) to $var\n", $val;
     if ($val >= 2 ** $bits) {
-        carp "Warning: Value $val doesn't fit in bits $bits\n";
-        $code .= "\t;; changing $val to $val & (2**$bits - 1)";
+        carp "Warning: Value $val doesn't fit in $bits-bits\n";
+        $code .= "\t;; $val doesn't fit in $bits-bits. Using ";
         $val &= (2 ** $bits) - 1;
-        $code .= " = $val\n";
+        $code .= sprintf "%d (0x%0${nibbles}X)\n", $val, $val;
     }
     if ($val == 0) {
         $code .= "\tclrf $var\n";
-        for (2 .. POSIX::ceil($bits / 8)) {
+        for (2 .. $bytes) {
+            $code .= sprintf "\tclrf $var + %d\n", ($_ - 1);
+        }
+    } else {
+        my $varbyte = $val & ((2 ** 8) - 1);
+        $code .= sprintf "\tmovlw 0x%02X\n\tmovwf $var\n", $varbyte if $varbyte > 0;
+        $code .= "\tclrf $var\n" if $varbyte == 0;
+        for (2 .. $bytes) {
+            my $k = $_ * 8;
             my $i = $_ - 1;
-            $code .= "\tclrf $var + $i\n" if $i > 0;
+            my $j = $i * 8;
+            # get the right byte
+            $varbyte = (($val & ((2 ** $k) - 1)) & (2 ** $k - 2 ** $j)) >> $j;
+            $code .= sprintf "\tmovlw 0x%02X\n\tmovwf $var + $i\n", $varbyte if $varbyte > 0;
+            $code .= "\tclrf $var + $i\n" if $varbyte == 0;
         }
-    } elsif ($bits == 8) {
-        $code .= << "...";
-\tmovlw D'$val'
-\tmovwf $var
-...
-    } elsif ($bits == 16) {
-        if ($val < 2 ** 8) {
-            $code .= << "...";
-\tmovlw D'$val'
-\tmovwf $var
-\tclrf  $var + 1
-...
-        } else {
-            $code .= << "...";
-\tmovlw low D'$val'
-\tmovwf $var
-\tmovlw high D'$val'
-\tmovwf $var + 1
-...
-        }
-    } elsif ($bits == 24) {
-    } elsif ($bits == 32) {
-    } elsif ($bits == 64) {
     }
     return $code;
 }
