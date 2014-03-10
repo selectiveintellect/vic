@@ -959,11 +959,43 @@ sub assign_literal {
 
 sub assign_variable {
     my ($self, $var1, $var2) = @_;
-    return <<"...";
-\t;; moves $var2 to $var1
-\tmovf  $var2, W
-\tmovwf $var1
-...
+    my $b1 = POSIX::ceil($self->address_bits($var1) / 8);
+    my $b2 = POSIX::ceil($self->address_bits($var2) / 8);
+    $var2 = uc $var2;
+    $var1 = uc $var1;
+    my $code = "\t;; moving $var2 to $var1\n";
+    if ($b1 == $b2) {
+        $code .= "\tmovf $var2, W\n\tmovwf $var1\n";
+        for (2 .. $b1) {
+            my $i = $_ - 1;
+            $code .= "\tmovf $var2 + $i, W\n\tmovwf $var1 + $i\n";
+        }
+    } elsif ($b1 > $b2) {
+        # we are moving a smaller var into a larger var
+        $code .= "\t;; $var2 has a smaller size than $var1\n";
+        $code .= "\tmovf $var2, W\n\tmovwf $var1\n";
+        for (2 .. $b2) {
+            my $i = $_ - 1;
+            $code .= "\tmovf $var2 + $i, W\n\tmovwf $var1 + $i\n";
+        }
+        $code .= "\t;; we practice safe assignment here. zero out the rest\n";
+        # we practice safe mathematics here. zero-out the rest of the place
+        $b2++;
+        for ($b2 .. $b1) {
+            $code .= sprintf "\tclrf $var1 + %d\n", ($_ - 1);
+        }
+    } elsif ($b1 < $b2) {
+        # we are moving a larger var into a smaller var
+        $code .= "\t;; $var2 has a larger size than $var1. truncating..,\n";
+        $code .= "\tmovf $var2, W\n\tmovwf $var1\n";
+        for (2 .. $b1) {
+            my $i = $_ - 1;
+            $code .= "\tmovf $var2 + $i, W\n\tmovwf $var1 + $i\n";
+        }
+    } else {
+        carp "Warning: should never reach here: $var1 is $b1 bytes and $var2 is $b2 bytes";
+    }
+    return $code;
 }
 
 sub get_not_code {
