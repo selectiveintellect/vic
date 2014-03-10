@@ -449,8 +449,7 @@ sub update_config {
             if $val > 64;
         $val = 8 if $val <= 8;
         $val = 16 if ($val > 8 and $val <= 16);
-        $val = 24 if ($val > 16 and $val <= 24);
-        $val = 32 if ($val > 24 and $val <= 32);
+        $val = 32 if ($val > 16 and $val <= 32);
         $val = 64 if $val > 32;
     }
     if (ref $grpref eq 'HASH') {
@@ -1060,18 +1059,38 @@ sub selfadd_variable {
 
 sub increment {
     my ($self, $var) = @_;
-    return <<"..."
-\t;; increments $var in place
-\tincf $var, 1
+    # we expect b1 == 1,2,4,8
+    my $b1 = POSIX::ceil($self->address_bits($var) / 8);
+    my $code = "\t;; increments $var in place\n";
+    $code .= "\t;; increment byte[0]\n\tincf $var, F\n";
+    for (2 .. $b1) {
+        my $j = $_ - 1;
+        my $i = $_ - 2;
+        $code .= << "...";
+\t;; increment byte[$j] iff byte[$i] == 0
+\tbtfsc STATUS, Z
+\tincf $var + $j, F
 ...
+    }
+    return $code;
 }
 
 sub decrement {
     my ($self, $var) = @_;
-    return <<"..."
-\t;; decrements $var in place
-\tdecf $var, 1
+    my $b1 = POSIX::ceil($self->address_bits($var) / 8);
+    my $code = "\t;; decrements $var in place\n";
+    $code .= "\tmovf $var, W\n" if $b1 > 1;
+    for (2 .. $b1) {
+        my $i = $_ - 1;
+        my $j = $i - 1;
+        $code .= << "...";
+\t;; decrement byte[$i] iff byte[$j] == 0
+\tbtfsc STATUS, Z
+\tdecf $var + $i
 ...
+    }
+    $code .= "\t;; decrement byte[0]\n\tdecf $var, W\n";
+    return $code;
 }
 
 sub check_eq {

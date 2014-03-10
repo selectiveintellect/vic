@@ -139,7 +139,7 @@ _end_action_2:
 _action_2:
 
 	;; increments DISPLAY in place
-	incf DISPLAY, 1
+	incf DISPLAY, F
 
 	;; moves DISPLAY to PORTC
 	movf  DISPLAY, W
