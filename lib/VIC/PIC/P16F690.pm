@@ -1,6 +1,7 @@
 package VIC::PIC::P16F690;
 use strict;
 use warnings;
+use bigint;
 use Carp;
 use POSIX ();
 use Pegex::Base; # use this instead of Mo
@@ -929,7 +930,7 @@ sub assign_literal {
     my $nibbles = 2 * $bytes;
     my $code = sprintf "\t;; moves $val (0x%0${nibbles}X) to $var\n", $val;
     if ($val >= 2 ** $bits) {
-        carp "Warning: Value $val doesn't fit in $bits-bits\n";
+        carp "Warning: Value $val doesn't fit in $bits-bits";
         $code .= "\t;; $val doesn't fit in $bits-bits. Using ";
         $val &= (2 ** $bits) - 1;
         $code .= sprintf "%d (0x%0${nibbles}X)\n", $val, $val;
@@ -947,7 +948,7 @@ sub assign_literal {
             my $k = $_ * 8;
             my $i = $_ - 1;
             my $j = $i * 8;
-            # get the right byte
+            # get the right byte. 64-bit math requires bigint
             $varbyte = (($val & ((2 ** $k) - 1)) & (2 ** $k - 2 ** $j)) >> $j;
             $code .= sprintf "\tmovlw 0x%02X\n\tmovwf $var + $i\n", $varbyte if $varbyte > 0;
             $code .= "\tclrf $var + $i\n" if $varbyte == 0;

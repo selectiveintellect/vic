@@ -3,6 +3,7 @@ PIC P16F690;
 config variable bits = 16;
 config $var5 bits = 8;
 config $var6 bits = 32;
+config $var7 bits = 64;
 
 Main {
     digital_output PORTC;
@@ -11,6 +12,7 @@ Main {
     $var6 = 0;
     $var3 = 0;
     $var6 = 67890;
+    $var7 = 0xCAFEFACEDEADBEEF;
     $var1++;
     $var2--;
     $var3 = $var1 + $var2;

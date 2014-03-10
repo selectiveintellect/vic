@@ -1,6 +1,7 @@
 package VIC::PIC;
 use strict;
 use warnings;
+use bigint;
 use POSIX ();
 
 our $VERSION = '0.04';
