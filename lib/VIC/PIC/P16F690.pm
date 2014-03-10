@@ -443,11 +443,21 @@ sub update_config {
     return unless defined $grp;
     $self->code_config->{$grp} = {} unless exists $self->code_config->{$grp};
     my $grpref = $self->code_config->{$grp};
+    if ($key eq 'bits') {
+        carp "$val-bits is not supported. Maximum supported size is 64-bit"
+            if $val > 64;
+        $val = 8 if $val <= 8;
+        $val = 16 if ($val > 8 and $val <= 16);
+        $val = 24 if ($val > 16 and $val <= 24);
+        $val = 32 if ($val > 24 and $val <= 32);
+        $val = 64 if $val > 32;
+    }
     if (ref $grpref eq 'HASH') {
         $grpref->{$key} = $val;
     } else {
         $self->code_config->{$grp} = { $key => $val };
     }
+    1;
 }
 
 sub address_bits {
@@ -914,12 +924,45 @@ sub ror {
 
 sub assign_literal {
     my ($self, $var, $val) = @_;
-    return "\tclrf $var\n" if "$val" eq '0';
-    return <<"...";
-\t;; moves $val to $var
+    my $bits = $self->address_bits($var);
+    my $code = "\t;; moves $val to $var\n";
+    if ($val >= 2 ** $bits) {
+        carp "Warning: Value $val doesn't fit in bits $bits\n";
+        $code .= "\t;; changing $val to $val & (2**$bits - 1)";
+        $val &= (2 ** $bits) - 1;
+        $code .= " = $val\n";
+    }
+    if ($val == 0) {
+        $code .= "\tclrf $var\n";
+        for (2 .. POSIX::ceil($bits / 8)) {
+            my $i = $_ - 1;
+            $code .= "\tclrf $var + $i\n" if $i > 0;
+        }
+    } elsif ($bits == 8) {
+        $code .= << "...";
 \tmovlw D'$val'
 \tmovwf $var
 ...
+    } elsif ($bits == 16) {
+        if ($val < 2 ** 8) {
+            $code .= << "...";
+\tmovlw D'$val'
+\tmovwf $var
+\tclrf  $var + 1
+...
+        } else {
+            $code .= << "...";
+\tmovlw low D'$val'
+\tmovwf $var
+\tmovlw high D'$val'
+\tmovwf $var + 1
+...
+        }
+    } elsif ($bits == 24) {
+    } elsif ($bits == 32) {
+    } elsif ($bits == 64) {
+    }
+    return $code;
 }
 
 sub assign_variable {
