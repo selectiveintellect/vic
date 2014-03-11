@@ -146,7 +146,7 @@ _isr_1:
 	movwf USERVAL
 
 	;;moves 100 to W
-	movlw D'100'
+	movlw 0x64
 	addwf USERVAL, F
 
 	goto _end_isr_1;; go back to end of conditional
