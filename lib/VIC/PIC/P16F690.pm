@@ -940,17 +940,17 @@ sub assign_literal {
             $code .= sprintf "\tclrf $var + %d\n", ($_ - 1);
         }
     } else {
-        my $varbyte = $val & ((2 ** 8) - 1);
-        $code .= sprintf "\tmovlw 0x%02X\n\tmovwf $var\n", $varbyte if $varbyte > 0;
-        $code .= "\tclrf $var\n" if $varbyte == 0;
+        my $valbyte = $val & ((2 ** 8) - 1);
+        $code .= sprintf "\tmovlw 0x%02X\n\tmovwf $var\n", $valbyte if $valbyte > 0;
+        $code .= "\tclrf $var\n" if $valbyte == 0;
         for (2 .. $bytes) {
             my $k = $_ * 8;
             my $i = $_ - 1;
             my $j = $i * 8;
             # get the right byte. 64-bit math requires bigint
-            $varbyte = (($val & ((2 ** $k) - 1)) & (2 ** $k - 2 ** $j)) >> $j;
-            $code .= sprintf "\tmovlw 0x%02X\n\tmovwf $var + $i\n", $varbyte if $varbyte > 0;
-            $code .= "\tclrf $var + $i\n" if $varbyte == 0;
+            $valbyte = (($val & ((2 ** $k) - 1)) & (2 ** $k - 2 ** $j)) >> $j;
+            $code .= sprintf "\tmovlw 0x%02X\n\tmovwf $var + $i\n", $valbyte if $valbyte > 0;
+            $code .= "\tclrf $var + $i\n" if $valbyte == 0;
         }
     }
     return $code;
@@ -1036,15 +1036,38 @@ sub assign_expression {
     return join("\n", @code);
 }
 
-## FIXME: handle carry bit
 sub selfadd_literal {
     my ($self, $var, $val) = @_;
-    return "\n" if "$val" eq '0';
-    return << "...";
-\t;;moves $val to W
-\tmovlw D'$val'
-\taddwf $var, F
-...
+    my $b1 = POSIX::ceil($self->address_bits($var) / 8);
+    my $nibbles = 2 * $b1;
+    my $code = sprintf "\t;; $var = $var + 0x%0${nibbles}X\n", $val;
+    return $code if $val == 0;
+    # we expect b1 == 1,2,4,8
+    my $b2 = 1 if $val < 2 ** 8;
+    $b2 = 2 if ($val < 2 ** 16 and $val >= 2 ** 8);
+    $b2 = 4 if ($val < 2 ** 32 and $val >= 2 ** 16);
+    $b2 = 8 if ($val < 2 ** 64 and $val >= 2 ** 32);
+    if ($b1 > $b2) {
+    } elsif ($b1 < $b2) {
+
+    } else {
+        # $b1 == $b2
+        my $valbyte = $val & ((2 ** 8) - 1);
+        $code .= sprintf "\t;; add 0x%02X to byte[0]\n", $valbyte;
+        $code .= sprintf "\tmovlw 0x%02X\n\taddwf $var, F\n", $valbyte if $valbyte > 0;
+        $code .= sprintf "\tbcf STATUS, C\n" if $valbyte == 0;
+        for (2 .. $b1) {
+            my $k = $_ * 8;
+            my $i = $_ - 1;
+            my $j = $i * 8;
+            # get the right byte. 64-bit math requires bigint
+            $valbyte = (($val & ((2 ** $k) - 1)) & (2 ** $k - 2 ** $j)) >> $j;
+            $code .= sprintf "\t;; add 0x%02X to byte[$i]\n", $valbyte;
+            $code .= "\tbtfsc STATUS, C\n\tincf $var + $i, F\n";
+            $code .= sprintf "\tmovlw 0x%02X\n\taddwf $var + $i, F\n", $valbyte if $valbyte > 0;
+        }
+    }
+    return $code;
 }
 
 ## FIXME: handle carry bit
