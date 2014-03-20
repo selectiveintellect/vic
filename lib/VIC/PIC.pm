@@ -144,12 +144,32 @@ sub _update_block {
     }
 }
 
+sub update_intermediate {
+    my $self = shift;
+    my $top = $self->ast->{block_stack_top};
+    $top = $top - 1 if $top > 0;
+    my $block = $self->ast->{block_stack}->[$top];
+    push @{$self->ast->{$block}}, @_ if $block;
+    return;
+}
+
 sub got_instruction {
     my ($self, $list) = @_;
     my $method = shift @$list;
     $self->flatten($list) if $list;
-    my @args = @$list if $list;
     return $self->parser->throw_error("Unknown instruction '$method'") unless $self->pic->can($method);
+    my @args = ();
+    while (scalar @$list) {
+        my $a = shift @$list;
+        if ($a =~ /LABEL::(\w+)::Action\w+::.*::(_end_\w+)$/) {
+            push @args, "ACTION::$1::END::$2";
+        } else {
+            push @args, $a;
+        }
+    }
+    $self->update_intermediate("INS::${method}::" . join ("::", @args));
+    return;
+    #TODO: remove
     my ($code, $funcs, $macros) = $self->pic->$method(@args);
     return $self->parser->throw_error("Error in statement '$method @args'") unless $code;
     $self->_update_block($code, $funcs, $macros);
@@ -161,6 +181,9 @@ sub got_unary_expr {
     $self->flatten($list);
     my $op = shift @$list;
     my $varname = shift @$list;
+    $self->update_intermediate("OP::${op}::${varname}");
+    return;
+    #TODO: remove
     my $method = $self->pic->validate_modifier($op);
     return $self->parser->throw_error("Unknown instruction '$method'") unless $self->pic->can($method);
     my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
@@ -181,7 +204,11 @@ sub got_assign_expr {
     $suffix = 'variable' if exists $self->ast->{variables}->{$rhs};
     $suffix = 'variable' if exists $self->ast->{tmp_variables}->{$rhs};
     my $method = $self->pic->validate_modifier($op, $suffix);
-#    YYY $rhs, $list;
+    YYY $varname, $op, $rhs if $suffix eq 'expression';
+    $self->parser->throw_error("$method is not supported") if $suffix eq 'expression';
+    $self->update_intermediate("OP::${op}::${varname}::${rhs}");
+    return;
+    #TODO: remove and test if $list has more elements
     return $self->parser->throw_error("Operator '$op' not supported") unless $method;
     return $self->parser->throw_error("Unknown method '$method'") unless $self->pic->can($method);
     my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
@@ -197,8 +224,24 @@ sub got_conditional {
     $self->flatten($predicate);
     return unless scalar @$predicate;
     #YYY $self->stack;
+    #TODO: handle complex-conditionals using temp vars
     $self->flatten($subject);
     my ($lhs, $op, $rhs) = @$subject;
+    $self->update_intermediate("OP::${op}::${lhs}::${rhs}");
+    if (ref $predicate ne 'ARRAY') {
+        $predicate = [ $predicate ];
+    }
+    my ($false_label, $true_label, $end_label);
+    #TODO: handle if-elsif cases also
+    foreach my $p (@$predicate) {
+        $false_label = $1 if $p =~ /LABEL::(\w+)::False/;
+        $true_label = $1 if $p =~ /LABEL::(\w+)::True/;
+        $end_label = $1 if $p =~ /LABEL::.*::(_end_conditional\w+)$/;
+    }
+    $self->update_intermediate("COND::FALSE::${false_label}::TRUE::${true_label}::END::${end_label}");
+    $self->ast->{conditionals}++;
+    return;
+    #TODO: remove
     my $method = $self->pic->validate_modifier($op);
     return $self->parser->throw_error("Unknown method '$method'") unless $self->pic->can($method);
     my $ccount = $self->ast->{conditionals};
@@ -217,7 +260,10 @@ sub got_expr_value {
             return shift @$list;
         } elsif (scalar @$list == 2) {
             my ($op, $varname) = @$list;
-            return "OP::${op}::$varname";
+            my $vref = $self->ast->{tmp_variables};
+            my $tvar = '_vic_tmp_' . scalar(keys %$vref);
+            $vref->{$tvar} = "OP::${op}::$varname";
+            return $tvar;
         } else {
             # TODO: handle precedence
             while (scalar @$list >= 3) {
