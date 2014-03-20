@@ -49,6 +49,18 @@ conditional-predicate: conditional-predicate-double | conditional-predicate-sing
 conditional-subject: (single-conditional % logic-operator)*
 conditional: conditional-subject - COMMA - conditional-predicate
 
+complement-operator: /(<TILDE> | <BANG>)/
+incdec-operator: /(<PLUS> <PLUS> | <DASH> <DASH>)/
+assign-operator: /([<PLUS> <DASH> <PERCENT> <CARET> <STAR> <PIPE> <AMP> <SLASH>]? <EQUAL>)/
+compare-operator: /([<BANG> <EQUAL> <LANGLE> <RANGLE>] <EQUAL> | (: <LANGLE> | <RANGLE> ))/
+logic-operator: /([<AMP> <PIPE>]{2})/
+math-operator: /([<PLUS> <DASH> <STAR> <SLASH> <PERCENT>])/
+bit-operator: /([<PIPE> <CARET> <AMP>])/
+rhs-operator: math-operator | bit-operator
+# parentheses
+start-expr-block: /- <LPAREN> -/
+end-expr-block: /- <RPAREN> -/
+
 string: single-quoted-string | double-quoted-string
 
 # most microcontrollers cannot do floating point math so ignore real numbers
@@ -61,18 +73,6 @@ validated-variable: identifier
 modifier-variable: identifier -  variable
 variable: DOLLAR identifier
 identifier: /(<ALPHA>[<WORDS>]*)/
-
-complement-operator: /(<TILDE> | <BANG>)/
-incdec-operator: /(<PLUS> <PLUS> | <DASH> <DASH>)/
-assign-operator: /([<PLUS> <DASH> <PERCENT> <CARET> <STAR> <PIPE> <AMP> <SLASH>]? <EQUAL>)/
-compare-operator: /([<BANG> <EQUAL> <LANGLE> <RANGLE>] <EQUAL> | (: <LANGLE> | <RANGLE> ))/
-logic-operator: /([<AMP> <PIPE>]{2})/
-math-operator: /([<PLUS> <DASH> <STAR> <SLASH> <PERCENT>])/
-bit-operator: /([<PIPE> <CARET> <AMP>])/
-rhs-operator: math-operator | bit-operator
-# parentheses
-start-expr-block: /- <LPAREN> -/
-end-expr-block: /- <RPAREN> -/
 
 single_quoted_string:
     /(:
