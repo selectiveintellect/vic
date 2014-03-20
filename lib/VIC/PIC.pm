@@ -172,12 +172,10 @@ sub got_assign_expr {
     my $varname = shift @$list;
     my $op = shift @$list;
     my $rhs = shift @$list;
-    my $method = 'assign_' if $op eq 'ASSIGN';
-    $method = 'selfadd_' if $op eq 'ADD_ASSIGN';
     my $suffix = 'expression';
     $suffix = 'literal' if $rhs =~ /^\d+$/;
     $suffix = 'variable' if exists $self->ast->{variables}->{$rhs};
-    $method .= $suffix if $suffix;
+    my $method = $self->pic->validate_modifier($op, $suffix);
 #    YYY $rhs, $list;
     return $self->parser->throw_error("Operator '$op' not supported") unless $method;
     return $self->parser->throw_error("Unknown method '$method'") unless $self->pic->can($method);

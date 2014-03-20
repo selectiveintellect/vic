@@ -492,13 +492,16 @@ sub validate {
 }
 
 sub validate_modifier {
-    my ($self, $mod) = @_;
-    return "op_$mod" if $mod =~ /^
+    my ($self, $mod, $suffix) = @_;
+    my $vmod = "op_$mod" if $mod =~ /^
             LE | GE | GT | LT | EQ | NE |
             ADD | SUB | MUL | DIV | MOD |
             BXOR | BOR | BAND | AND | OR |
+            ASSIGN | INC | DEC | NOT | COMP
         /x;
-    return uc $mod; #FIXME
+    $vmod = uc $mod unless defined $vmod;
+    $vmod .= "_$suffix" if defined $suffix;
+    return $vmod;
 }
 
 sub digital_output {
@@ -540,8 +543,8 @@ sub write {
 \tcomf PORT$port, 1
 ...
         }
-        return $self->assign_literal("PORT$port", $val) if ($val =~ /^\d+$/);
-        return $self->assign_variable("PORT$port", uc $val);
+        return $self->op_ASSIGN_literal("PORT$port", $val) if ($val =~ /^\d+$/);
+        return $self->op_ASSIGN_variable("PORT$port", uc $val);
     } elsif (exists $self->pins->{$outp}) {
         my ($port, $portbit) = @{$self->pins->{$outp}};
         if ($val =~ /^\d+$/) {
@@ -549,11 +552,11 @@ sub write {
             return "\tbsf PORT$port, $portbit\n" if "$val" eq '1';
             carp "$val cannot be applied to a pin $outp";
         }
-        return $self->assign_variable("PORT$port", uc $val);
+        return $self->op_ASSIGN_variable("PORT$port", uc $val);
     } elsif ($self->validate($outp)) {
         my $code = "\tbanksel $outp\n";
-        $code .= ($val =~ /^\d+$/) ? $self->assign_literal($outp, $val) :
-                                    $self->assign_variable($outp, uc $val);
+        $code .= ($val =~ /^\d+$/) ? $self->op_ASSIGN_literal($outp, $val) :
+                                    $self->op_ASSIGN_variable($outp, uc $val);
         return $code;
     } else {
         carp "Cannot find $outp in the list of ports or pins";
@@ -932,7 +935,7 @@ sub ror {
     return $code;
 }
 
-sub assign_literal {
+sub op_ASSIGN_literal {
     my ($self, $var, $val) = @_;
     my $bits = $self->address_bits($var);
     my $bytes = POSIX::ceil($bits / 8);
@@ -966,7 +969,7 @@ sub assign_literal {
     return $code;
 }
 
-sub assign_variable {
+sub op_ASSIGN_variable {
     my ($self, $var1, $var2) = @_;
     my $b1 = POSIX::ceil($self->address_bits($var1) / 8);
     my $b2 = POSIX::ceil($self->address_bits($var2) / 8);
@@ -1007,7 +1010,7 @@ sub assign_variable {
     return $code;
 }
 
-sub get_not_code {
+sub op_NOT {
     my ($self, $var2) = @_;
     return << "...";
 ;; generate code for !$var2
@@ -1017,7 +1020,7 @@ sub get_not_code {
 ...
 }
 
-sub get_comp_code {
+sub op_COMP {
     my ($self, $var2) = @_;
     return << "...";
 ;; generate code for ~$var2
@@ -1025,7 +1028,7 @@ sub get_comp_code {
 ...
 }
 
-sub assign_expression {
+sub op_ASSIGN_expression {
     my $self = shift;
     my $var1 = shift;
     return unless scalar @_;
@@ -1033,9 +1036,9 @@ sub assign_expression {
     foreach my $expr (@_) {
         if ($expr =~ /^OP::(\w+)::(\w+)$/) {
             # this is a unary operation
-            my $op = lc $1;
+            my $op = uc $1;
             my $var2 = uc $2;
-            my $method = "get_$op\_code";
+            my $method = "op_$op";
             carp "Unable to handle operator '$op'\n" unless $self->can($method);
             push @code, $self->$method($var2);
         } else {
@@ -1046,7 +1049,7 @@ sub assign_expression {
     return join("\n", @code);
 }
 
-sub selfadd_literal {
+sub op_ADD_ASSIGN_literal {
     my ($self, $var, $val) = @_;
     my $b1 = POSIX::ceil($self->address_bits($var) / 8);
     my $nibbles = 2 * $b1;
@@ -1081,7 +1084,7 @@ sub selfadd_literal {
 }
 
 ## FIXME: handle carry bit
-sub selfadd_variable {
+sub op_ADD_ASSIGN_variable {
     my ($self, $var, $var2) = @_;
     return << "...";
 \t;;moves $var2 to W
