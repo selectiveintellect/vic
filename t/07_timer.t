@@ -10,7 +10,7 @@ Main {
     timer_enable TMR0, 256;
     Loop {
         timer Action {
-            $display++;
+            ++$display;
             write PORTC, $display;
         };
     }

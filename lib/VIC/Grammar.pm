@@ -53,6 +53,19 @@ sub make_tree {
         }
       ]
     },
+    'block_expr_value' => {
+      '.all' => [
+        {
+          '.ref' => 'start_expr_block'
+        },
+        {
+          '.ref' => 'rhs_expr'
+        },
+        {
+          '.ref' => 'end_expr_block'
+        }
+      ]
+    },
     'comment' => {
       '.any' => [
         {
@@ -204,6 +217,9 @@ sub make_tree {
     'end_block' => {
       '.rgx' => qr/\G[\ \t]*\}[\ \t]*\r?\n?/
     },
+    'end_expr_block' => {
+      '.rgx' => qr/\G[\ \t]*\)[\ \t]*/
+    },
     'expr_value' => {
       '.all' => [
         {
@@ -225,6 +241,9 @@ sub make_tree {
             },
             {
               '.ref' => 'modifier_variable'
+            },
+            {
+              '.ref' => 'block_expr_value'
             }
           ]
         },
@@ -236,13 +255,10 @@ sub make_tree {
     'expression' => {
       '.any' => [
         {
-          '.ref' => 'lhs_op_rhs'
+          '.ref' => 'lhs_assign_rhs'
         },
         {
-          '.ref' => 'lhs_op'
-        },
-        {
-          '.ref' => 'op_rhs'
+          '.ref' => 'unary_expr'
         },
         {
           '.ref' => 'conditional'
@@ -262,9 +278,6 @@ sub make_tree {
     'identifier' => {
       '.rgx' => qr/\G([a-zA-Z][0-9A-Za-z_]*)/
     },
-    'incdec_operator' => {
-      '.rgx' => qr/\G(\+\+|\-\-)/
-    },
     'instruction' => {
       '.all' => [
         {
@@ -278,26 +291,7 @@ sub make_tree {
         }
       ]
     },
-    'lhs_op' => {
-      '.all' => [
-        {
-          '.ref' => '_'
-        },
-        {
-          '.ref' => 'variable'
-        },
-        {
-          '.ref' => '_'
-        },
-        {
-          '.ref' => 'incdec_operator'
-        },
-        {
-          '.rgx' => qr/\G[\ \t]*;?[\ \t]*\r?\n?/
-        }
-      ]
-    },
-    'lhs_op_rhs' => {
+    'lhs_assign_rhs' => {
       '.all' => [
         {
           '.ref' => '_'
@@ -316,6 +310,9 @@ sub make_tree {
         },
         {
           '.ref' => 'rhs_expr'
+        },
+        {
+          '.ref' => '_'
         },
         {
           '.ref' => 'line_ending'
@@ -370,25 +367,6 @@ sub make_tree {
         },
         {
           '.ref' => 'units'
-        }
-      ]
-    },
-    'op_rhs' => {
-      '.all' => [
-        {
-          '.ref' => '_'
-        },
-        {
-          '.ref' => 'incdec_operator'
-        },
-        {
-          '.ref' => '_'
-        },
-        {
-          '.ref' => 'variable'
-        },
-        {
-          '.rgx' => qr/\G[\ \t]*;?[\ \t]*\r?\n?/
         }
       ]
     },
@@ -450,6 +428,9 @@ sub make_tree {
         }
       ]
     },
+    'start_expr_block' => {
+      '.rgx' => qr/\G[\ \t]*\([\ \t]*/
+    },
     'statement' => {
       '.any' => [
         {
@@ -504,6 +485,28 @@ sub make_tree {
     },
     'uc_select' => {
       '.rgx' => qr/\GPIC[\ \t]+((?i:P16F690|P16F690X))[\ \t]*;[\ \t]*\r?\n?/
+    },
+    'unary_expr' => {
+      '.all' => [
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'unary_operator'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'variable'
+        },
+        {
+          '.rgx' => qr/\G[\ \t]*;?[\ \t]*\r?\n?/
+        }
+      ]
+    },
+    'unary_operator' => {
+      '.rgx' => qr/\G(\+\+|\-\-)/
     },
     'units' => {
       '.rgx' => qr/\G(s|ms|us|kHz|Hz|MHz)/

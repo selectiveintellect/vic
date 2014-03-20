@@ -491,6 +491,11 @@ sub validate {
     return 0;
 }
 
+sub validate_modifier {
+    my ($self, $mod) = @_;
+    return uc $mod; #FIXME
+}
+
 sub digital_output {
     my ($self, $outp) = @_;
     return unless defined $outp;

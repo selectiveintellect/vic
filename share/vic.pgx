@@ -33,13 +33,14 @@ name: - identifier -
 values: (value % COMMA)*
 value: - (string | number-units | number | variable | block | validated-variable | modifier-variable) -
 
-expression: lhs-op-rhs | lhs-op | op-rhs | conditional
-lhs-op: - variable - incdec-operator /- <SEMI>? - <EOL>?/
-op-rhs: - incdec-operator - variable /- <SEMI>? - <EOL>?/
+expression: lhs-assign-rhs | unary-expr | conditional
+unary-expr: - unary-operator - variable /- <SEMI>? - <EOL>?/
 complement: - complement-operator - variable -
-expr-value: - (number | variable | number-units | complement | modifier-variable) -
+block-expr-value: start-expr-block rhs-expr end-expr-block
+expr-value: - (number | variable | number-units |
+            complement | modifier-variable | block-expr-value) -
 rhs-expr: (expr-value % rhs-operator)*
-lhs-op-rhs: - variable - assign-operator - rhs-expr line-ending
+lhs-assign-rhs: - variable - assign-operator - rhs-expr - line-ending
 
 comparison: expr-value compare-operator expr-value
 single-conditional: comparison | complement
@@ -50,7 +51,7 @@ conditional-subject: (single-conditional % logic-operator)*
 conditional: conditional-subject - COMMA - conditional-predicate
 
 complement-operator: /(<TILDE> | <BANG>)/
-incdec-operator: /(<PLUS> <PLUS> | <DASH> <DASH>)/
+unary-operator: /(<PLUS> <PLUS> | <DASH> <DASH>)/
 assign-operator: /([<PLUS> <DASH> <PERCENT> <CARET> <STAR> <PIPE> <AMP> <SLASH>]? <EQUAL>)/
 compare-operator: /([<BANG> <EQUAL> <LANGLE> <RANGLE>] <EQUAL> | (: <LANGLE> | <RANGLE> ))/
 logic-operator: /([<AMP> <PIPE>]{2})/

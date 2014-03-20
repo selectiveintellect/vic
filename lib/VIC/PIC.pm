@@ -20,6 +20,7 @@ has ast => {
     block_stack_top => 0,
     funcs => {},
     variables => {},
+    tmp_variables => {},
     conditionals => 0,
 };
 
@@ -151,11 +152,13 @@ sub got_instruction {
     return;
 }
 
-sub _handle_var_op {
-    my ($self, $varname, $op) = @_;
-    my $method = 'increment' if $op eq '++';
-    $method = 'decrement' if $op eq '--';
-    return $self->parser->throw_error("Operator '$op' not supported. Use -- or ++ only.") unless $method;
+sub got_unary_expr {
+    my ($self, $list) = @_;
+    $self->flatten($list);
+    my $op = shift @$list;
+    my $varname = shift @$list;
+    my $method = 'increment' if $op eq 'INC';
+    $method = 'decrement' if $op eq 'DEC';
     return $self->parser->throw_error("Unknown instruction '$method'") unless $self->pic->can($method);
     my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
     my $code = $self->pic->$method($nvar);
@@ -164,30 +167,14 @@ sub _handle_var_op {
     return;
 }
 
-sub got_lhs_op {
-    my ($self, $list) = @_;
-    $self->flatten($list);
-    my $varname = shift @$list;
-    my $op = shift @$list;
-    return $self->_handle_var_op($varname, $op);
-}
-
-sub got_op_rhs {
-    my ($self, $list) = @_;
-    $self->flatten($list);
-    my $op = shift @$list;
-    my $varname = shift @$list;
-    return $self->_handle_var_op($varname, $op);
-}
-
-sub got_lhs_op_rhs {
+sub got_lhs_assign_rhs {
     my ($self, $list) = @_;
     $self->flatten($list);
     my $varname = shift @$list;
     my $op = shift @$list;
     my $rhs = shift @$list;
-    my $method = 'assign_' if $op eq '=';
-    $method = 'selfadd_' if $op eq '+=';
+    my $method = 'assign_' if $op eq 'ASSIGN';
+    $method = 'selfadd_' if $op eq 'ADD_ASSIGN';
     my $suffix = 'expression';
     $suffix = 'literal' if $rhs =~ /^\d+$/;
     $suffix = 'variable' if exists $self->ast->{variables}->{$rhs};
@@ -235,18 +222,91 @@ sub got_expr_value {
     my ($self, $list) = @_;
     if (ref $list eq 'ARRAY') {
         $self->flatten($list);
-        if (scalar @$list > 1) {
+        if (scalar @$list == 2) {
             my ($op, $varname) = @$list;
-            return "OP::NOT::$varname" if $op eq '!';
-            return "OP::COMP::$varname" if $op eq '~';
-            $self->parser->throw_error("Unary operator '$op' not supported");
-            return;
-        } else {
+            return "OP::${op}::$varname";
+        } elsif (scalar @$list == 1) {
             return shift @$list;
+        } elsif (scalar @$list == 3) {
+            # using Quadruples method as per Dragon book Chapter 8 Page 470
+            my ($var1, $op, $var2) = @$list;
+            my $vref = $self->ast->{tmp_variables};
+            my $tvar = 'tmp_' . scalar(keys %$vref);
+            $vref->{$tvar} = "OP::${op}::${var1}::${var2}";
+            #YYY $vref;
+            return $tvar;
+        } else {
+            $self->parser->throw_error(
+                "Error in evaluating expr-value element: @$list");
+            return $list;
         }
     } else {
         return $list;
     }
+}
+
+sub got_math_operator {
+    my ($self, $op) = @_;
+    return 'ADD' if $op eq '+';
+    return 'SUB' if $op eq '-';
+    return 'MUL' if $op eq '*';
+    return 'DIV' if $op eq '/';
+    return 'MOD' if $op eq '%';
+    return $self->parser->throw_error("Math operator '$op' is not supported");
+}
+
+sub got_bit_operator {
+    my ($self, $op) = @_;
+    return 'BXOR' if $op eq '^';
+    return 'BOR'  if $op eq '|';
+    return 'BAND' if $op eq '&';
+    return $self->parser->throw_error("Bitwise operator '$op' is not supported");
+}
+
+sub got_logic_operator {
+    my ($self, $op) = @_;
+    return 'AND' if $op eq '&&';
+    return 'OR' if $op eq '||';
+    return $self->parser->throw_error("Logic operator '$op' is not supported");
+}
+
+sub got_compare_operator_TODO {
+    my ($self, $op) = @_;
+    return 'LE' if $op eq '<=';
+    return 'LT' if $op eq '<';
+    return 'GE' if $op eq '>=';
+    return 'GT' if $op eq '>';
+    return 'EQ' if $op eq '==';
+    return 'NE' if $op eq '!=';
+    return $self->parser->throw_error("Compare operator '$op' is not supported");
+}
+
+sub got_complement_operator {
+    my ($self, $op) = @_;
+    return 'NOT'  if $op eq '!';
+    return 'COMP' if $op eq '~';
+    return $self->parser->throw_error("Complement operator '$op' is not supported");
+}
+
+sub got_assign_operator {
+    my ($self, $op) = @_;
+    return 'ASSIGN' if $op eq '=';
+    return 'ADD_ASSIGN'  if $op eq '+=';
+    return 'SUB_ASSIGN'  if $op eq '-=';
+    return 'MUL_ASSIGN'  if $op eq '*=';
+    return 'DIV_ASSIGN'  if $op eq '/=';
+    return 'MOD_ASSIGN'  if $op eq '%=';
+    return 'BXOR_ASSIGN' if $op eq '^=';
+    return 'BOR_ASSIGN'  if $op eq '|=';
+    return 'BAND_ASSIGN' if $op eq '&=';
+    return $self->parser->throw_error("Assignment operator '$op' is not supported");
+}
+
+sub got_unary_operator {
+    my ($self, $op) = @_;
+    return 'INC' if $op eq '++';
+    return 'DEC' if $op eq '--';
+    return $self->parser->throw_error("Increment/Decrement operator '$op' is not supported");
 }
 
 sub got_modifier_variable {
