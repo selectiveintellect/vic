@@ -157,8 +157,7 @@ sub got_unary_expr {
     $self->flatten($list);
     my $op = shift @$list;
     my $varname = shift @$list;
-    my $method = 'increment' if $op eq 'INC';
-    $method = 'decrement' if $op eq 'DEC';
+    my $method = $self->pic->validate_modifier($op);
     return $self->parser->throw_error("Unknown instruction '$method'") unless $self->pic->can($method);
     my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
     my $code = $self->pic->$method($nvar);
@@ -167,7 +166,7 @@ sub got_unary_expr {
     return;
 }
 
-sub got_lhs_assign_rhs {
+sub got_assign_expr {
     my ($self, $list) = @_;
     $self->flatten($list);
     my $varname = shift @$list;
@@ -196,7 +195,8 @@ sub got_conditional {
     return unless scalar @$predicate;
     #YYY $self->stack;
     $self->flatten($subject);
-    my ($lhs, $method, $rhs) = @$subject; #FIXME: does this work with multiple?
+    my ($lhs, $op, $rhs) = @$subject;
+    my $method = $self->pic->validate_modifier($op);
     return $self->parser->throw_error("Unknown method '$method'") unless $self->pic->can($method);
     my $ccount = $self->ast->{conditionals};
     my ($code, $funcs, $macros) = $self->pic->$method($lhs, $rhs, $predicate, $ccount);
@@ -204,18 +204,6 @@ sub got_conditional {
     $self->_update_block($code, $funcs, $macros);
     $self->ast->{conditionals}++;
     return;
-}
-
-sub got_compare_operator {
-    my ($self, $op) = @_;
-    my $method = 'check_eq' if $op eq '==';
-    $method = 'check_ne' if $op eq '!=';
-    $method = 'check_le' if $op eq '<=';
-    $method = 'check_ge' if $op eq '>=';
-    $method = 'check_lt' if $op eq '<';
-    $method = 'check_gt' if $op eq '>';
-    return $self->parser->throw_error("Operator '$op' not supported") unless $method;
-    return $method;
 }
 
 sub got_expr_value {
@@ -231,7 +219,7 @@ sub got_expr_value {
             # using Quadruples method as per Dragon book Chapter 8 Page 470
             my ($var1, $op, $var2) = @$list;
             my $vref = $self->ast->{tmp_variables};
-            my $tvar = 'tmp_' . scalar(keys %$vref);
+            my $tvar = '_vic_tmp_' . scalar(keys %$vref);
             $vref->{$tvar} = "OP::${op}::${var1}::${var2}";
             #YYY $vref;
             return $tvar;
@@ -270,7 +258,7 @@ sub got_logic_operator {
     return $self->parser->throw_error("Logic operator '$op' is not supported");
 }
 
-sub got_compare_operator_TODO {
+sub got_compare_operator {
     my ($self, $op) = @_;
     return 'LE' if $op eq '<=';
     return 'LT' if $op eq '<';

@@ -33,14 +33,14 @@ name: - identifier -
 values: (value % COMMA)*
 value: - (string | number-units | number | variable | block | validated-variable | modifier-variable) -
 
-expression: lhs-assign-rhs | unary-expr | conditional
+expression: assign-expr | unary-expr | conditional
 unary-expr: - unary-operator - variable /- <SEMI>? - <EOL>?/
 complement: - complement-operator - variable -
 block-expr-value: start-expr-block rhs-expr end-expr-block
 expr-value: - (number | variable | number-units |
             complement | modifier-variable | block-expr-value) -
 rhs-expr: (expr-value % rhs-operator)*
-lhs-assign-rhs: - variable - assign-operator - rhs-expr - line-ending
+assign-expr: - variable - assign-operator - rhs-expr - line-ending
 
 comparison: expr-value compare-operator expr-value
 single-conditional: comparison | complement

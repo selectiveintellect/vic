@@ -493,6 +493,11 @@ sub validate {
 
 sub validate_modifier {
     my ($self, $mod) = @_;
+    return "op_$mod" if $mod =~ /^
+            LE | GE | GT | LT | EQ | NE |
+            ADD | SUB | MUL | DIV | MOD |
+            BXOR | BOR | BAND | AND | OR |
+        /x;
     return uc $mod; #FIXME
 }
 
@@ -1085,7 +1090,7 @@ sub selfadd_variable {
 ...
 }
 
-sub increment {
+sub op_INC {
     my ($self, $var) = @_;
     # we expect b1 == 1,2,4,8
     my $b1 = POSIX::ceil($self->address_bits($var) / 8);
@@ -1103,7 +1108,7 @@ sub increment {
     return $code;
 }
 
-sub decrement {
+sub op_DEC {
     my ($self, $var) = @_;
     my $b1 = POSIX::ceil($self->address_bits($var) / 8);
     my $code = "\t;; decrements $var in place\n";
@@ -1121,7 +1126,7 @@ sub decrement {
     return $code;
 }
 
-sub check_eq {
+sub op_EQ {
     my ($self, $lhs, $rhs, $predicate, $ccount) = @_;
     my $pred = '';
     my $end_label = "_end_conditional_$ccount";

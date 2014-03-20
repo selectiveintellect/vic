@@ -30,6 +30,34 @@ sub make_tree {
     '__' => {
       '.rgx' => qr/\G[\ \t]+/
     },
+    'assign_expr' => {
+      '.all' => [
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'variable'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'assign_operator'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'rhs_expr'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'line_ending'
+        }
+      ]
+    },
     'assign_operator' => {
       '.rgx' => qr/\G([\+\-%\^\*\|&\/]?=)/
     },
@@ -255,7 +283,7 @@ sub make_tree {
     'expression' => {
       '.any' => [
         {
-          '.ref' => 'lhs_assign_rhs'
+          '.ref' => 'assign_expr'
         },
         {
           '.ref' => 'unary_expr'
@@ -285,34 +313,6 @@ sub make_tree {
         },
         {
           '.ref' => 'values'
-        },
-        {
-          '.ref' => 'line_ending'
-        }
-      ]
-    },
-    'lhs_assign_rhs' => {
-      '.all' => [
-        {
-          '.ref' => '_'
-        },
-        {
-          '.ref' => 'variable'
-        },
-        {
-          '.ref' => '_'
-        },
-        {
-          '.ref' => 'assign_operator'
-        },
-        {
-          '.ref' => '_'
-        },
-        {
-          '.ref' => 'rhs_expr'
-        },
-        {
-          '.ref' => '_'
         },
         {
           '.ref' => 'line_ending'
