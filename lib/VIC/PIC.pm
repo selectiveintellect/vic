@@ -23,8 +23,6 @@ has ast => {
     conditionals => 0,
 };
 
-sub throw_error { shift->parser->throw_error(@_); }
-
 sub stack { reverse @{shift->parser->stack}; }
 
 sub got_uc_select {
@@ -146,9 +144,9 @@ sub got_instruction {
     my $method = shift @$list;
     $self->flatten($list) if $list;
     my @args = @$list if $list;
-    return $self->throw_error("Unknown instruction '$method'") unless $self->pic->can($method);
+    return $self->parser->throw_error("Unknown instruction '$method'") unless $self->pic->can($method);
     my ($code, $funcs, $macros) = $self->pic->$method(@args);
-    return $self->throw_error("Error in statement '$method @args'") unless $code;
+    return $self->parser->throw_error("Error in statement '$method @args'") unless $code;
     $self->_update_block($code, $funcs, $macros);
     return;
 }
@@ -157,11 +155,11 @@ sub _handle_var_op {
     my ($self, $varname, $op) = @_;
     my $method = 'increment' if $op eq '++';
     $method = 'decrement' if $op eq '--';
-    return $self->throw_error("Operator '$op' not supported. Use -- or ++ only.") unless $method;
-    return $self->throw_error("Unknown instruction '$method'") unless $self->pic->can($method);
+    return $self->parser->throw_error("Operator '$op' not supported. Use -- or ++ only.") unless $method;
+    return $self->parser->throw_error("Unknown instruction '$method'") unless $self->pic->can($method);
     my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
     my $code = $self->pic->$method($nvar);
-    return $self->throw_error("Invalid expression '$varname $op'") unless $code;
+    return $self->parser->throw_error("Invalid expression '$varname $op'") unless $code;
     $self->_update_block($code);
     return;
 }
@@ -195,11 +193,11 @@ sub got_lhs_op_rhs {
     $suffix = 'variable' if exists $self->ast->{variables}->{$rhs};
     $method .= $suffix if $suffix;
 #    YYY $rhs, $list;
-    return $self->throw_error("Operator '$op' not supported") unless $method;
-    return $self->throw_error("Unknown method '$method'") unless $self->pic->can($method);
+    return $self->parser->throw_error("Operator '$op' not supported") unless $method;
+    return $self->parser->throw_error("Unknown method '$method'") unless $self->pic->can($method);
     my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
     my $code = $self->pic->$method($nvar, $rhs, @$list);
-    return $self->throw_error("Invalid expression '$varname $op $rhs'") unless $code;
+    return $self->parser->throw_error("Invalid expression '$varname $op $rhs'") unless $code;
     $self->_update_block($code);
     return;
 }
@@ -212,10 +210,10 @@ sub got_conditional {
     #YYY $self->stack;
     $self->flatten($subject);
     my ($lhs, $method, $rhs) = @$subject; #FIXME: does this work with multiple?
-    return $self->throw_error("Unknown method '$method'") unless $self->pic->can($method);
+    return $self->parser->throw_error("Unknown method '$method'") unless $self->pic->can($method);
     my $ccount = $self->ast->{conditionals};
     my ($code, $funcs, $macros) = $self->pic->$method($lhs, $rhs, $predicate, $ccount);
-    $self->throw_error("Unable to generate code for comparison expression"), return unless $code;
+    $self->parser->throw_error("Unable to generate code for comparison expression"), return unless $code;
     $self->_update_block($code, $funcs, $macros);
     $self->ast->{conditionals}++;
     return;
@@ -229,7 +227,7 @@ sub got_compare_operator {
     $method = 'check_ge' if $op eq '>=';
     $method = 'check_lt' if $op eq '<';
     $method = 'check_gt' if $op eq '>';
-    return $self->throw_error("Operator '$op' not supported") unless $method;
+    return $self->parser->throw_error("Operator '$op' not supported") unless $method;
     return $method;
 }
 
@@ -241,7 +239,7 @@ sub got_expr_value {
             my ($op, $varname) = @$list;
             return "OP::NOT::$varname" if $op eq '!';
             return "OP::COMP::$varname" if $op eq '~';
-            $self->throw_error("Unary operator '$op' not supported");
+            $self->parser->throw_error("Unary operator '$op' not supported");
             return;
         } else {
             return shift @$list;
@@ -257,7 +255,7 @@ sub got_modifier_variable {
     $self->flatten($list) if ref $list eq 'ARRAY';
     $modifier = shift @$list;
     $varname = shift @$list;
-    $self->throw_error("Modifying operator '$modifier' not supported") unless
+    $self->parser->throw_error("Modifying operator '$modifier' not supported") unless
         $self->pic->validate_modifier($modifier);
     $modifier = uc $modifier;
     return "OP::$modifier\::$varname";
@@ -273,7 +271,7 @@ sub got_validated_variable {
         $varname = $list;
     }
     return $varname if $self->pic->validate($varname);
-    return $self->throw_error("'$varname' is not a valid part of the " . uc $self->pic->type);
+    return $self->parser->throw_error("'$varname' is not a valid part of the " . uc $self->pic->type);
     return;
 }
 
@@ -364,8 +362,8 @@ sub _generate_code {
 sub final {
     my ($self, $got) = @_;
     my $ast = $self->ast;
-    return $self->throw_error("Missing '}'") if $self->ast->{block_stack_top} ne 0;
-    return $self->throw_error("Main not defined") unless defined $self->ast->{Main};
+    return $self->parser->throw_error("Missing '}'") if $self->ast->{block_stack_top} ne 0;
+    return $self->parser->throw_error("Main not defined") unless defined $self->ast->{Main};
     # generate main code first so that any addition to functions, macros,
     # variables during generation can be handled after
     my @main_code = _generate_code($ast, 'Main');
