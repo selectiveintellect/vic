@@ -120,8 +120,12 @@ sub got_end_block {
 
 sub got_name {
     my ($self, $list) = @_;
-    $self->flatten($list);
-    return shift(@$list);
+    if (ref $list eq 'ARRAY') {
+        $self->flatten($list);
+        return shift(@$list);
+    } else {
+        return $list;
+    }
 }
 
 sub _update_block {
@@ -175,6 +179,7 @@ sub got_assign_expr {
     my $suffix = 'expression';
     $suffix = 'literal' if $rhs =~ /^\d+$/;
     $suffix = 'variable' if exists $self->ast->{variables}->{$rhs};
+    $suffix = 'variable' if exists $self->ast->{tmp_variables}->{$rhs};
     my $method = $self->pic->validate_modifier($op, $suffix);
 #    YYY $rhs, $list;
     return $self->parser->throw_error("Operator '$op' not supported") unless $method;
@@ -208,22 +213,25 @@ sub got_expr_value {
     my ($self, $list) = @_;
     if (ref $list eq 'ARRAY') {
         $self->flatten($list);
-        if (scalar @$list == 2) {
+        if (scalar @$list == 1) {
+            return shift @$list;
+        } elsif (scalar @$list == 2) {
             my ($op, $varname) = @$list;
             return "OP::${op}::$varname";
-        } elsif (scalar @$list == 1) {
-            return shift @$list;
-        } elsif (scalar @$list == 3) {
-            # using Quadruples method as per Dragon book Chapter 8 Page 470
-            my ($var1, $op, $var2) = @$list;
-            my $vref = $self->ast->{tmp_variables};
-            my $tvar = '_vic_tmp_' . scalar(keys %$vref);
-            $vref->{$tvar} = "OP::${op}::${var1}::${var2}";
-            #YYY $vref;
-            return $tvar;
         } else {
-            $self->parser->throw_error(
-                "Error in evaluating expr-value element: @$list");
+            # TODO: handle precedence
+            while (scalar @$list >= 3) {
+                # using Quadruples method as per Dragon book Chapter 8 Page 470
+                my $var1 = shift @$list;
+                my $op = shift @$list;
+                my $var2 = shift @$list;
+                my $vref = $self->ast->{tmp_variables};
+                my $tvar = '_vic_tmp_' . scalar(keys %$vref);
+                $vref->{$tvar} = "OP::${op}::${var1}::${var2}";
+                unshift @$list, $tvar;
+            }
+#            YYY $self->ast->{tmp_variables};
+#            YYY $list;
             return $list;
         }
     } else {
