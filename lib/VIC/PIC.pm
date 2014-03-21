@@ -238,7 +238,8 @@ sub got_expr_value {
             my ($op, $varname) = @$list;
             my $vref = $self->ast->{tmp_variables};
             my $tvar = '_vic_tmp_' . scalar(keys %$vref);
-            $vref->{$tvar} = "OP::${op}::$varname";
+            $vref->{$tvar} = "OP::${tvar}::${op}::${varname}";
+            $self->update_intermediate($vref->{$tvar});
             return $tvar;
         } else {
             # TODO: handle precedence
@@ -249,7 +250,8 @@ sub got_expr_value {
                 my $var2 = shift @$list;
                 my $vref = $self->ast->{tmp_variables};
                 my $tvar = '_vic_tmp_' . scalar(keys %$vref);
-                $vref->{$tvar} = "OP::${op}::${var1}::${var2}";
+                $vref->{$tvar} = "OP::${tvar}::${op}::${var1}::${var2}";
+                $self->update_intermediate($vref->{$tvar});
                 unshift @$list, $tvar;
             }
 #            YYY $self->ast->{tmp_variables};
@@ -334,7 +336,8 @@ sub got_modifier_variable {
     $self->parser->throw_error("Modifying operator '$modifier' not supported") unless
         $self->pic->validate_modifier($modifier);
     $modifier = uc $modifier;
-    return "OP::$modifier\::$varname";
+    #TODO: figure out a better way
+    return "MOP::$modifier\::$varname";
 }
 
 sub got_validated_variable {
@@ -412,6 +415,119 @@ sub _update_funcs {
     1;
 }
 
+sub _generate_code_instruction {
+    my ($self, $line) = @_;
+    my @ins = split /::/, $line;
+    shift @ins; # remove INS
+    my $method = shift @ins;
+    my ($code, $funcs, $macros) = $self->pic->$method(@ins);
+    return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
+    my @code = ();
+    push @code, "\t;; $line" if $self->intermediate_inline;
+    push @code, $code if $code;
+    $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
+    return @code;
+}
+
+sub _generate_code_unary_expr {
+    my ($self, $line) = @_;
+    my @code = ();
+    my $ast = $self->ast;
+    my ($tag, $op, $varname) = split /::/, $line;
+    my $method = $self->pic->validate_operator($op);
+    $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
+    # check if temporary variable or not
+    if (exists $ast->{variables}->{$varname}) {
+        my $nvar = $ast->{variables}->{$varname}->{name} || uc $varname;
+        my ($code, $funcs, $macros) = $self->pic->$method($nvar);
+        return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
+        push @code, "\t;; $line" if $self->intermediate_inline;
+        push @code, $code if $code;
+        $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
+    } elsif (exists $ast->{tmp_variables}->{$varname}) {
+        #TODO: check if the tmp-var address bits works correctly
+        my $tmp_code = $ast->{tmp_variables}->{$varname};
+        my @newcode = $self->_generate_code($ast, $tmp_code);
+        push @code, "\t;; $varname = $tmp_code\n" if $self->intermediate_inline;
+        push @code, @newcode if @newcode;
+        push @code, "\t;; $line" if $self->intermediate_inline;
+        #TODO: how do we move the tmp-var code into the actual var
+    }
+    return @code;
+}
+
+sub _generate_code_assign_expr {
+    my ($self, $line) = @_;
+    my @code = ();
+    my $ast = $self->ast;
+    my ($tag, $op, $varname, $rhs) = split /::/, $line;
+    if (exists $ast->{variables}->{$varname}) {
+        my $suffix = '';
+        $suffix = '_literal' if $rhs =~ /^\d+$/;
+        $suffix = '_variable' if exists $ast->{variables}->{$rhs};
+        if (exists $ast->{tmp_variables}->{$rhs}) {
+            my $tmp_code = $ast->{tmp_variables}->{$rhs};
+            $suffix = '_variable' if exists $ast->{tmp_variables}->{$rhs};
+            push @code, "\t;; $rhs = $tmp_code\n";
+            #TODO: check if the tmp-var address bits works correctly
+            my @newcode = $self->_generate_code($ast, $tmp_code);
+            push @code, @newcode if @newcode;
+            #TODO: how do we move the tmp-var code into the actual var
+        }
+        my $method = $self->pic->validate_operator($op);
+        $method .= $suffix if $method;
+        $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
+        my $nvar = $ast->{variables}->{$varname}->{name} || uc $varname;
+        my ($code, $funcs, $macros) = $self->pic->$method($nvar, $rhs);
+        return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
+        push @code, "\t;; $line" if $self->intermediate_inline;
+        push @code, $code if $code;
+        $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
+    } elsif (exists $ast->{tmp_variables}->{$varname}) {
+        #TODO: check if the tmp-var address bits works correctly
+        my $tmp_code = $ast->{tmp_variables}->{$varname};
+        my @newcode = $self->_generate_code($ast, $tmp_code);
+        push @code, "\t;; $varname = $tmp_code\n" if $self->intermediate_inline;
+        push @code, @newcode if @newcode;
+        push @code, "\t;; $line" if $self->intermediate_inline;
+        #TODO: how do we move the tmp-var code into the actual var
+    } else {
+        return $self->parser->throw_error("Error in intermediate code '$line'");
+    }
+    return @code;
+}
+
+sub _generate_code_blocks {
+    my ($self, $line, $block) = @_;
+    my @code = ();
+    my $ast = $self->ast;
+    my ($tag, $label, $child, $parent, $parent_label, $end_label) = split/::/, $line;
+    return if $child eq $parent; # bug - FIXME
+    return if $child eq $block; # bug - FIXME
+    return if exists $ast->{generated_blocks}->{$child};
+    push @code, "\t;; $line" if $self->intermediate_inline;
+    my @newcode = $self->_generate_code($ast, $child);
+    if ($child =~ /^Action|True|False|ISR/) {
+        push @newcode, "\tgoto $end_label;; go back to end of conditional\n" if @newcode;
+        # hack into the function list
+        $ast->{funcs}->{$label} = [@newcode] if @newcode;
+    } else {
+        push @code, @newcode if @newcode;
+    }
+    $ast->{generated_blocks}->{$child} = 1 if @newcode;
+    # parent equals block if it is the topmost of the stack
+    # if the child is not a loop construct it will need a goto back to
+    # the parent construct. if a child is a loop construct it will
+    # already have a goto back to itself
+    if (defined $parent and exists $ast->{$parent} and
+        ref $ast->{$parent} eq 'ARRAY' and $parent ne $block) {
+        my $plabel = $1 if $ast->{$parent}->[0] =~ /^\s*(\w+):/;
+        push @code, "\tgoto $plabel;; $plabel" if $plabel;
+    }
+    push @code, "\tgoto $label" if $child =~ /^Loop/;
+    return @code;
+}
+
 sub _generate_code {
     my ($self, $ast, $block) = @_;
     my @code = ();
@@ -420,98 +536,30 @@ sub _generate_code {
     $ast->{generated_blocks} = {} unless defined $ast->{generated_blocks};
     push @code, ";;;; generated code for $block";
     foreach my $line (@{$ast->{$block}}) {
-        if ($line =~ /BLOCK::([\w\:]+)/) {
-            my ($label, $child, $parent, $parent_label, $end_label) = split/::/, $1;
-            next if $child eq $parent; # bug - FIXME
-            next if $child eq $block; # bug - FIXME
-            next if exists $ast->{generated_blocks}->{$child};
-            push @code, "\t;; $line" if $self->intermediate_inline;
-            my @newcode = $self->_generate_code($ast, $child);
-            if ($child =~ /^Action|True|False|ISR/) {
-                push @newcode, "\tgoto $end_label;; go back to end of conditional\n" if @newcode;
-                # hack into the function list
-                $ast->{funcs}->{$label} = [@newcode] if @newcode;
-            } else {
-                push @code, @newcode if @newcode;
-            }
-            $ast->{generated_blocks}->{$child} = 1 if @newcode;
-            # parent equals block if it is the topmost of the stack
-            # if the child is not a loop construct it will need a goto back to
-            # the parent construct. if a child is a loop construct it will
-            # already have a goto back to itself
-            if (defined $parent and exists $ast->{$parent} and
-                ref $ast->{$parent} eq 'ARRAY' and $parent ne $block) {
-                my $plabel = $1 if $ast->{$parent}->[0] =~ /^\s*(\w+):/;
-                push @code, "\tgoto $plabel;; $plabel" if $plabel;
-            }
-            push @code, "\tgoto $label" if $child =~ /^Loop/;
+        if ($line =~ /^BLOCK::\w+/) {
+            push @code, $self->_generate_code_blocks($line, $block);
         } elsif ($line =~ /^INS::\w+/) {
-            my @ins = split /::/, $line;
-            shift @ins; # remove INS
-            my $method = shift @ins;
-            my ($code, $funcs, $macros) = $self->pic->$method(@ins);
-            return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
+            push @code, $self->_generate_code_instruction($line);
+        } elsif ($line =~ /^UNARY::\w+/) {
+            push @code, $self->_generate_code_unary_expr($line);
+        } elsif ($line =~ /^SET::\w+/) {
+            push @code, $self->_generate_code_assign_expr($line);
+        } elsif ($line =~ /^OP::\w+/) {
+            my ($tag, $tvar, $op, $var1, $var2) = split /::/, $line;
+            my $method = $self->pic->validate_operator($op);
+            $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
             push @code, "\t;; $line" if $self->intermediate_inline;
+            if (defined $var2) {
+                push @code, "\t;; $tvar = $var1 $op $var2" if $self->intermediate_inline;
+                $var2 = uc $var2;
+            } else {
+                push @code, "\t;; $tvar = $op $var1" if $self->intermediate_inline;
+            }
+            $var1 = uc $var1;
+            my ($code, $funcs, $macros) = $self->pic->$method($var1, $var2);
+            return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
             push @code, $code if $code;
             $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
-            ##TODO: handle labels and actions here
-        } elsif ($line =~ /^UNARY::\w+/) {
-            my ($tag, $op, $varname) = split /::/, $line;
-            my $method = $self->pic->validate_operator($op);
-            $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
-            # check if temporary variable or not
-            if (exists $self->ast->{variables}->{$varname}) {
-                my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
-                my ($code, $funcs, $macros) = $self->pic->$method($nvar);
-                return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
-                push @code, "\t;; $line" if $self->intermediate_inline;
-                push @code, $code if $code;
-                $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
-            } elsif (exists $self->ast->{tmp_variables}->{$varname}) {
-                #TODO: check if the tmp-var address bits works correctly
-                my $tmp_code = $self->ast->{tmp_variables}->{$varname};
-                my @newcode = $self->_generate_code($ast, $tmp_code);
-                push @code, "\t;; $tmp_code" if $self->intermediate_inline;
-                push @code, @newcode if @newcode;
-                push @code, "\t;; $line" if $self->intermediate_inline;
-                #TODO: how do we move the tmp-var code into the actual var
-            }
-        } elsif ($line =~ /^SET::\w+/) {
-            my ($tag, $op, $varname, $rhs) = split /::/, $line;
-            if (exists $self->ast->{variables}->{$varname}) {
-                my $suffix = '';
-                $suffix = '_literal' if $rhs =~ /^\d+$/;
-                $suffix = '_variable' if exists $self->ast->{variables}->{$rhs};
-                $suffix = '_variable' if exists $self->ast->{tmp_variables}->{$rhs};
-                my $method = $self->pic->validate_operator($op);
-                $method .= $suffix if $method;
-                $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
-                my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
-                my ($code, $funcs, $macros) = $self->pic->$method($nvar, $rhs);
-                return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
-                push @code, "\t;; $line" if $self->intermediate_inline;
-                push @code, $code if $code;
-                $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
-            } elsif (exists $self->ast->{tmp_variables}->{$varname}) {
-                #TODO: check if the tmp-var address bits works correctly
-                my $tmp_code = $self->ast->{tmp_variables}->{$varname};
-                my @newcode = $self->_generate_code($ast, $tmp_code);
-                push @code, "\t;; $tmp_code" if $self->intermediate_inline;
-                push @code, @newcode if @newcode;
-                push @code, "\t;; $line" if $self->intermediate_inline;
-                #TODO: how do we move the tmp-var code into the actual var
-            }
-        } elsif ($line =~ /^OP::\w+/) {
-            my @ops = split /::/, $line;
-            shift @ops; # remove OP
-            my $op = shift @ops;
-            my $method = $self->pic->validate_operator($op);
-            $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
-            my @tmp_vars = ();
-            foreach (@ops) {
-                push @tmp_vars, $ast->{tmp_variables}->{$_} if exists $ast->{tmp_variables}->{$_};
-            }
-            push @code, @tmp_vars, $line;
         } else {
             push @code, $line;
         }
@@ -522,8 +570,8 @@ sub _generate_code {
 sub final {
     my ($self, $got) = @_;
     my $ast = $self->ast;
-    return $self->parser->throw_error("Missing '}'") if $self->ast->{block_stack_top} ne 0;
-    return $self->parser->throw_error("Main not defined") unless defined $self->ast->{Main};
+    return $self->parser->throw_error("Missing '}'") if $ast->{block_stack_top} ne 0;
+    return $self->parser->throw_error("Main not defined") unless defined $ast->{Main};
     # generate main code first so that any addition to functions, macros,
     # variables during generation can be handled after
     my @main_code = $self->_generate_code($ast, 'Main');

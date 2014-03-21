@@ -1024,7 +1024,7 @@ sub op_ASSIGN_variable {
 sub op_NOT {
     my ($self, $var2) = @_;
     return << "...";
-;; generate code for !$var2
+\t;;;; generate code for !$var2
 \tcomf $var2, W
 \tbtfsc STATUS, Z
 \tmovlw 1
@@ -1034,7 +1034,7 @@ sub op_NOT {
 sub op_COMP {
     my ($self, $var2) = @_;
     return << "...";
-;; generate code for ~$var2
+\t;;;; generate code for ~$var2
 \tcomf $var2, W
 ...
 }
