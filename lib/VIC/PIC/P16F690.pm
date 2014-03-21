@@ -25,6 +25,8 @@ has program_counter_size => 13; # PCL and PCLATH<4:0>
 
 has stack_size => 8; # 8-level x 13-bit wide
 
+has register_size => 8; # size of register W
+
 has banks => {
     # general purpose registers
     gpr => [
@@ -435,7 +437,7 @@ has code_config => {
         internal => 0,
     },
     variable => {
-        bits => 8, # bits
+        bits => 8, # bits. same as register_size
     },
 };
 
@@ -1019,6 +1021,14 @@ sub op_ASSIGN_variable {
         carp "Warning: should never reach here: $var1 is $b1 bytes and $var2 is $b2 bytes";
     }
     return $code;
+}
+
+sub op_ASSIGN_w {
+    my ($self, $var) = @_;
+    return unless $var;
+    return << "...";
+\tmovwf $var
+...
 }
 
 sub op_NOT {

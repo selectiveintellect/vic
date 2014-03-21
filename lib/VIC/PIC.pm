@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use bigint;
 use POSIX ();
+use List::Util qw(max);
 
 our $VERSION = '0.04';
 $VERSION = eval $VERSION;
@@ -438,23 +439,93 @@ sub generate_code_unary_expr {
 sub generate_code_operations {
     my ($self, $line) = @_;
     my @code = ();
-    my $ast = $self->ast;
-    my ($tag, $tvar, $op, $var1, $var2) = split /::/, $line;
-    my $method = $self->pic->validate_operator($op);
-    $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
-    push @code, "\t;; $line" if $self->intermediate_inline;
-    if (defined $var2) {
-        push @code, "\t;; $tvar = $var1 $op $var2" if $self->intermediate_inline;
+    my ($tag, @args) = split /::/, $line;
+    my ($op, $var1, $var2);
+    if (scalar @args == 2) {
+        $op = shift @args;
+        $var1 = shift @args;
+        $var1 = uc $var1;
+    } elsif (scalar @args == 3) {
+        $var1 = shift @args;
+        $var1 = uc $var1;
+        $op = shift @args;
+        $var2 = shift @args;
         $var2 = uc $var2;
     } else {
-        push @code, "\t;; $tvar = $op $var1" if $self->intermediate_inline;
+        return $self->parser->throw_error("Error in intermediate code '$line'");
     }
-    $var1 = uc $var1;
+    my $method = $self->pic->validate_operator($op) if defined $op;
+    $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
+    push @code, "\t;; $line" if $self->intermediate_inline;
     my ($code, $funcs, $macros) = $self->pic->$method($var1, $var2);
     return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
     push @code, $code if $code;
     $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
     return @code;
+}
+
+sub find_tmpvar_dependencies {
+    my ($self, $tvar) = @_;
+    my $tcode = $self->ast->{tmp_variables}->{$tvar};
+    my ($tag, @args) = split /::/, $tcode;
+    return unless $tag eq 'OP';
+    my @deps = ();
+    if (scalar @args == 2) {
+        my ($op, $var) = @args;
+        if (exists $self->ast->{tmp_variables}->{$var}) {
+            push @deps, $var;
+            my @rdeps = $self->find_tmpvar_dependencies($var);
+            push @deps, @rdeps if @rdeps;
+        }
+    } elsif (scalar @args == 3) {
+        my ($var1, $op, $var2) = @args;
+        if (exists $self->ast->{tmp_variables}->{$var1}) {
+            push @deps, $var1;
+            my @rdeps = $self->find_tmpvar_dependencies($var1);
+            push @deps, @rdeps if @rdeps;
+        }
+        if (exists $self->ast->{tmp_variables}->{$var2}) {
+            push @deps, $var2;
+            my @rdeps = $self->find_tmpvar_dependencies($var2);
+            push @deps, @rdeps if @rdeps;
+        }
+    } else {
+        return $self->parser->throw_error("Error in intermediate code '$tcode'");
+    }
+    return wantarray ? @deps : \@deps;
+}
+
+sub find_var_dependencies {
+    my ($self, $tvar) = @_;
+    my $tcode = $self->ast->{tmp_variables}->{$tvar};
+    my ($tag, @args) = split /::/, $tcode;
+    return unless $tag eq 'OP';
+    my @deps = ();
+    if (scalar @args == 2) {
+        my ($op, $var) = @args;
+        if (exists $self->ast->{variables}->{$var}) {
+            push @deps, $var;
+        }
+    } elsif (scalar @args == 3) {
+        my ($var1, $op, $var2) = @args;
+        if (exists $self->ast->{variables}->{$var1}) {
+            push @deps, $var1;
+        }
+        if (exists $self->ast->{variables}->{$var2}) {
+            push @deps, $var2;
+        }
+    } else {
+        return $self->parser->throw_error("Error in intermediate code '$tcode'");
+    }
+    return wantarray ? @deps : \@deps;
+}
+
+sub do_i_use_stack {
+    my ($self, @deps) = @_;
+    return 0 unless @deps;
+    my @bits = map { $self->pic->address_bits($_) } @deps;
+    return 0 if max(@bits) == $self->pic->register_size;
+    return 1;
 }
 
 sub generate_code_assign_expr {
@@ -463,27 +534,43 @@ sub generate_code_assign_expr {
     my $ast = $self->ast;
     my ($tag, $op, $varname, $rhs) = split /::/, $line;
     if (exists $ast->{variables}->{$varname}) {
-        my $suffix = '';
-        $suffix = '_literal' if $rhs =~ /^\d+$/;
-        $suffix = '_variable' if exists $ast->{variables}->{$rhs};
         if (exists $ast->{tmp_variables}->{$rhs}) {
             my $tmp_code = $ast->{tmp_variables}->{$rhs};
-            $suffix = '_variable' if exists $ast->{tmp_variables}->{$rhs};
+            my @deps = $self->find_tmpvar_dependencies($rhs);
+            my @vdeps = $self->find_var_dependencies($rhs);
+            push @code, "\t;; TMP_VAR DEPS - $rhs, ". join (',', @deps) if @deps;
+            push @code, "\t;; VAR DEPS - ". join (',', @vdeps) if @vdeps;
             push @code, "\t;; $rhs = $tmp_code\n";
-            #TODO: check if the tmp-var address bits works correctly
-            my @newcode = $self->generate_code($ast, $tmp_code);
-            push @code, @newcode if @newcode;
-            #TODO: how do we move the tmp-var code into the actual var
+            if (scalar @deps) {
+                # TODO: have to use stack or check for it
+            } else {
+                # no tmp-var dependencies
+                my $use_stack = $self->do_i_use_stack(@vdeps);
+                unless ($use_stack) {
+                    my @newcode = $self->generate_code_operations($tmp_code);
+                    push @code, @newcode if @newcode;
+                    my ($code) = $self->pic->op_ASSIGN_w(uc $varname);
+                    return $self->parser->throw_error("Error in intermediate code '$tmp_code'") unless $code;
+                    push @code, "\t;; $line" if $self->intermediate_inline;
+                    push @code, $code if $code;
+                } else {
+                    # TODO: stack
+                }
+            }
+        } else {
+            my $suffix = '';
+            $suffix = '_literal' if $rhs =~ /^\d+$/;
+            $suffix = '_variable' if exists $ast->{variables}->{$rhs};
+            my $method = $self->pic->validate_operator($op);
+            $method .= $suffix if $method;
+            $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
+            my $nvar = $ast->{variables}->{$varname}->{name} || uc $varname;
+            my ($code, $funcs, $macros) = $self->pic->$method($nvar, $rhs);
+            return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
+            push @code, "\t;; $line" if $self->intermediate_inline;
+            push @code, $code if $code;
+            $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
         }
-        my $method = $self->pic->validate_operator($op);
-        $method .= $suffix if $method;
-        $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
-        my $nvar = $ast->{variables}->{$varname}->{name} || uc $varname;
-        my ($code, $funcs, $macros) = $self->pic->$method($nvar, $rhs);
-        return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
-        push @code, "\t;; $line" if $self->intermediate_inline;
-        push @code, $code if $code;
-        $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
     } else {
         return $self->parser->throw_error("Error in intermediate code '$line'");
     }
@@ -539,14 +626,12 @@ sub generate_code {
             push @code, $self->generate_code_unary_expr($line);
         } elsif ($line =~ /^SET::\w+/) {
             push @code, $self->generate_code_assign_expr($line);
-#       } elsif ($line =~ /^OP::\w+/) {
-#            push @code, $self->generate_code_operations($line);
         } elsif ($line =~ /^LABEL::(\w+)/) {
             push @code, ";; $line" if $self->intermediate_inline;
             push @code, "$1:\n"; # label name
         } elsif ($line =~ /^COND::/) {
             push @code, $line;
-            while ($blocks->[0] =~ /^COND\d::/) {
+            while (defined $blocks->[0] and $blocks->[0] =~ /^COND\d+::/) {
                 my $condline = shift @$blocks;
                 push @code, $condline;
             }
@@ -585,6 +670,7 @@ sub final {
     my $isr_checks = '';
     my $isr_code = '';
     my $funcs = '';
+#    YYY $ast->{tmp_variables};
     foreach my $fn (sort(keys %{$ast->{funcs}})) {
         my $fn_val = $ast->{funcs}->{$fn};
         # the default ISR checks to be done first
