@@ -130,22 +130,6 @@ sub got_name {
     }
 }
 
-sub _update_block {
-    my ($self, $code, $funcs, $macros) = @_;
-    my $top = $self->ast->{block_stack_top};
-    $top = $top - 1 if $top > 0;
-    my $block = $self->ast->{block_stack}->[$top];
-    push @{$self->ast->{$block}}, $code if $block;
-    return unless ref $funcs eq 'HASH';
-    foreach (keys %$funcs) {
-        $self->ast->{funcs}->{$_} = $funcs->{$_};
-    }
-    return unless ref $macros eq 'HASH';
-    foreach (keys %$macros) {
-        $self->ast->{macros}->{$_} = $macros->{$_};
-    }
-}
-
 sub update_intermediate {
     my $self = shift;
     my $top = $self->ast->{block_stack_top};
@@ -219,14 +203,14 @@ sub got_conditional {
     $self->ast->{conditionals}++;
     return;
     #TODO: remove
-    my $method = $self->pic->validate_modifier($op);
-    return $self->parser->throw_error("Unknown method '$method'") unless $self->pic->can($method);
-    my $ccount = $self->ast->{conditionals};
-    my ($code, $funcs, $macros) = $self->pic->$method($lhs, $rhs, $predicate, $ccount);
-    $self->parser->throw_error("Unable to generate code for comparison expression"), return unless $code;
-    $self->_update_block($code, $funcs, $macros);
-    $self->ast->{conditionals}++;
-    return;
+    #my $method = $self->pic->validate_modifier($op);
+    #return $self->parser->throw_error("Unknown method '$method'") unless $self->pic->can($method);
+    #my $ccount = $self->ast->{conditionals};
+    #my ($code, $funcs, $macros) = $self->pic->$method($lhs, $rhs, $predicate, $ccount);
+    #$self->parser->throw_error("Unable to generate code for comparison expression"), return unless $code;
+    #$self->_update_block($code, $funcs, $macros);
+    #$self->ast->{conditionals}++;
+    #return;
 }
 
 ##WARNING: do not change this function without looking at its effect on
