@@ -222,11 +222,10 @@ sub got_expr_value {
         if (scalar @$list == 1) {
             return shift @$list;
         } elsif (scalar @$list == 2) {
-            my ($op, $varname) = @$list;
+            my ($op, $var) = @$list;
             my $vref = $self->ast->{tmp_variables};
             my $tvar = '_vic_tmp_' . scalar(keys %$vref);
-            $vref->{$tvar} = "OP::${tvar}::${op}::${varname}";
-            $self->update_intermediate($vref->{$tvar});
+            $vref->{$tvar} = "OP::${op}::${var}";
             return $tvar;
         } else {
             # TODO: handle precedence
@@ -237,8 +236,7 @@ sub got_expr_value {
                 my $var2 = shift @$list;
                 my $vref = $self->ast->{tmp_variables};
                 my $tvar = '_vic_tmp_' . scalar(keys %$vref);
-                $vref->{$tvar} = "OP::${tvar}::${op}::${var1}::${var2}";
-                $self->update_intermediate($vref->{$tvar});
+                $vref->{$tvar} = "OP::${var1}::${op}::${var2}";
                 unshift @$list, $tvar;
             }
 #            YYY $self->ast->{tmp_variables};
@@ -431,14 +429,8 @@ sub generate_code_unary_expr {
         push @code, "\t;; $line" if $self->intermediate_inline;
         push @code, $code if $code;
         $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
-    } elsif (exists $ast->{tmp_variables}->{$varname}) {
-        #TODO: check if the tmp-var address bits works correctly
-        my $tmp_code = $ast->{tmp_variables}->{$varname};
-        my @newcode = $self->generate_code($ast, $tmp_code);
-        push @code, "\t;; $varname = $tmp_code\n" if $self->intermediate_inline;
-        push @code, @newcode if @newcode;
-        push @code, "\t;; $line" if $self->intermediate_inline;
-        #TODO: how do we move the tmp-var code into the actual var
+    } else {
+        return $self->parser->throw_error("Error in intermediate code '$line'");
     }
     return @code;
 }
@@ -492,14 +484,6 @@ sub generate_code_assign_expr {
         push @code, "\t;; $line" if $self->intermediate_inline;
         push @code, $code if $code;
         $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
-    } elsif (exists $ast->{tmp_variables}->{$varname}) {
-        #TODO: check if the tmp-var address bits works correctly
-        my $tmp_code = $ast->{tmp_variables}->{$varname};
-        my @newcode = $self->generate_code($ast, $tmp_code);
-        push @code, "\t;; $varname = $tmp_code\n" if $self->intermediate_inline;
-        push @code, @newcode if @newcode;
-        push @code, "\t;; $line" if $self->intermediate_inline;
-        #TODO: how do we move the tmp-var code into the actual var
     } else {
         return $self->parser->throw_error("Error in intermediate code '$line'");
     }
@@ -530,7 +514,7 @@ sub generate_code_blocks {
     # already have a goto back to itself
     if (defined $parent and exists $ast->{$parent} and
         ref $ast->{$parent} eq 'ARRAY' and $parent ne $block) {
-        my $plabel = $1 if $ast->{$parent}->[0] =~ /^\s*(\w+):/;
+        my ($ptag, $plabel) = split /::/, $ast->{$parent}->[0];
         push @code, "\tgoto $plabel;; $plabel" if $plabel;
     }
     push @code, "\tgoto $label" if $child =~ /^Loop/;
@@ -555,8 +539,8 @@ sub generate_code {
             push @code, $self->generate_code_unary_expr($line);
         } elsif ($line =~ /^SET::\w+/) {
             push @code, $self->generate_code_assign_expr($line);
-        } elsif ($line =~ /^OP::\w+/) {
-            push @code, $self->generate_code_operations($line);
+#       } elsif ($line =~ /^OP::\w+/) {
+#            push @code, $self->generate_code_operations($line);
         } elsif ($line =~ /^LABEL::(\w+)/) {
             push @code, ";; $line" if $self->intermediate_inline;
             push @code, "$1:\n"; # label name
