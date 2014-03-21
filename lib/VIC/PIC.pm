@@ -402,7 +402,7 @@ sub _update_funcs {
     1;
 }
 
-sub _generate_code_instruction {
+sub generate_code_instruction {
     my ($self, $line) = @_;
     my @ins = split /::/, $line;
     shift @ins; # remove INS
@@ -416,7 +416,7 @@ sub _generate_code_instruction {
     return @code;
 }
 
-sub _generate_code_unary_expr {
+sub generate_code_unary_expr {
     my ($self, $line) = @_;
     my @code = ();
     my $ast = $self->ast;
@@ -434,7 +434,7 @@ sub _generate_code_unary_expr {
     } elsif (exists $ast->{tmp_variables}->{$varname}) {
         #TODO: check if the tmp-var address bits works correctly
         my $tmp_code = $ast->{tmp_variables}->{$varname};
-        my @newcode = $self->_generate_code($ast, $tmp_code);
+        my @newcode = $self->generate_code($ast, $tmp_code);
         push @code, "\t;; $varname = $tmp_code\n" if $self->intermediate_inline;
         push @code, @newcode if @newcode;
         push @code, "\t;; $line" if $self->intermediate_inline;
@@ -443,7 +443,7 @@ sub _generate_code_unary_expr {
     return @code;
 }
 
-sub _generate_code_operations {
+sub generate_code_operations {
     my ($self, $line) = @_;
     my @code = ();
     my $ast = $self->ast;
@@ -465,7 +465,7 @@ sub _generate_code_operations {
     return @code;
 }
 
-sub _generate_code_assign_expr {
+sub generate_code_assign_expr {
     my ($self, $line) = @_;
     my @code = ();
     my $ast = $self->ast;
@@ -479,7 +479,7 @@ sub _generate_code_assign_expr {
             $suffix = '_variable' if exists $ast->{tmp_variables}->{$rhs};
             push @code, "\t;; $rhs = $tmp_code\n";
             #TODO: check if the tmp-var address bits works correctly
-            my @newcode = $self->_generate_code($ast, $tmp_code);
+            my @newcode = $self->generate_code($ast, $tmp_code);
             push @code, @newcode if @newcode;
             #TODO: how do we move the tmp-var code into the actual var
         }
@@ -495,7 +495,7 @@ sub _generate_code_assign_expr {
     } elsif (exists $ast->{tmp_variables}->{$varname}) {
         #TODO: check if the tmp-var address bits works correctly
         my $tmp_code = $ast->{tmp_variables}->{$varname};
-        my @newcode = $self->_generate_code($ast, $tmp_code);
+        my @newcode = $self->generate_code($ast, $tmp_code);
         push @code, "\t;; $varname = $tmp_code\n" if $self->intermediate_inline;
         push @code, @newcode if @newcode;
         push @code, "\t;; $line" if $self->intermediate_inline;
@@ -506,7 +506,7 @@ sub _generate_code_assign_expr {
     return @code;
 }
 
-sub _generate_code_blocks {
+sub generate_code_blocks {
     my ($self, $line, $block) = @_;
     my @code = ();
     my $ast = $self->ast;
@@ -515,7 +515,7 @@ sub _generate_code_blocks {
     return if $child eq $block; # bug - FIXME
     return if exists $ast->{generated_blocks}->{$child};
     push @code, "\t;; $line" if $self->intermediate_inline;
-    my @newcode = $self->_generate_code($ast, $child);
+    my @newcode = $self->generate_code($ast, $child);
     if ($child =~ /^Action|True|False|ISR/) {
         push @newcode, "\tgoto $end_label;; go back to end of conditional\n" if @newcode;
         # hack into the function list
@@ -537,7 +537,7 @@ sub _generate_code_blocks {
     return @code;
 }
 
-sub _generate_code {
+sub generate_code {
     my ($self, $ast, $block_name) = @_;
     my @code = ();
     return wantarray ? @code : [] unless defined $ast;
@@ -548,15 +548,15 @@ sub _generate_code {
     while (@$blocks) {
         my $line = shift @$blocks;
         if ($line =~ /^BLOCK::\w+/) {
-            push @code, $self->_generate_code_blocks($line, $block_name);
+            push @code, $self->generate_code_blocks($line, $block_name);
         } elsif ($line =~ /^INS::\w+/) {
-            push @code, $self->_generate_code_instruction($line);
+            push @code, $self->generate_code_instruction($line);
         } elsif ($line =~ /^UNARY::\w+/) {
-            push @code, $self->_generate_code_unary_expr($line);
+            push @code, $self->generate_code_unary_expr($line);
         } elsif ($line =~ /^SET::\w+/) {
-            push @code, $self->_generate_code_assign_expr($line);
+            push @code, $self->generate_code_assign_expr($line);
         } elsif ($line =~ /^OP::\w+/) {
-            push @code, $self->_generate_code_operations($line);
+            push @code, $self->generate_code_operations($line);
         } elsif ($line =~ /^LABEL::(\w+)/) {
             push @code, ";; $line" if $self->intermediate_inline;
             push @code, "$1:\n"; # label name
@@ -581,7 +581,7 @@ sub final {
     return $self->parser->throw_error("Main not defined") unless defined $ast->{Main};
     # generate main code first so that any addition to functions, macros,
     # variables during generation can be handled after
-    my @main_code = $self->_generate_code($ast, 'Main');
+    my @main_code = $self->generate_code($ast, 'Main');
     my $main_code = join("\n", @main_code);
     # variables are part of macros and need to go first
     my $variables = '';
