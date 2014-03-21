@@ -23,6 +23,7 @@ has ast => {
     tmp_variables => {},
     conditionals => 0,
 };
+has intermediate_inline => undef;
 
 sub stack { reverse @{shift->parser->stack}; }
 
@@ -169,11 +170,6 @@ sub got_instruction {
     }
     $self->update_intermediate("INS::${method}::" . join ("::", @args));
     return;
-    #TODO: remove
-    my ($code, $funcs, $macros) = $self->pic->$method(@args);
-    return $self->parser->throw_error("Error in statement '$method @args'") unless $code;
-    $self->_update_block($code, $funcs, $macros);
-    return;
 }
 
 sub got_unary_expr {
@@ -181,15 +177,7 @@ sub got_unary_expr {
     $self->flatten($list);
     my $op = shift @$list;
     my $varname = shift @$list;
-    $self->update_intermediate("OP::${op}::${varname}");
-    return;
-    #TODO: remove
-    my $method = $self->pic->validate_modifier($op);
-    return $self->parser->throw_error("Unknown instruction '$method'") unless $self->pic->can($method);
-    my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
-    my $code = $self->pic->$method($nvar);
-    return $self->parser->throw_error("Invalid expression '$varname $op'") unless $code;
-    $self->_update_block($code);
+    $self->update_intermediate("UNARY::${op}::${varname}");
     return;
 }
 
@@ -198,23 +186,9 @@ sub got_assign_expr {
     $self->flatten($list);
     my $varname = shift @$list;
     my $op = shift @$list;
-    my $rhs = shift @$list;
-    my $suffix = 'expression';
-    $suffix = 'literal' if $rhs =~ /^\d+$/;
-    $suffix = 'variable' if exists $self->ast->{variables}->{$rhs};
-    $suffix = 'variable' if exists $self->ast->{tmp_variables}->{$rhs};
-    my $method = $self->pic->validate_modifier($op, $suffix);
-    YYY $varname, $op, $rhs if $suffix eq 'expression';
-    $self->parser->throw_error("$method is not supported") if $suffix eq 'expression';
-    $self->update_intermediate("OP::${op}::${varname}::${rhs}");
-    return;
-    #TODO: remove and test if $list has more elements
-    return $self->parser->throw_error("Operator '$op' not supported") unless $method;
-    return $self->parser->throw_error("Unknown method '$method'") unless $self->pic->can($method);
-    my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
-    my $code = $self->pic->$method($nvar, $rhs, @$list);
-    return $self->parser->throw_error("Invalid expression '$varname $op $rhs'") unless $code;
-    $self->_update_block($code);
+    my $rhsx = $self->got_expr_value($list);
+    my $rhs = ref $rhsx eq 'ARRAY' ? join ("::", @$rhsx) : $rhsx;
+    $self->update_intermediate("SET::${op}::${varname}::${rhs}");
     return;
 }
 
@@ -227,7 +201,7 @@ sub got_conditional {
     #TODO: handle complex-conditionals using temp vars
     $self->flatten($subject);
     my ($lhs, $op, $rhs) = @$subject;
-    $self->update_intermediate("OP::${op}::${lhs}::${rhs}");
+    $self->update_intermediate("COND1::${op}::${lhs}::${rhs}");
     if (ref $predicate ne 'ARRAY') {
         $predicate = [ $predicate ];
     }
@@ -238,7 +212,7 @@ sub got_conditional {
         $true_label = $1 if $p =~ /LABEL::(\w+)::True/;
         $end_label = $1 if $p =~ /LABEL::.*::(_end_conditional\w+)$/;
     }
-    $self->update_intermediate("COND::FALSE::${false_label}::TRUE::${true_label}::END::${end_label}");
+    $self->update_intermediate("COND2::FALSE::${false_label}::TRUE::${true_label}::END::${end_label}");
     $self->ast->{conditionals}++;
     return;
     #TODO: remove
@@ -252,6 +226,8 @@ sub got_conditional {
     return;
 }
 
+##WARNING: do not change this function without looking at its effect on
+#got_assign_expr() above which calls this function explicitly
 sub got_expr_value {
     my ($self, $list) = @_;
     if (ref $list eq 'ARRAY') {
@@ -420,8 +396,24 @@ sub got_number_units {
 # remove the dumb stuff from the tree
 sub got_comment { return; }
 
+sub _update_funcs {
+    my ($self, $funcs, $macros) = @_;
+    if (ref $funcs eq 'HASH') {
+        foreach (keys %$funcs) {
+            $self->ast->{funcs}->{$_} = $funcs->{$_};
+        }
+    }
+    if (ref $macros eq 'HASH') {
+        return unless ref $macros eq 'HASH';
+        foreach (keys %$macros) {
+            $self->ast->{macros}->{$_} = $macros->{$_};
+        }
+    }
+    1;
+}
+
 sub _generate_code {
-    my ($ast, $block) = @_;
+    my ($self, $ast, $block) = @_;
     my @code = ();
     return wantarray ? @code : [] unless defined $ast;
     return wantarray ? @code : [] unless exists $ast->{$block};
@@ -433,7 +425,8 @@ sub _generate_code {
             next if $child eq $parent; # bug - FIXME
             next if $child eq $block; # bug - FIXME
             next if exists $ast->{generated_blocks}->{$child};
-            my @newcode = _generate_code($ast, $child);
+            push @code, "\t;; $line" if $self->intermediate_inline;
+            my @newcode = $self->_generate_code($ast, $child);
             if ($child =~ /^Action|True|False|ISR/) {
                 push @newcode, "\tgoto $end_label;; go back to end of conditional\n" if @newcode;
                 # hack into the function list
@@ -452,6 +445,73 @@ sub _generate_code {
                 push @code, "\tgoto $plabel;; $plabel" if $plabel;
             }
             push @code, "\tgoto $label" if $child =~ /^Loop/;
+        } elsif ($line =~ /^INS::\w+/) {
+            my @ins = split /::/, $line;
+            shift @ins; # remove INS
+            my $method = shift @ins;
+            my ($code, $funcs, $macros) = $self->pic->$method(@ins);
+            return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
+            push @code, "\t;; $line" if $self->intermediate_inline;
+            push @code, $code if $code;
+            $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
+            ##TODO: handle labels and actions here
+        } elsif ($line =~ /^UNARY::\w+/) {
+            my ($tag, $op, $varname) = split /::/, $line;
+            my $method = $self->pic->validate_operator($op);
+            $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
+            # check if temporary variable or not
+            if (exists $self->ast->{variables}->{$varname}) {
+                my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
+                my ($code, $funcs, $macros) = $self->pic->$method($nvar);
+                return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
+                push @code, "\t;; $line" if $self->intermediate_inline;
+                push @code, $code if $code;
+                $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
+            } elsif (exists $self->ast->{tmp_variables}->{$varname}) {
+                #TODO: check if the tmp-var address bits works correctly
+                my $tmp_code = $self->ast->{tmp_variables}->{$varname};
+                my @newcode = $self->_generate_code($ast, $tmp_code);
+                push @code, "\t;; $tmp_code" if $self->intermediate_inline;
+                push @code, @newcode if @newcode;
+                push @code, "\t;; $line" if $self->intermediate_inline;
+                #TODO: how do we move the tmp-var code into the actual var
+            }
+        } elsif ($line =~ /^SET::\w+/) {
+            my ($tag, $op, $varname, $rhs) = split /::/, $line;
+            if (exists $self->ast->{variables}->{$varname}) {
+                my $suffix = '';
+                $suffix = '_literal' if $rhs =~ /^\d+$/;
+                $suffix = '_variable' if exists $self->ast->{variables}->{$rhs};
+                $suffix = '_variable' if exists $self->ast->{tmp_variables}->{$rhs};
+                my $method = $self->pic->validate_operator($op);
+                $method .= $suffix if $method;
+                $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
+                my $nvar = $self->ast->{variables}->{$varname}->{name} || uc $varname;
+                my ($code, $funcs, $macros) = $self->pic->$method($nvar, $rhs);
+                return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
+                push @code, "\t;; $line" if $self->intermediate_inline;
+                push @code, $code if $code;
+                $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
+            } elsif (exists $self->ast->{tmp_variables}->{$varname}) {
+                #TODO: check if the tmp-var address bits works correctly
+                my $tmp_code = $self->ast->{tmp_variables}->{$varname};
+                my @newcode = $self->_generate_code($ast, $tmp_code);
+                push @code, "\t;; $tmp_code" if $self->intermediate_inline;
+                push @code, @newcode if @newcode;
+                push @code, "\t;; $line" if $self->intermediate_inline;
+                #TODO: how do we move the tmp-var code into the actual var
+            }
+        } elsif ($line =~ /^OP::\w+/) {
+            my @ops = split /::/, $line;
+            shift @ops; # remove OP
+            my $op = shift @ops;
+            my $method = $self->pic->validate_operator($op);
+            $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
+            my @tmp_vars = ();
+            foreach (@ops) {
+                push @tmp_vars, $ast->{tmp_variables}->{$_} if exists $ast->{tmp_variables}->{$_};
+            }
+            push @code, @tmp_vars, $line;
         } else {
             push @code, $line;
         }
@@ -466,7 +526,7 @@ sub final {
     return $self->parser->throw_error("Main not defined") unless defined $self->ast->{Main};
     # generate main code first so that any addition to functions, macros,
     # variables during generation can be handled after
-    my @main_code = _generate_code($ast, 'Main');
+    my @main_code = $self->_generate_code($ast, 'Main');
     my $main_code = join("\n", @main_code);
     # variables are part of macros and need to go first
     my $variables = '';

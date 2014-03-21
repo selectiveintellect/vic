@@ -27,12 +27,12 @@ Main {
     $var4 = $var4 / $var2;
     $var3 = $var4 % 5;
     # sqrt is a modifier
-    $var3 = sqrt $var4;
+    #$var3 = sqrt $var4;
     $var5 = $var3;
     --$var7;
     $var7 = $var3;
     --$var5;
-    $var5 = $var1 + (($var3 * ($var4 + $var7)) + $var2);
+    $var5 = ($var1 + (($var3 * ($var4 + $var7) + 5) + $var2));
 }
 ...
 

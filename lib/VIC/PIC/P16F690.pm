@@ -491,6 +491,17 @@ sub validate {
     return 0;
 }
 
+sub validate_operator {
+    my ($self, $mod) = @_;
+    my $vmod = "op_$mod" if $mod =~ /^
+            LE | GE | GT | LT | EQ | NE |
+            ADD | SUB | MUL | DIV | MOD |
+            BXOR | BOR | BAND | AND | OR |
+            ASSIGN | INC | DEC | NOT | COMP
+        /x;
+    return $vmod;
+}
+
 sub validate_modifier {
     my ($self, $mod, $suffix) = @_;
     my $vmod = "op_$mod" if $mod =~ /^
