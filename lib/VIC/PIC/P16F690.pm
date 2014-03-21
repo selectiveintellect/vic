@@ -1049,27 +1049,6 @@ sub op_COMP {
 ...
 }
 
-sub op_ASSIGN_expression {
-    my $self = shift;
-    my $var1 = shift;
-    return unless scalar @_;
-    my @code = ("\tclrw\n");
-    foreach my $expr (@_) {
-        if ($expr =~ /^OP::(\w+)::(\w+)$/) {
-            # this is a unary operation
-            my $op = uc $1;
-            my $var2 = uc $2;
-            my $method = "op_$op";
-            carp "Unable to handle operator '$op'\n" unless $self->can($method);
-            push @code, $self->$method($var2);
-        } else {
-            carp "Unable to handle $expr\n";
-        }
-    }
-    push @code, "\tmovwf $var1\n";
-    return join("\n", @code);
-}
-
 sub op_ADD_ASSIGN_literal {
     my ($self, $var, $val) = @_;
     my $b1 = POSIX::ceil($self->address_bits($var) / 8);
