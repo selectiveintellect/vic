@@ -58,8 +58,9 @@ sub got_block {
     my $parent = shift @$list;
     if (exists $self->ast->{$block} and ref $self->ast->{$block} eq 'ARRAY') {
         my $block_label = $self->ast->{$block}->[0];
-        my $label = $1 if $block_label =~ /^\s*(\w+):/;
-        $block_label = "BLOCK::${label}::$block" if $label;
+        ## this expression is dependent on got_start_block()
+        my ($tag, $label) = split /::/, $block_label;
+        $block_label = "BLOCK::${label}::${block}" if $label;
         ## do not allow the parent to be a label
         if (defined $parent) {
             unless ($parent =~ /BLOCK::/) {
@@ -90,20 +91,20 @@ sub got_start_block {
     $self->ast->{block_stack_top} = scalar @{$self->ast->{block_stack}};
     my $stack = [];
     if ($block eq 'Main') {
-        push @$stack, "_start:\n";
+        push @$stack, "LABEL::_start";
     } elsif ($block =~ /^Loop/) {
-        push @$stack, "_loop_$id:\n";
+        push @$stack, "LABEL::_loop_${id}";
     } elsif ($block =~ /^Action/) {
-        push @$stack, "_action_$id:\n";
+        push @$stack, "LABEL::_action_${id}";
     } elsif ($block =~ /^True/) {
-        push @$stack, "_true_$id:\n";
+        push @$stack, "LABEL::_true_${id}";
     } elsif ($block =~ /^False/) {
-        push @$stack, "_false_$id:\n";
+        push @$stack, "LABEL::_false_${id}";
     } elsif ($block =~ /^ISR/) {
-        push @$stack, "_isr_$id:\n";
+        push @$stack, "LABEL::_isr_${id}";
     } else {
         my $lcb = lc "_$block";
-        push @$stack, "$lcb:\n";
+        push @$stack, "LABEL::$lcb";
     }
     $self->ast->{$block} = $stack;
     return $block;
@@ -164,6 +165,8 @@ sub got_instruction {
         my $a = shift @$list;
         if ($a =~ /BLOCK::(\w+)::Action\w+::.*::(_end_\w+)$/) {
             push @args, "ACTION::$1::END::$2";
+        } elsif ($a =~ /BLOCK::(\w+)::ISR::.*::(_end_\w+)$/) {
+            push @args, "ISR::$1::END::$2";
         } else {
             push @args, $a;
         }
@@ -201,7 +204,7 @@ sub got_conditional {
     #TODO: handle complex-conditionals using temp vars
     $self->flatten($subject);
     my ($lhs, $op, $rhs) = @$subject;
-    $self->update_intermediate("COND1::${op}::${lhs}::${rhs}");
+    $self->update_intermediate("COND::${op}::${lhs}::${rhs}");
     if (ref $predicate ne 'ARRAY') {
         $predicate = [ $predicate ];
     }
@@ -212,7 +215,7 @@ sub got_conditional {
         $true_label = $1 if $p =~ /BLOCK::(\w+)::True/;
         $end_label = $1 if $p =~ /BLOCK::.*::(_end_conditional\w+)$/;
     }
-    $self->update_intermediate("COND2::FALSE::${false_label}::TRUE::${true_label}::END::${end_label}");
+    $self->update_intermediate("COND1::FALSE::${false_label}::TRUE::${true_label}::END::${end_label}");
     $self->ast->{conditionals}++;
     return;
     #TODO: remove
@@ -456,6 +459,28 @@ sub _generate_code_unary_expr {
     return @code;
 }
 
+sub _generate_code_operations {
+    my ($self, $line) = @_;
+    my @code = ();
+    my $ast = $self->ast;
+    my ($tag, $tvar, $op, $var1, $var2) = split /::/, $line;
+    my $method = $self->pic->validate_operator($op);
+    $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
+    push @code, "\t;; $line" if $self->intermediate_inline;
+    if (defined $var2) {
+        push @code, "\t;; $tvar = $var1 $op $var2" if $self->intermediate_inline;
+        $var2 = uc $var2;
+    } else {
+        push @code, "\t;; $tvar = $op $var1" if $self->intermediate_inline;
+    }
+    $var1 = uc $var1;
+    my ($code, $funcs, $macros) = $self->pic->$method($var1, $var2);
+    return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
+    push @code, $code if $code;
+    $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
+    return @code;
+}
+
 sub _generate_code_assign_expr {
     my ($self, $line) = @_;
     my @code = ();
@@ -529,15 +554,17 @@ sub _generate_code_blocks {
 }
 
 sub _generate_code {
-    my ($self, $ast, $block) = @_;
+    my ($self, $ast, $block_name) = @_;
     my @code = ();
     return wantarray ? @code : [] unless defined $ast;
-    return wantarray ? @code : [] unless exists $ast->{$block};
+    return wantarray ? @code : [] unless exists $ast->{$block_name};
     $ast->{generated_blocks} = {} unless defined $ast->{generated_blocks};
-    push @code, ";;;; generated code for $block";
-    foreach my $line (@{$ast->{$block}}) {
+    push @code, ";;;; generated code for $block_name";
+    my $blocks = $ast->{$block_name};
+    while (@$blocks) {
+        my $line = shift @$blocks;
         if ($line =~ /^BLOCK::\w+/) {
-            push @code, $self->_generate_code_blocks($line, $block);
+            push @code, $self->_generate_code_blocks($line, $block_name);
         } elsif ($line =~ /^INS::\w+/) {
             push @code, $self->_generate_code_instruction($line);
         } elsif ($line =~ /^UNARY::\w+/) {
@@ -545,23 +572,19 @@ sub _generate_code {
         } elsif ($line =~ /^SET::\w+/) {
             push @code, $self->_generate_code_assign_expr($line);
         } elsif ($line =~ /^OP::\w+/) {
-            my ($tag, $tvar, $op, $var1, $var2) = split /::/, $line;
-            my $method = $self->pic->validate_operator($op);
-            $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
-            push @code, "\t;; $line" if $self->intermediate_inline;
-            if (defined $var2) {
-                push @code, "\t;; $tvar = $var1 $op $var2" if $self->intermediate_inline;
-                $var2 = uc $var2;
-            } else {
-                push @code, "\t;; $tvar = $op $var1" if $self->intermediate_inline;
-            }
-            $var1 = uc $var1;
-            my ($code, $funcs, $macros) = $self->pic->$method($var1, $var2);
-            return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
-            push @code, $code if $code;
-            $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
-        } else {
+            push @code, $self->_generate_code_operations($line);
+        } elsif ($line =~ /^LABEL::(\w+)/) {
+            push @code, ";; $line" if $self->intermediate_inline;
+            push @code, "$1:\n"; # label name
+        } elsif ($line =~ /^COND::/) {
             push @code, $line;
+            while ($blocks->[0] =~ /^COND\d::/) {
+                my $condline = shift @$blocks;
+                push @code, $condline;
+            }
+        } else {
+            #push @code, $line; # other things
+            $self->parser->throw_error("Intermediate code '$line' cannot be handled");
         }
     }
     return wantarray ? @code : [@code];

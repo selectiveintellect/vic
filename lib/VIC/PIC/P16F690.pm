@@ -1433,7 +1433,7 @@ sub timer_enable {
     my $funcs = {};
     my $macros = {};
     if (%isr) {
-        my $action_label = $isr{ACTION};
+        my $action_label = $isr{ISR};
         my $end_label = $isr{END};
         return unless $action_label;
         return unless $end_label;
