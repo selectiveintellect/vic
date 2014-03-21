@@ -59,10 +59,10 @@ sub got_block {
     if (exists $self->ast->{$block} and ref $self->ast->{$block} eq 'ARRAY') {
         my $block_label = $self->ast->{$block}->[0];
         my $label = $1 if $block_label =~ /^\s*(\w+):/;
-        $block_label = "LABEL::${label}::$block" if $label;
+        $block_label = "BLOCK::${label}::$block" if $label;
         ## do not allow the parent to be a label
         if (defined $parent) {
-            unless ($parent =~ /LABEL::/) {
+            unless ($parent =~ /BLOCK::/) {
                 $block_label .= "::$parent";
                 if (exists $self->ast->{$parent} and
                     ref $self->ast->{$parent} eq 'ARRAY' and
@@ -162,7 +162,7 @@ sub got_instruction {
     my @args = ();
     while (scalar @$list) {
         my $a = shift @$list;
-        if ($a =~ /LABEL::(\w+)::Action\w+::.*::(_end_\w+)$/) {
+        if ($a =~ /BLOCK::(\w+)::Action\w+::.*::(_end_\w+)$/) {
             push @args, "ACTION::$1::END::$2";
         } else {
             push @args, $a;
@@ -208,9 +208,9 @@ sub got_conditional {
     my ($false_label, $true_label, $end_label);
     #TODO: handle if-elsif cases also
     foreach my $p (@$predicate) {
-        $false_label = $1 if $p =~ /LABEL::(\w+)::False/;
-        $true_label = $1 if $p =~ /LABEL::(\w+)::True/;
-        $end_label = $1 if $p =~ /LABEL::.*::(_end_conditional\w+)$/;
+        $false_label = $1 if $p =~ /BLOCK::(\w+)::False/;
+        $true_label = $1 if $p =~ /BLOCK::(\w+)::True/;
+        $end_label = $1 if $p =~ /BLOCK::.*::(_end_conditional\w+)$/;
     }
     $self->update_intermediate("COND2::FALSE::${false_label}::TRUE::${true_label}::END::${end_label}");
     $self->ast->{conditionals}++;
@@ -420,7 +420,7 @@ sub _generate_code {
     $ast->{generated_blocks} = {} unless defined $ast->{generated_blocks};
     push @code, ";;;; generated code for $block";
     foreach my $line (@{$ast->{$block}}) {
-        if ($line =~ /LABEL::([\w\:]+)/) {
+        if ($line =~ /BLOCK::([\w\:]+)/) {
             my ($label, $child, $parent, $parent_label, $end_label) = split/::/, $1;
             next if $child eq $parent; # bug - FIXME
             next if $child eq $block; # bug - FIXME

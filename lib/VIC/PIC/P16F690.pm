@@ -1147,8 +1147,8 @@ sub op_EQ {
     my ($false_label, $true_label);
     if (ref $predicate eq 'ARRAY') {
         foreach my $p (@$predicate) {
-            $false_label = $1 if $p =~ /LABEL::(\w+)::False/;
-            $true_label = $1 if $p =~ /LABEL::(\w+)::True/;
+            $false_label = $1 if $p =~ /BLOCK::(\w+)::False/;
+            $true_label = $1 if $p =~ /BLOCK::(\w+)::True/;
             last if (defined $false_label and defined $true_label);
         }
         if (defined $false_label) {
@@ -1229,12 +1229,9 @@ DEBOUNCECOUNTER db 0x00
 ...
 }
 sub debounce {
-    my ($self, $inp, $action) = @_;
-    my ($end_label, $action_label);
-    if ($action =~ /LABEL::(\w+)::\w+::\w+::\w+::(\w+)/) {
-        $action_label = $1;
-        $end_label = $2;
-    }
+    my ($self, $inp, %action) = @_;
+    my $action_label = $action{ACTION};
+    my $end_label = $action{END};
     return unless $action_label;
     return unless $end_label;
     my ($port, $portbit);
@@ -1406,7 +1403,7 @@ _isr_exit:
 }
 
 sub timer_enable {
-    my ($self, $tmr, $scale, $isr) = @_;
+    my ($self, $tmr, $scale, %isr) = @_;
     unless (exists $self->timer_pins->{$tmr}) {
         carp "$tmr is not a timer.";
         return;
@@ -1431,16 +1428,13 @@ sub timer_enable {
 \tbanksel $tmr
 \tclrf $tmr
 ...
-    $code .= "\n$isr_code\n" if $isr;
+    $code .= "\n$isr_code\n" if %isr;
     $code .= "\n$end_code\n";
     my $funcs = {};
     my $macros = {};
-    if ($isr) {
-        my ($end_label, $action_label);
-        if ($isr =~ /LABEL::(\w+)::\w+::\w+::\w+::(\w+)/) {
-            $action_label = $1;
-            $end_label = $2;
-        }
+    if (%isr) {
+        my $action_label = $isr{ACTION};
+        my $end_label = $isr{END};
         return unless $action_label;
         return unless $end_label;
         $funcs->{isr_timer} = << "..."
@@ -1474,20 +1468,15 @@ sub timer_disable {
 }
 
 sub timer {
-    my ($self, $action) = @_;
-    my ($end_label, $action_label);
-    if ($action =~ /LABEL::(\w+)::\w+::\w+::\w+::(\w+)/) {
-        $action_label = $1;
-        $end_label = $2;
-    }
-    return unless $action_label;
-    return unless $end_label;
+    my ($self, %action) = @_;
+    return unless exists $action{ACTION};
+    return unless exists $action{END};
     return << "...";
 \tbtfss INTCON, T0IF
-\tgoto $end_label
+\tgoto $action{END}
 \tbcf INTCON, T0IF
-\tgoto $action_label
-$end_label:
+\tgoto $action{ACTION}
+$action{END}:
 ...
 }
 
