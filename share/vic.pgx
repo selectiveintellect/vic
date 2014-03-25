@@ -25,7 +25,7 @@ statement: comment | instruction | expression | block
 
 block: named-block | conditional-block
 named-block: name anonymous-block
-conditional-block: conditional-subject anonymous-block
+conditional-block: - / while | until / - conditional-subject anonymous-block
 anonymous-block: start-block statement* end-block
 start-block: /- <LCURLY> - <EOL>?/
 end-block: /- <RCURLY> - <EOL>?/
@@ -46,11 +46,9 @@ assign-expr: - variable - assign-operator - rhs-expr line-ending
 
 comparison: expr-value compare-operator expr-value
 single-conditional: comparison | complement
-conditional-predicate-double: - named-block - COMMA - named-block line-ending
-conditional-predicate-single: - named-block line-ending
-conditional-predicate: conditional-predicate-double | conditional-predicate-single
+conditional-predicate: - (anonymous-block) - COMMA? - (anonymous-block | conditional-statement)* -
 conditional-subject: (single-conditional % logic-operator)+
-conditional-statement: conditional-subject - COMMA - conditional-predicate
+conditional-statement: - / if / - conditional-subject - COMMA - conditional-predicate line-ending
 
 complement-operator: /(<TILDE> | <BANG>)/
 unary-operator: /(<PLUS> <PLUS> | <DASH> <DASH>)/

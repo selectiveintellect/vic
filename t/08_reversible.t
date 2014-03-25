@@ -24,9 +24,10 @@ Main {
         debounce RA3, Action {
             $dirxn = !$dirxn;
         };
-        $dirxn == 1, True {
+        if $dirxn == 1, { rol $display, 1; };
+        if $dirxn == 1, {
             rol $display, 1;
-        }, False {
+        }, {
             ror $display, 1;
         };
     }

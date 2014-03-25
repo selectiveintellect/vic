@@ -18,8 +18,8 @@ has pic_override => undef;
 has pic => undef;
 has ast => {
     block_stack => [],
-    block_stack_top => 0,
     block_mapping => {},
+    block_count => 0,
     funcs => {},
     variables => {},
     tmp_variables => {},
@@ -53,11 +53,38 @@ sub got_uc_config {
     return;
 }
 
-sub handle_block {
-    my ($self, $name, $parent) = @_;
-    my $href = $self->ast->{block_mapping}->{$name} || {};
-    my $anon_block = $href->{block};
-    my $expected_label = $href->{label};
+sub handle_named_block {
+    my ($self, $name, $anon_block, $parent) = @_;
+    my $id = $1 if $anon_block =~ /_anonblock(\d+)/;
+    $id = $self->ast->{block_count} unless defined $id;
+    my $expected_label;
+    if ($name eq 'Main') {
+        $expected_label = "_start";
+    } elsif ($name =~ /^Loop/) {
+        $expected_label = "_loop_${id}";
+    } elsif ($name =~ /^Action/) {
+        $expected_label = "_action_${id}";
+    } elsif ($name =~ /^True/) {
+        $expected_label = "_true_${id}";
+    } elsif ($name =~ /^False/) {
+        $expected_label = "_false_${id}";
+    } elsif ($name =~ /^ISR/) {
+        $expected_label = "_isr_${id}";
+    } else {
+        $expected_label = lc "_$name$id";
+    }
+    $name .= $id if $name =~ /^(?:Loop|Action|True|False|ISR)/;
+    $self->ast->{block_mapping}->{$name} = {
+        label => $expected_label,
+        block => $anon_block,
+    };
+    $self->ast->{block_mapping}->{$anon_block} = {
+        label => $expected_label,
+        block => $name,
+    };
+    # make sure the anon-block and named-block refer to the same block
+    $self->ast->{$name} = $self->ast->{$anon_block};
+
     my $stack = $self->ast->{$name} || $self->ast->{$anon_block};
     if (defined $stack and ref $stack eq 'ARRAY') {
         my $block_label = $stack->[0];
@@ -93,46 +120,25 @@ sub got_named_block {
     my ($self, $list) = @_;
     $self->flatten($list) if ref $list eq 'ARRAY';
     my ($name, $anon_block, $parent_block) = @$list;
-    my $id = $1 if $anon_block =~ /_anonblock(\d+)/;
-    $id = $self->ast->{block_stack_top} + 1 unless defined $id;
-    my $block_label;
-    if ($name eq 'Main') {
-        $block_label = "_start";
-    } elsif ($name =~ /^Loop/) {
-        $block_label = "_loop_${id}";
-    } elsif ($name =~ /^Action/) {
-        $block_label = "_action_${id}";
-    } elsif ($name =~ /^True/) {
-        $block_label = "_true_${id}";
-    } elsif ($name =~ /^False/) {
-        $block_label = "_false_${id}";
-    } elsif ($name =~ /^ISR/) {
-        $block_label = "_isr_${id}";
-    } else {
-        $block_label = lc "_$name$id";
-    }
-    $name .= $id if $name =~ /^(?:Loop|Action|True|False|ISR)/;
-    $self->ast->{block_mapping}->{$name} = {
-        label => $block_label,
-        block => $anon_block,
-    };
-    $self->ast->{block_mapping}->{$anon_block} = {
-        label => $block_label,
-        block => $name,
-    };
-    # make sure the anon-block and named-block refer to the same block
-    $self->ast->{$name} = $self->ast->{$anon_block};
-    return $self->handle_block($name, $parent_block);
+    return $self->handle_named_block(@$list);
+}
+
+sub got_anonymous_block {
+    my $self = shift;
+    my $list = shift;
+    $self->flatten($list);
+    # returns anon_block and parent_block
+    return $list;
 }
 
 sub got_start_block {
     my ($self, $list) = @_;
-    my $id = $self->ast->{block_stack_top};
+    my $id = $self->ast->{block_count};
     # we may not know the block name here
     my $block = lc "_anonblock$id";
     push @{$self->ast->{block_stack}}, $block;
-    $self->ast->{block_stack_top} = scalar @{$self->ast->{block_stack}};
     $self->ast->{$block} = [ "LABEL::$block" ];
+    $self->ast->{block_count}++;
     return $block;
 }
 
@@ -140,10 +146,7 @@ sub got_end_block {
     my ($self, $list) = @_;
     # we are not capturing anything here
     my $block = pop @{$self->ast->{block_stack}};
-    $self->ast->{block_stack_top} = scalar @{$self->ast->{block_stack}};
-    my $top = $self->ast->{block_stack_top};
-    return $block if $top eq 0;
-    return $self->ast->{block_stack}->[$top - 1];
+    return $self->ast->{block_stack}->[-1];
 }
 
 sub got_name {
@@ -158,9 +161,7 @@ sub got_name {
 
 sub update_intermediate {
     my $self = shift;
-    my $top = $self->ast->{block_stack_top};
-    $top = $top - 1 if $top > 0;
-    my $block = $self->ast->{block_stack}->[$top];
+    my $block = $self->ast->{block_stack}->[-1];
     push @{$self->ast->{$block}}, @_ if $block;
     return;
 }
@@ -205,16 +206,18 @@ sub got_assign_expr {
     return;
 }
 
+sub got_conditional_subject {
+    my ($self, $list) = @_;
+    #TODO: handle complex-conditionals using temp vars
+    $self->flatten($list) if ref $list eq 'ARRAY';
+    return join("::", 'COND_IF', @$list);
+}
+
 sub got_conditional_statement {
     my ($self, $list) = @_;
     my ($subject, $predicate) = @$list;
-    $self->flatten($predicate);
     return unless scalar @$predicate;
     #YYY $self->stack;
-    #TODO: handle complex-conditionals using temp vars
-    $self->flatten($subject);
-    my ($lhs, $op, $rhs) = @$subject;
-    $self->update_intermediate("COND::${op}::${lhs}::${rhs}");
     if (ref $predicate ne 'ARRAY') {
         $predicate = [ $predicate ];
     }
@@ -225,18 +228,10 @@ sub got_conditional_statement {
         $true_label = $1 if $p =~ /BLOCK::(\w+)::True/;
         $end_label = $1 if $p =~ /BLOCK::.*::(_end_conditional\w+)$/;
     }
+    return;
     $self->update_intermediate("COND1::FALSE::${false_label}::TRUE::${true_label}::END::${end_label}");
     $self->ast->{conditionals}++;
     return;
-    #TODO: remove
-    #my $method = $self->pic->validate_modifier($op);
-    #return $self->parser->throw_error("Unknown method '$method'") unless $self->pic->can($method);
-    #my $ccount = $self->ast->{conditionals};
-    #my ($code, $funcs, $macros) = $self->pic->$method($lhs, $rhs, $predicate, $ccount);
-    #$self->parser->throw_error("Unable to generate code for comparison expression"), return unless $code;
-    #$self->_update_block($code, $funcs, $macros);
-    #$self->ast->{conditionals}++;
-    #return;
 }
 
 ##WARNING: do not change this function without looking at its effect on
@@ -429,7 +424,7 @@ sub _update_funcs {
 sub generate_code_instruction {
     my ($self, $line) = @_;
     my @ins = split /::/, $line;
-    shift @ins; # remove INS
+    my $tag = shift @ins;
     my $method = shift @ins;
     my ($code, $funcs, $macros) = $self->pic->$method(@ins);
     return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
@@ -671,7 +666,7 @@ sub generate_code {
 sub final {
     my ($self, $got) = @_;
     my $ast = $self->ast;
-    return $self->parser->throw_error("Missing '}'") if $ast->{block_stack_top} ne 0;
+    return $self->parser->throw_error("Missing '}'") if scalar @{$ast->{block_stack}};
     return $self->parser->throw_error("Main not defined") unless defined $ast->{Main};
     # generate main code first so that any addition to functions, macros,
     # variables during generation can be handled after

@@ -139,6 +139,15 @@ sub make_tree {
     'conditional_block' => {
       '.all' => [
         {
+          '.ref' => '_'
+        },
+        {
+          '.rgx' => qr/\Gwhile|until/
+        },
+        {
+          '.ref' => '_'
+        },
+        {
           '.ref' => 'conditional_subject'
         },
         {
@@ -147,55 +156,50 @@ sub make_tree {
       ]
     },
     'conditional_predicate' => {
-      '.any' => [
-        {
-          '.ref' => 'conditional_predicate_double'
-        },
-        {
-          '.ref' => 'conditional_predicate_single'
-        }
-      ]
-    },
-    'conditional_predicate_double' => {
       '.all' => [
         {
           '.ref' => '_'
         },
         {
-          '.ref' => 'named_block'
+          '.ref' => 'anonymous_block'
         },
         {
           '.ref' => '_'
         },
         {
+          '+max' => 1,
           '.ref' => 'COMMA'
         },
         {
           '.ref' => '_'
         },
         {
-          '.ref' => 'named_block'
+          '+min' => 0,
+          '.any' => [
+            {
+              '.ref' => 'anonymous_block'
+            },
+            {
+              '.ref' => 'conditional_statement'
+            }
+          ]
         },
-        {
-          '.ref' => 'line_ending'
-        }
-      ]
-    },
-    'conditional_predicate_single' => {
-      '.all' => [
         {
           '.ref' => '_'
-        },
-        {
-          '.ref' => 'named_block'
-        },
-        {
-          '.ref' => 'line_ending'
         }
       ]
     },
     'conditional_statement' => {
       '.all' => [
+        {
+          '.ref' => '_'
+        },
+        {
+          '.rgx' => qr/\Gif/
+        },
+        {
+          '.ref' => '_'
+        },
         {
           '.ref' => 'conditional_subject'
         },
@@ -210,6 +214,9 @@ sub make_tree {
         },
         {
           '.ref' => 'conditional_predicate'
+        },
+        {
+          '.ref' => 'line_ending'
         }
       ]
     },
