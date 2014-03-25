@@ -19,6 +19,7 @@ has pic => undef;
 has ast => {
     block_stack => [],
     block_stack_top => 0,
+    block_mapping => {},
     funcs => {},
     variables => {},
     tmp_variables => {},
@@ -54,22 +55,37 @@ sub got_uc_config {
 
 sub got_block {
     my ($self, $list) = @_;
-    $self->flatten($list);
-    my $block = shift @$list;
-    my $parent = shift @$list;
-    if (exists $self->ast->{$block} and ref $self->ast->{$block} eq 'ARRAY') {
-        my $block_label = $self->ast->{$block}->[0];
-        ## this expression is dependent on got_start_named_block()
-        my ($tag, $label) = split /::/, $block_label;
-        $block_label = "BLOCK::${label}::${block}" if $label;
+    my ($name, $parent);
+    if (ref $list eq 'ARRAY') {
+        $self->flatten($list);
+        $name = shift @$list;
+        $parent = shift @$list;
+    } else {
+        $name = $list;
+        $parent = undef;
+    }
+    my $href = $self->ast->{block_mapping}->{$name} || {};
+    my $anon_block = $href->{block};
+    my $expected_label = $href->{label};
+    my $stack = $self->ast->{$name} || $self->ast->{$anon_block};
+    if (defined $stack and ref $stack eq 'ARRAY') {
+        my $block_label = $stack->[0];
+        ## this expression is dependent on got_start_block()
+        my ($tag, $label, @others) = split /::/, $block_label;
+        $label = $expected_label if $label ne $expected_label;
+        $block_label = "BLOCK::${label}::${name}" if $label;
+        # change the LABEL:: value in the stack for code-generation ease
+        # we want to use the expected label and not the anon one unless it is an
+        # anon-block
+        $stack->[0] = join("::", $tag, $label, @others);
         ## do not allow the parent to be a label
         if (defined $parent) {
             unless ($parent =~ /BLOCK::/) {
                 $block_label .= "::$parent";
                 if (exists $self->ast->{$parent} and
                     ref $self->ast->{$parent} eq 'ARRAY' and
-                    $parent ne $block) {
-                    my $plabel = $1 if $self->ast->{$parent}->[0] =~ /^\s*(\w+):/;
+                    $parent ne $anon_block) {
+                    my ($ptag, $plabel) = split /::/, $self->ast->{$parent}->[0];
                     $block_label .= "::$plabel" if $plabel;
                 }
             }
@@ -82,32 +98,50 @@ sub got_block {
     }
 }
 
-sub got_start_named_block {
+sub got_named_block {
     my ($self, $list) = @_;
-    $self->flatten($list); # we flatten because we only want the name out
-    my $block = shift @$list;
+    $self->flatten($list) if ref $list eq 'ARRAY';
+    my ($name, $anon_block, $parent_block) = @$list;
+    my $id = $1 if $anon_block =~ /_anonblock(\d+)/;
+    $id = $self->ast->{block_stack_top} + 1 unless defined $id;
+    my $block_label;
+    if ($name eq 'Main') {
+        $block_label = "_start";
+    } elsif ($name =~ /^Loop/) {
+        $block_label = "_loop_${id}";
+    } elsif ($name =~ /^Action/) {
+        $block_label = "_action_${id}";
+    } elsif ($name =~ /^True/) {
+        $block_label = "_true_${id}";
+    } elsif ($name =~ /^False/) {
+        $block_label = "_false_${id}";
+    } elsif ($name =~ /^ISR/) {
+        $block_label = "_isr_${id}";
+    } else {
+        $block_label = lc "_$name$id";
+    }
+    $name .= $id if $name =~ /^(?:Loop|Action|True|False|ISR)/;
+    $self->ast->{block_mapping}->{$name} = {
+        label => $block_label,
+        block => $anon_block,
+    };
+    $self->ast->{block_mapping}->{$anon_block} = {
+        label => $block_label,
+        block => $name,
+    };
+    # make sure the anon-block and named-block refer to the same block
+    $self->ast->{$name} = $self->ast->{$anon_block};
+    return [$name, $parent_block];
+}
+
+sub got_start_block {
+    my ($self, $list) = @_;
     my $id = $self->ast->{block_stack_top};
-    $block = "$block$id" if $block =~ /^(?:Loop|Action|True|False)/;
+    # we may not know the block name here
+    my $block = lc "_anonblock$id";
     push @{$self->ast->{block_stack}}, $block;
     $self->ast->{block_stack_top} = scalar @{$self->ast->{block_stack}};
-    my $stack = [];
-    if ($block eq 'Main') {
-        push @$stack, "LABEL::_start";
-    } elsif ($block =~ /^Loop/) {
-        push @$stack, "LABEL::_loop_${id}";
-    } elsif ($block =~ /^Action/) {
-        push @$stack, "LABEL::_action_${id}";
-    } elsif ($block =~ /^True/) {
-        push @$stack, "LABEL::_true_${id}";
-    } elsif ($block =~ /^False/) {
-        push @$stack, "LABEL::_false_${id}";
-    } elsif ($block =~ /^ISR/) {
-        push @$stack, "LABEL::_isr_${id}";
-    } else {
-        my $lcb = lc "_$block";
-        push @$stack, "LABEL::$lcb";
-    }
-    $self->ast->{$block} = $stack;
+    $self->ast->{$block} = [ "LABEL::$block" ];
     return $block;
 }
 
@@ -180,7 +214,7 @@ sub got_assign_expr {
     return;
 }
 
-sub got_conditional {
+sub got_conditional_statement {
     my ($self, $list) = @_;
     my ($subject, $predicate) = @$list;
     $self->flatten($predicate);
@@ -352,7 +386,7 @@ sub got_variable {
     return $varname if $parent eq 'uc_config';
     $self->ast->{variables}->{$varname} = {
         name => uc $varname,
-        scope => $self->ast->{block_stack_top},
+        scope => $self->ast->{block_stack}->[-1],
         size => POSIX::ceil($self->pic->address_bits($varname) / 8),
     } unless exists $self->ast->{variables}->{$varname};
     return $varname;
@@ -581,9 +615,9 @@ sub generate_code_blocks {
     my ($self, $line, $block) = @_;
     my @code = ();
     my $ast = $self->ast;
+    my $mapped_block = $ast->{block_mapping}->{$block}->{block} || $block;
     my ($tag, $label, $child, $parent, $parent_label, $end_label) = split/::/, $line;
-    return if $child eq $parent; # bug - FIXME
-    return if $child eq $block; # bug - FIXME
+    return if ($child eq $block or $child eq $mapped_block or $child eq $parent);
     return if exists $ast->{generated_blocks}->{$child};
     push @code, "\t;; $line" if $self->intermediate_inline;
     my @newcode = $self->generate_code($ast, $child);
@@ -600,7 +634,7 @@ sub generate_code_blocks {
     # the parent construct. if a child is a loop construct it will
     # already have a goto back to itself
     if (defined $parent and exists $ast->{$parent} and
-        ref $ast->{$parent} eq 'ARRAY' and $parent ne $block) {
+        ref $ast->{$parent} eq 'ARRAY' and $parent ne $mapped_block) {
         my ($ptag, $plabel) = split /::/, $ast->{$parent}->[0];
         push @code, "\tgoto $plabel;; $plabel" if $plabel;
     }

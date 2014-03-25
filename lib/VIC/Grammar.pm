@@ -14,7 +14,7 @@ sub make_tree {
   {
     '+grammar' => 'vic',
     '+toprule' => 'program',
-    '+version' => '0.0.6',
+    '+version' => '0.0.7',
     'COMMA' => {
       '.rgx' => qr/\G,/
     },
@@ -29,6 +29,20 @@ sub make_tree {
     },
     '__' => {
       '.rgx' => qr/\G[\ \t]+/
+    },
+    'anonymous_block' => {
+      '.all' => [
+        {
+          '.ref' => 'start_block'
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'statement'
+        },
+        {
+          '.ref' => 'end_block'
+        }
+      ]
     },
     'assign_expr' => {
       '.all' => [
@@ -65,18 +79,7 @@ sub make_tree {
       '.rgx' => qr/\G[\ \t]*\r?\n/
     },
     'block' => {
-      '.all' => [
-        {
-          '.ref' => 'start_named_block'
-        },
-        {
-          '+min' => 0,
-          '.ref' => 'statement'
-        },
-        {
-          '.ref' => 'end_block'
-        }
-      ]
+      '.ref' => 'named_block'
     },
     'block_expr_value' => {
       '.all' => [
@@ -139,25 +142,6 @@ sub make_tree {
     'complement_operator' => {
       '.rgx' => qr/\G(\~|!)/
     },
-    'conditional' => {
-      '.all' => [
-        {
-          '.ref' => 'conditional_subject'
-        },
-        {
-          '.ref' => '_'
-        },
-        {
-          '.ref' => 'COMMA'
-        },
-        {
-          '.ref' => '_'
-        },
-        {
-          '.ref' => 'conditional_predicate'
-        }
-      ]
-    },
     'conditional_predicate' => {
       '.any' => [
         {
@@ -203,6 +187,25 @@ sub make_tree {
         },
         {
           '.ref' => 'line_ending'
+        }
+      ]
+    },
+    'conditional_statement' => {
+      '.all' => [
+        {
+          '.ref' => 'conditional_subject'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'COMMA'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'conditional_predicate'
         }
       ]
     },
@@ -286,7 +289,7 @@ sub make_tree {
           '.ref' => 'unary_expr'
         },
         {
-          '.ref' => 'conditional'
+          '.ref' => 'conditional_statement'
         }
       ]
     },
@@ -348,6 +351,16 @@ sub make_tree {
         },
         {
           '.ref' => '_'
+        }
+      ]
+    },
+    'named_block' => {
+      '.all' => [
+        {
+          '.ref' => 'name'
+        },
+        {
+          '.ref' => 'anonymous_block'
         }
       ]
     },
@@ -415,18 +428,11 @@ sub make_tree {
     'single_quoted_string' => {
       '.rgx' => qr/\G(?:'((?:[^\n\\']|\\'|\\\\)*?)')/
     },
+    'start_block' => {
+      '.rgx' => qr/\G[\ \t]*\{[\ \t]*\r?\n?/
+    },
     'start_expr_block' => {
       '.rgx' => qr/\G[\ \t]*\([\ \t]*/
-    },
-    'start_named_block' => {
-      '.all' => [
-        {
-          '.ref' => 'name'
-        },
-        {
-          '.rgx' => qr/\G[\ \t]*\{[\ \t]*\r?\n?/
-        }
-      ]
     },
     'statement' => {
       '.any' => [
