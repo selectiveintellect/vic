@@ -34,13 +34,13 @@ values: (value % COMMA)*
 value: - (string | number-units | number | variable | block | validated-variable | modifier-variable) -
 
 expression: assign-expr | unary-expr | conditional
-unary-expr: - unary-operator - variable /- <SEMI>? - <EOL>?/
-complement: - complement-operator - variable -
+unary-expr: - unary-operator - variable line-ending
+complement: - complement-operator - rhs-expr -
 block-expr-value: start-expr-block rhs-expr end-expr-block
 expr-value: - (number | variable | number-units |
             complement | modifier-variable | block-expr-value) -
 rhs-expr: (expr-value % rhs-operator)*
-assign-expr: - variable - assign-operator - rhs-expr - line-ending
+assign-expr: - variable - assign-operator - rhs-expr line-ending
 
 comparison: expr-value compare-operator expr-value
 single-conditional: comparison | complement

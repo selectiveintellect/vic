@@ -51,9 +51,6 @@ sub make_tree {
           '.ref' => 'rhs_expr'
         },
         {
-          '.ref' => '_'
-        },
-        {
           '.ref' => 'line_ending'
         }
       ]
@@ -132,7 +129,7 @@ sub make_tree {
           '.ref' => '_'
         },
         {
-          '.ref' => 'variable'
+          '.ref' => 'rhs_expr'
         },
         {
           '.ref' => '_'
@@ -501,7 +498,7 @@ sub make_tree {
           '.ref' => 'variable'
         },
         {
-          '.rgx' => qr/\G[\ \t]*;?[\ \t]*\r?\n?/
+          '.ref' => 'line_ending'
         }
       ]
     },
