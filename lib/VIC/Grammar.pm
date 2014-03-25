@@ -79,7 +79,14 @@ sub make_tree {
       '.rgx' => qr/\G[\ \t]*\r?\n/
     },
     'block' => {
-      '.ref' => 'named_block'
+      '.any' => [
+        {
+          '.ref' => 'named_block'
+        },
+        {
+          '.ref' => 'conditional_block'
+        }
+      ]
     },
     'block_expr_value' => {
       '.all' => [
@@ -141,6 +148,16 @@ sub make_tree {
     },
     'complement_operator' => {
       '.rgx' => qr/\G(\~|!)/
+    },
+    'conditional_block' => {
+      '.all' => [
+        {
+          '.ref' => 'conditional_subject'
+        },
+        {
+          '.ref' => 'anonymous_block'
+        }
+      ]
     },
     'conditional_predicate' => {
       '.any' => [
@@ -210,7 +227,7 @@ sub make_tree {
       ]
     },
     'conditional_subject' => {
-      '+min' => 0,
+      '+min' => 1,
       '.ref' => 'single_conditional',
       '.sep' => {
         '.ref' => 'logic_operator'
@@ -399,7 +416,7 @@ sub make_tree {
       ]
     },
     'rhs_expr' => {
-      '+min' => 0,
+      '+min' => 1,
       '.ref' => 'expr_value',
       '.sep' => {
         '.ref' => 'rhs_operator'

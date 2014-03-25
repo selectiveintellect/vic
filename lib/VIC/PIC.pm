@@ -184,7 +184,7 @@ sub got_instruction {
         my $a = shift @$list;
         if ($a =~ /BLOCK::(\w+)::Action\w+::.*::(_end_\w+)$/) {
             push @args, "ACTION::$1::END::$2";
-        } elsif ($a =~ /BLOCK::(\w+)::ISR::.*::(_end_\w+)$/) {
+        } elsif ($a =~ /BLOCK::(\w+)::ISR\w+::.*::(_end_\w+)$/) {
             push @args, "ISR::$1::END::$2";
         } else {
             push @args, $a;
@@ -621,7 +621,7 @@ sub generate_code_blocks {
     return if exists $ast->{generated_blocks}->{$child};
     push @code, "\t;; $line" if $self->intermediate_inline;
     my @newcode = $self->generate_code($ast, $child);
-    if ($child =~ /^Action|True|False|ISR/) {
+    if ($child =~ /^(?:Action|True|False|ISR)/) {
         push @newcode, "\tgoto $end_label;; go back to end of conditional\n" if @newcode;
         # hack into the function list
         $ast->{funcs}->{$label} = [@newcode] if @newcode;
