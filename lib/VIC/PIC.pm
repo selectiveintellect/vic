@@ -59,7 +59,7 @@ sub got_block {
     my $parent = shift @$list;
     if (exists $self->ast->{$block} and ref $self->ast->{$block} eq 'ARRAY') {
         my $block_label = $self->ast->{$block}->[0];
-        ## this expression is dependent on got_start_block()
+        ## this expression is dependent on got_start_named_block()
         my ($tag, $label) = split /::/, $block_label;
         $block_label = "BLOCK::${label}::${block}" if $label;
         ## do not allow the parent to be a label
@@ -82,7 +82,7 @@ sub got_block {
     }
 }
 
-sub got_start_block {
+sub got_start_named_block {
     my ($self, $list) = @_;
     $self->flatten($list); # we flatten because we only want the name out
     my $block = shift @$list;

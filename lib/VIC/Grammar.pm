@@ -67,7 +67,7 @@ sub make_tree {
     'block' => {
       '.all' => [
         {
-          '.ref' => 'start_block'
+          '.ref' => 'start_named_block'
         },
         {
           '+min' => 0,
@@ -415,7 +415,10 @@ sub make_tree {
     'single_quoted_string' => {
       '.rgx' => qr/\G(?:'((?:[^\n\\']|\\'|\\\\)*?)')/
     },
-    'start_block' => {
+    'start_expr_block' => {
+      '.rgx' => qr/\G[\ \t]*\([\ \t]*/
+    },
+    'start_named_block' => {
       '.all' => [
         {
           '.ref' => 'name'
@@ -424,9 +427,6 @@ sub make_tree {
           '.rgx' => qr/\G[\ \t]*\{[\ \t]*\r?\n?/
         }
       ]
-    },
-    'start_expr_block' => {
-      '.rgx' => qr/\G[\ \t]*\([\ \t]*/
     },
     'statement' => {
       '.any' => [

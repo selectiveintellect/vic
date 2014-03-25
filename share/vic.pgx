@@ -23,8 +23,8 @@ line-ending: /- <SEMI> - <EOL>?/
 
 statement: comment | instruction | expression | block
 
-block: start-block statement* end-block
-start-block: name /- <LCURLY> - <EOL>?/
+block: start-named-block statement* end-block
+start-named-block: name /- <LCURLY> - <EOL>?/
 end-block: /- <RCURLY> - <EOL>?/
 
 instruction: name values line-ending
