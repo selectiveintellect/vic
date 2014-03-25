@@ -88,19 +88,6 @@ sub make_tree {
         }
       ]
     },
-    'block_expr_value' => {
-      '.all' => [
-        {
-          '.ref' => 'start_expr_block'
-        },
-        {
-          '.ref' => 'rhs_expr'
-        },
-        {
-          '.ref' => 'end_expr_block'
-        }
-      ]
-    },
     'comment' => {
       '.any' => [
         {
@@ -175,7 +162,7 @@ sub make_tree {
           '.ref' => '_'
         },
         {
-          '.ref' => 'block'
+          '.ref' => 'named_block'
         },
         {
           '.ref' => '_'
@@ -187,7 +174,7 @@ sub make_tree {
           '.ref' => '_'
         },
         {
-          '.ref' => 'block'
+          '.ref' => 'named_block'
         },
         {
           '.ref' => 'line_ending'
@@ -200,7 +187,7 @@ sub make_tree {
           '.ref' => '_'
         },
         {
-          '.ref' => 'block'
+          '.ref' => 'named_block'
         },
         {
           '.ref' => 'line_ending'
@@ -262,7 +249,7 @@ sub make_tree {
     'end_block' => {
       '.rgx' => qr/\G[\ \t]*\}[\ \t]*\r?\n?/
     },
-    'end_expr_block' => {
+    'end_nested_expr' => {
       '.rgx' => qr/\G[\ \t]*\)[\ \t]*/
     },
     'expr_value' => {
@@ -288,7 +275,7 @@ sub make_tree {
               '.ref' => 'modifier_variable'
             },
             {
-              '.ref' => 'block_expr_value'
+              '.ref' => 'nested_expr_value'
             }
           ]
         },
@@ -381,6 +368,19 @@ sub make_tree {
         }
       ]
     },
+    'nested_expr_value' => {
+      '.all' => [
+        {
+          '.ref' => 'start_nested_expr'
+        },
+        {
+          '.ref' => 'rhs_expr'
+        },
+        {
+          '.ref' => 'end_nested_expr'
+        }
+      ]
+    },
     'number' => {
       '.rgx' => qr/\G(0[xX][0-9a-fA-F]+|[0-9]+)/
     },
@@ -448,7 +448,7 @@ sub make_tree {
     'start_block' => {
       '.rgx' => qr/\G[\ \t]*\{[\ \t]*\r?\n?/
     },
-    'start_expr_block' => {
+    'start_nested_expr' => {
       '.rgx' => qr/\G[\ \t]*\([\ \t]*/
     },
     'statement' => {
@@ -554,7 +554,7 @@ sub make_tree {
               '.ref' => 'variable'
             },
             {
-              '.ref' => 'block'
+              '.ref' => 'named_block'
             },
             {
               '.ref' => 'validated_variable'

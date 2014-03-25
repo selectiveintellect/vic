@@ -34,21 +34,21 @@ instruction: name values line-ending
 
 name: - identifier -
 values: (value % COMMA)*
-value: - (string | number-units | number | variable | block | validated-variable | modifier-variable) -
+value: - (string | number-units | number | variable | named-block | validated-variable | modifier-variable) -
 
 expression: assign-expr | unary-expr | conditional-statement
 unary-expr: - unary-operator - variable line-ending
 complement: - complement-operator - rhs-expr -
-block-expr-value: start-expr-block rhs-expr end-expr-block
+nested-expr-value: start-nested-expr rhs-expr end-nested-expr
 expr-value: - (number | variable | number-units |
-            complement | modifier-variable | block-expr-value) -
+            complement | modifier-variable | nested-expr-value) -
 rhs-expr: (expr-value % rhs-operator)+
 assign-expr: - variable - assign-operator - rhs-expr line-ending
 
 comparison: expr-value compare-operator expr-value
 single-conditional: comparison | complement
-conditional-predicate-double: - block - COMMA - block line-ending
-conditional-predicate-single: - block line-ending
+conditional-predicate-double: - named-block - COMMA - named-block line-ending
+conditional-predicate-single: - named-block line-ending
 conditional-predicate: conditional-predicate-double | conditional-predicate-single
 conditional-subject: (single-conditional % logic-operator)+
 conditional-statement: conditional-subject - COMMA - conditional-predicate
@@ -62,8 +62,8 @@ math-operator: /([<PLUS> <DASH> <STAR> <SLASH> <PERCENT>])/
 bit-operator: /([<PIPE> <CARET> <AMP>])/
 rhs-operator: math-operator | bit-operator
 # parentheses
-start-expr-block: /- <LPAREN> -/
-end-expr-block: /- <RPAREN> -/
+start-nested-expr: /- <LPAREN> -/
+end-nested-expr: /- <RPAREN> -/
 
 string: single-quoted-string | double-quoted-string
 

@@ -53,17 +53,8 @@ sub got_uc_config {
     return;
 }
 
-sub got_block {
-    my ($self, $list) = @_;
-    my ($name, $parent);
-    if (ref $list eq 'ARRAY') {
-        $self->flatten($list);
-        $name = shift @$list;
-        $parent = shift @$list;
-    } else {
-        $name = $list;
-        $parent = undef;
-    }
+sub handle_block {
+    my ($self, $name, $parent) = @_;
     my $href = $self->ast->{block_mapping}->{$name} || {};
     my $anon_block = $href->{block};
     my $expected_label = $href->{label};
@@ -131,7 +122,7 @@ sub got_named_block {
     };
     # make sure the anon-block and named-block refer to the same block
     $self->ast->{$name} = $self->ast->{$anon_block};
-    return [$name, $parent_block];
+    return $self->handle_block($name, $parent_block);
 }
 
 sub got_start_block {
