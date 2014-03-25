@@ -40,8 +40,7 @@ expression: assign-expr | unary-expr | conditional-statement
 unary-expr: - unary-operator - variable line-ending
 complement: - complement-operator - rhs-expr -
 nested-expr-value: start-nested-expr rhs-expr end-nested-expr
-expr-value: - (number | variable | number-units |
-            complement | modifier-variable | nested-expr-value) -
+expr-value: - (number | variable | number-units | complement | modifier-variable | nested-expr-value) -
 rhs-expr: (expr-value % rhs-operator)+
 assign-expr: - variable - assign-operator - rhs-expr line-ending
 
