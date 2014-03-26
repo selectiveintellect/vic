@@ -186,6 +186,12 @@ sub got_instruction {
     return;
 }
 
+sub got_unary_rhs {
+    my ($self, $list) = @_;
+    $self->flatten($list);
+    return [ reverse @$list ];
+}
+
 sub got_unary_expr {
     my ($self, $list) = @_;
     $self->flatten($list);
@@ -206,32 +212,89 @@ sub got_assign_expr {
     return;
 }
 
-sub got_conditional_subject {
-    my ($self, $list) = @_;
-    #TODO: handle complex-conditionals using temp vars
-    $self->flatten($list) if ref $list eq 'ARRAY';
-    return join("::", 'COND_IF', @$list);
-}
-
 sub got_conditional_statement {
     my ($self, $list) = @_;
     my ($subject, $predicate) = @$list;
     return unless scalar @$predicate;
-    #YYY $self->stack;
+    my ($current, $parent) = $self->stack;
+    my $subcond = 0;
+    $subcond = 1 if $parent =~ /^conditional/;
     if (ref $predicate ne 'ARRAY') {
         $predicate = [ $predicate ];
     }
-    my ($false_label, $true_label, $end_label);
-    #TODO: handle if-elsif cases also
-    foreach my $p (@$predicate) {
-        $false_label = $1 if $p =~ /BLOCK::(\w+)::False/;
-        $true_label = $1 if $p =~ /BLOCK::(\w+)::True/;
-        $end_label = $1 if $p =~ /BLOCK::.*::(_end_conditional\w+)$/;
+    my @condblocks = ();
+    if (scalar @$predicate < 3) {
+        my $tb = $predicate->[0] || undef;
+        my $fb = $predicate->[1] || undef;
+        $self->flatten($tb) if $tb;
+        $self->flatten($fb) if $fb;
+        my $true_block = $self->handle_named_block('True', @$tb) if $tb and scalar @$tb;
+        push @condblocks, $true_block if $true_block;
+        my $false_block = $self->handle_named_block('False', @$fb)  if $fb and scalar @$fb;
+        push @condblocks, $false_block if $false_block;
+    } else {
+        return $self->parser->throw_error("Multiple predicate conditionals not implemented");
     }
+    my $inter;
+    if (scalar @condblocks < 3) {
+        my ($false_label, $true_label, $end_label);
+        foreach my $p (@condblocks) {
+            $false_label = $1 if $p =~ /BLOCK::(\w+)::False\d+::/;
+            $true_label = $1 if $p =~ /BLOCK::(\w+)::True\d+::/;
+            $end_label = $1 if $p =~ /BLOCK::.*::(_end_conditional\w+)$/;
+        }
+        $false_label = $end_label unless defined $false_label;
+        $true_label = $end_label unless defined $true_label;
+        my $subj = $subject;
+        $subj = shift @$subject if ref $subject eq 'ARRAY';
+        $inter = join("::", 'COND' => $self->ast->{conditionals},
+                SUBJ => $subj,
+                FALSE => $false_label,
+                TRUE => $true_label,
+                END => $end_label);
+    } else {
+        return $self->parser->throw_error("Multiple predicate conditionals not implemented");
+    }
+    $self->update_intermediate($inter);
+    $self->ast->{conditionals}++ unless $subcond;
     return;
-    $self->update_intermediate("COND1::FALSE::${false_label}::TRUE::${true_label}::END::${end_label}");
-    $self->ast->{conditionals}++;
-    return;
+}
+
+##WARNING: do not change this function without looking at its effect on
+#got_conditional_statement() above which calls this function explicitly
+# this function is identical to got_expr_value() and hence redundant
+# we may need to just use the same one although precedence will be different
+# so maybe not
+sub got_conditional_subject {
+    my ($self, $list) = @_;
+    #TODO: handle complex-conditionals using temp vars
+    if (ref $list eq 'ARRAY') {
+        $self->flatten($list);
+        if (scalar @$list == 1) {
+            return shift @$list;
+        } elsif (scalar @$list == 2) {
+            my ($op, $var) = @$list;
+            my $vref = $self->ast->{tmp_variables};
+            my $tvar = '_vic_tmp_' . scalar(keys %$vref);
+            $vref->{$tvar} = "OP::${op}::${var}";
+            return $tvar;
+        } else {
+            # TODO: handle precedence
+            while (scalar @$list >= 3) {
+                my $var1 = shift @$list;
+                my $op = shift @$list;
+                my $var2 = shift @$list;
+                my $vref = $self->ast->{tmp_variables};
+                my $tvar = '_vic_tmp_' . scalar(keys %$vref);
+                $vref->{$tvar} = "OP::${var1}::${op}::${var2}";
+                $vref->{$tvar} = "OP::${var1}::${op}::${var2}";
+                unshift @$list, $tvar;
+            }
+            return $list;
+        }
+    } else {
+        return $list;
+    }
 }
 
 ##WARNING: do not change this function without looking at its effect on
@@ -628,6 +691,14 @@ sub generate_code_blocks {
     return @code;
 }
 
+sub generate_code_conditionals {
+    my ($self, @condblocks) = @_;
+    if (scalar @condblocks == 1) {
+        my %hh = split /::/, shift @condblocks;
+        #XXX %hh;
+    }
+}
+
 sub generate_code {
     my ($self, $ast, $block_name) = @_;
     my @code = ();
@@ -638,6 +709,7 @@ sub generate_code {
     my $blocks = $ast->{$block_name};
     while (@$blocks) {
         my $line = shift @$blocks;
+        next unless defined $line;
         if ($line =~ /^BLOCK::\w+/) {
             push @code, $self->generate_code_blocks($line, $block_name);
         } elsif ($line =~ /^INS::\w+/) {
@@ -649,14 +721,16 @@ sub generate_code {
         } elsif ($line =~ /^LABEL::(\w+)/) {
             push @code, ";; $line" if $self->intermediate_inline;
             push @code, "$1:\n"; # label name
-        } elsif ($line =~ /^COND::/) {
-            push @code, $line;
-            while (defined $blocks->[0] and $blocks->[0] =~ /^COND\d+::/) {
-                my $condline = shift @$blocks;
-                push @code, $condline;
+        } elsif ($line =~ /^COND::(\d+)/) {
+            my $cblock = $1;
+            my @condblocks = ( $line );
+            for my $i (1 .. scalar @$blocks) {
+                next unless $blocks->[$i - 1] =~ /^COND::$cblock/;
+                push @condblocks, $blocks->[$i - 1];
+                delete $blocks->[$i - 1];
             }
+            push @code, $self->generate_code_conditionals(reverse @condblocks);
         } else {
-            #push @code, $line; # other things
             $self->parser->throw_error("Intermediate code '$line' cannot be handled");
         }
     }

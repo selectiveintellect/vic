@@ -63,9 +63,6 @@ sub make_tree {
         },
         {
           '.ref' => 'rhs_expr'
-        },
-        {
-          '.ref' => 'line_ending'
         }
       ]
     },
@@ -214,9 +211,6 @@ sub make_tree {
         },
         {
           '.ref' => 'conditional_predicate'
-        },
-        {
-          '.ref' => 'line_ending'
         }
       ]
     },
@@ -292,15 +286,22 @@ sub make_tree {
       ]
     },
     'expression' => {
-      '.any' => [
+      '.all' => [
         {
-          '.ref' => 'assign_expr'
+          '.any' => [
+            {
+              '.ref' => 'assign_expr'
+            },
+            {
+              '.ref' => 'unary_expr'
+            },
+            {
+              '.ref' => 'conditional_statement'
+            }
+          ]
         },
         {
-          '.ref' => 'unary_expr'
-        },
-        {
-          '.ref' => 'conditional_statement'
+          '.ref' => 'line_ending'
         }
       ]
     },
@@ -514,6 +515,16 @@ sub make_tree {
       '.rgx' => qr/\GPIC[\ \t]+((?i:P16F690|P16F690X))[\ \t]*;[\ \t]*\r?\n?/
     },
     'unary_expr' => {
+      '.any' => [
+        {
+          '.ref' => 'unary_lhs'
+        },
+        {
+          '.ref' => 'unary_rhs'
+        }
+      ]
+    },
+    'unary_lhs' => {
       '.all' => [
         {
           '.ref' => '_'
@@ -528,12 +539,31 @@ sub make_tree {
           '.ref' => 'variable'
         },
         {
-          '.ref' => 'line_ending'
+          '.ref' => '_'
         }
       ]
     },
     'unary_operator' => {
       '.rgx' => qr/\G(\+\+|\-\-)/
+    },
+    'unary_rhs' => {
+      '.all' => [
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'variable'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'unary_operator'
+        },
+        {
+          '.ref' => '_'
+        }
+      ]
     },
     'units' => {
       '.rgx' => qr/\G(s|ms|us|kHz|Hz|MHz)/

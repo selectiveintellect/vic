@@ -36,19 +36,21 @@ name: - identifier -
 values: (value % COMMA)*
 value: - (string | number-units | number | variable | named-block | validated-variable | modifier-variable) -
 
-expression: assign-expr | unary-expr | conditional-statement
-unary-expr: - unary-operator - variable line-ending
+expression: (assign-expr | unary-expr | conditional-statement) line-ending
+unary-lhs: - unary-operator - variable -
+unary-rhs: - variable - unary-operator -
+unary-expr: unary-lhs | unary-rhs
 complement: - complement-operator - rhs-expr -
 nested-expr-value: start-nested-expr rhs-expr end-nested-expr
 expr-value: - (number | variable | number-units | complement | modifier-variable | nested-expr-value) -
 rhs-expr: (expr-value % rhs-operator)+
-assign-expr: - variable - assign-operator - rhs-expr line-ending
+assign-expr: - variable - assign-operator - rhs-expr
 
 comparison: expr-value compare-operator expr-value
 single-conditional: comparison | complement
 conditional-predicate: - (anonymous-block) - COMMA? - (anonymous-block | conditional-statement)* -
 conditional-subject: (single-conditional % logic-operator)+
-conditional-statement: - / if / - conditional-subject - COMMA - conditional-predicate line-ending
+conditional-statement: - / if / - conditional-subject - COMMA - conditional-predicate
 
 complement-operator: /(<TILDE> | <BANG>)/
 unary-operator: /(<PLUS> <PLUS> | <DASH> <DASH>)/

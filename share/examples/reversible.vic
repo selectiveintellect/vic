@@ -21,6 +21,7 @@ Main {
             $dirxn = !$dirxn;
         };
         if $dirxn == 1, {
+#        if !$dirxn, {
             rol $display, 1;
         }, {
             ror $display, 1;
