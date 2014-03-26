@@ -247,7 +247,8 @@ sub got_conditional_statement {
         $true_label = $end_label unless defined $true_label;
         my $subj = $subject;
         $subj = shift @$subject if ref $subject eq 'ARRAY';
-        $inter = join("::", 'COND' => $self->ast->{conditionals},
+        $inter = join("::",
+                COND => $self->ast->{conditionals},
                 SUBJ => $subj,
                 FALSE => $false_label,
                 TRUE => $true_label,
@@ -721,11 +722,11 @@ sub generate_code {
         } elsif ($line =~ /^LABEL::(\w+)/) {
             push @code, ";; $line" if $self->intermediate_inline;
             push @code, "$1:\n"; # label name
-        } elsif ($line =~ /^COND::(\d+)/) {
+        } elsif ($line =~ /^COND::(\d+)::/) {
             my $cblock = $1;
             my @condblocks = ( $line );
             for my $i (1 .. scalar @$blocks) {
-                next unless $blocks->[$i - 1] =~ /^COND::$cblock/;
+                next unless $blocks->[$i - 1] =~ /^COND::${cblock}::/;
                 push @condblocks, $blocks->[$i - 1];
                 delete $blocks->[$i - 1];
             }
