@@ -1,5 +1,6 @@
 bin/vic
 Build.PL
+doc/Cr8GVrV.jpg
 doc/philosophy.md
 lib/VIC.pm
 lib/VIC/Command.pm
