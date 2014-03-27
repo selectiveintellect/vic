@@ -1130,6 +1130,57 @@ sub op_DEC {
 }
 
 sub op_EQ {
+    my ($self, $lhs, $rhs, %extra) = @_;
+    my $pred = '';
+    $pred .= "\tgoto $extra{FALSE}\n" if defined $extra{FALSE};
+    $pred .= "\tgoto $extra{TRUE}\n" if defined $extra{TRUE};
+    $pred .= "$extra{END}:\n" if defined $extra{END};
+    if ($lhs !~ /^\d+$/ and $rhs !~ /^\d+$/) {
+        # lhs and rhs are variables
+        $rhs = uc $rhs;
+        $lhs = uc $lhs;
+        return << "...";
+\tbcf STATUS, C
+\tmovf $rhs, W
+\txorwf $lhs, W
+\tbtfss STATUS, Z ;; they are equal
+$pred
+...
+    } elsif ($rhs !~ /^\d+$/ and $lhs =~ /^\d+$/) {
+        # rhs is variable and lhs is a literal
+        $rhs = uc $rhs;
+        return << "...";
+\tmovf $rhs, W
+\txorlw $lhs
+\tbtfss STATUS, Z ;; $rhs == $lhs ?
+$pred
+...
+    } elsif ($rhs =~ /^\d+$/ and $lhs !~ /^\d+$/) {
+        # rhs is a literal and lhs is a variable
+        $lhs = uc $lhs;
+        return << "...";
+\tmovf $lhs, W
+\txorlw $rhs
+\tbtfss STATUS, Z ;; $lhs == $rhs ?
+$pred
+...
+    } else {
+        # both rhs and lhs are literals
+        if ($lhs == $rhs) {
+            return << "...";
+\tgoto $extra{TRUE}
+$extra{END}:
+...
+        } else {
+            return << "...";
+\tgoto $extra{FALSE}
+$extra{END}:
+...
+        }
+    }
+}
+
+sub op_EQ_old {
     my ($self, $lhs, $rhs, $predicate, $ccount) = @_;
     my $pred = '';
     my $end_label = "_end_conditional_$ccount";

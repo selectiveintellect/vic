@@ -47,7 +47,7 @@ rhs-expr: (expr-value % rhs-operator)+
 assign-expr: - variable - assign-operator - rhs-expr
 
 comparison: expr-value compare-operator expr-value
-single-conditional: comparison | complement
+single-conditional: comparison | complement | boolean
 conditional-predicate: - (anonymous-block) - COMMA? - (anonymous-block | conditional-statement)* -
 conditional-subject: (single-conditional % logic-operator)+
 conditional-statement: - / if / - conditional-subject - COMMA - conditional-predicate
@@ -71,6 +71,7 @@ number-units: number - units
 # number handles both hex and non-hex values for ease of use
 number: /(0[xX]<HEX>+ | <DIGIT>+)/
 units: /(s | ms | us | kHz | Hz | MHz)/
+boolean: /( TRUE | FALSE | true | false | 0 | 1)/
 
 validated-variable: identifier
 modifier-variable: identifier -  variable

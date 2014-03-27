@@ -85,6 +85,9 @@ sub make_tree {
         }
       ]
     },
+    'boolean' => {
+      '.rgx' => qr/\G(TRUE|FALSE|true|false|0|1)/
+    },
     'comment' => {
       '.any' => [
         {
@@ -447,6 +450,9 @@ sub make_tree {
         },
         {
           '.ref' => 'complement'
+        },
+        {
+          '.ref' => 'boolean'
         }
       ]
     },

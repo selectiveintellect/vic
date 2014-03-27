@@ -420,7 +420,7 @@ sub got_validated_variable {
         $varname = $list;
     }
     return $varname if $self->pic->validate($varname);
-    return $self->parser->throw_error("'$varname' is not a valid part of the " . uc $self->pic->type);
+    #return $self->parser->throw_error("'$varname' is not a valid part of the " . uc $self->pic->type);
     return;
 }
 
@@ -440,6 +440,21 @@ sub got_variable {
         size => POSIX::ceil($self->pic->address_bits($varname) / 8),
     } unless exists $self->ast->{variables}->{$varname};
     return $varname;
+}
+
+sub got_boolean {
+    my ($self, $list) = @_;
+    my $b;
+    if (ref $list eq 'ARRAY') {
+        $self->flatten($list);
+        $b = shift @$list;
+    } else {
+        $b = $list;
+    }
+    return 1 if $b =~ /TRUE|true/i;
+    return 1 if $b == 1;
+    return 0 if $b =~ /FALSE|false/i;
+    return 0; # default boolean is false
 }
 
 sub got_number {
@@ -521,7 +536,7 @@ sub generate_code_unary_expr {
 }
 
 sub generate_code_operations {
-    my ($self, $line) = @_;
+    my ($self, $line, %extra) = @_;
     my @code = ();
     my ($tag, @args) = split /::/, $line;
     my ($op, $var1, $var2);
@@ -541,7 +556,7 @@ sub generate_code_operations {
     my $method = $self->pic->validate_operator($op) if defined $op;
     $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
     push @code, "\t;; $line" if $self->intermediate_inline;
-    my ($code, $funcs, $macros) = $self->pic->$method($var1, $var2);
+    my ($code, $funcs, $macros) = $self->pic->$method($var1, $var2, %extra);
     return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
     push @code, $code if $code;
     $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
@@ -694,10 +709,42 @@ sub generate_code_blocks {
 
 sub generate_code_conditionals {
     my ($self, @condblocks) = @_;
+    my @code = ();
     if (scalar @condblocks == 1) {
-        my %hh = split /::/, shift @condblocks;
-        #XXX %hh;
+        my $line = shift @condblocks;
+        my %hh = split /::/, $line;
+        my $ast = $self->ast;
+        my $subj = $hh{SUBJ};
+        if ($subj =~ /^\d+?$/) { # if subject is a literal
+            push @code, "\t;; $line" if $self->intermediate_inline;
+        } elsif (exists $ast->{variables}->{$subj}) {
+
+        } elsif (exists $ast->{tmp_variables}->{$subj}) {
+            my $tmp_code = $ast->{tmp_variables}->{$subj};
+            my @deps = $self->find_tmpvar_dependencies($subj);
+            my @vdeps = $self->find_var_dependencies($subj);
+            push @code, "\t;; TMP_VAR DEPS - $subj, ". join (',', @deps) if @deps;
+            push @code, "\t;; VAR DEPS - ". join (',', @vdeps) if @vdeps;
+            push @code, "\t;; $subj = $tmp_code\n";
+            if (scalar @deps) {
+                # TODO: have to use stack or check for it
+            } else {
+                # no tmp-var dependencies
+                my $use_stack = $self->do_i_use_stack(@vdeps);
+                unless ($use_stack) {
+                    my @newcode = $self->generate_code_operations($tmp_code, %hh);
+                    push @code, @newcode if @newcode;
+                    return $self->parser->throw_error("Error in intermediate code '$tmp_code'")
+                        unless @newcode;
+                } else {
+                    # TODO: stack
+                }
+            }
+        } else {
+            return $self->parser->throw_error("Error in intermediate code '$line'");
+        }
     }
+    return @code;
 }
 
 sub generate_code {
