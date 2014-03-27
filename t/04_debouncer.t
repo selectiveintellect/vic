@@ -13,7 +13,7 @@ Main {
     $display = 0;
     Loop {
         debounce RA3, Action {
-            $display++;
+            ++$display;
             write PORTC, $display;
         };
     }

@@ -24,9 +24,9 @@ Main {
         debounce RA3, Action {
             $dirxn = !$dirxn;
         };
-        $dirxn == 1, True {
+        if $dirxn == 1, {
             rol $display, 1;
-        }, False {
+        }, {
             ror $display, 1;
         };
     }
@@ -207,8 +207,8 @@ _end_action_2:
 	movf DIRXN, W
 	xorlw 1
 	btfss STATUS, Z ;; DIRXN == 1 ?
-	goto _false_2
-	goto _true_2
+	goto _false_4
+	goto _true_3
 _end_conditional_0:
 
 
@@ -218,7 +218,7 @@ _end_conditional_0:
 ;;;; generated code for Action2
 _action_2:
 
-	clrw
+	;clrw -- leftover from old code generator
 
 ;; generate code for !DIRXN
 	comf DIRXN, W
@@ -238,7 +238,7 @@ _delay_wms:
 	return
 
 ;;;; generated code for False2
-_false_2:
+_false_4:
 
 	bcf STATUS, C
 	rrf DISPLAY, 1
@@ -248,7 +248,7 @@ _false_2:
 	goto _end_conditional_0;; go back to end of conditional
 
 ;;;; generated code for True2
-_true_2:
+_true_3:
 
 	bcf STATUS, C
 	rlf DISPLAY, 1

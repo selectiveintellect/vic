@@ -25,9 +25,9 @@ Main {
         debounce RA3, Action {
             $dirxn = !$dirxn;
         };
-        $dirxn == 1, True {
+        if $dirxn == 1, {
             rol $display, 1;
-        }, False { 
+        }, {
             ror $display, 1;
         };
     }
@@ -218,7 +218,7 @@ _start:
 
 
 ;;;; generated code for Loop1
-_loop_1:
+_loop_2:
 
 	;; moves DISPLAY to PORTC
 	movf  DISPLAY, W
@@ -254,32 +254,32 @@ _debounce_state_check:
 	xorlw   2
 	;; is counter == 2 ?
 	btfss   STATUS, Z
-	goto    _end_action_2
+	goto    _end_action_3
 	;; after 2 straight, flip direction
 	comf    DEBOUNCESTATE, 1
 	clrf    DEBOUNCECOUNTER
 	;; was it a key-down
 	btfss   DEBOUNCESTATE, 0
-	goto    _end_action_2
-	goto    _action_2
-_end_action_2:
+	goto    _end_action_3
+	goto    _action_3
+_end_action_3:
 
 
 	movf DIRXN, W
 	xorlw 1
 	btfss STATUS, Z ;; DIRXN == 1 ?
-	goto _false_2
-	goto _true_2
+	goto _false_5
+	goto _true_4
 _end_conditional_0:
 
 
-	goto _loop_1
+	goto _loop_2
 
 ;;;; generated code for functions
 ;;;; generated code for Action2
-_action_2:
+_action_3:
 
-	clrw
+	;; clrw -- leftover from old code
 
 ;; generate code for !DIRXN
 	comf DIRXN, W
@@ -288,7 +288,7 @@ _action_2:
 
 	movwf DIRXN
 
-	goto _end_action_2;; go back to end of conditional
+	goto _end_action_3;; go back to end of conditional
 
 _delay_1ms:
 	m_delay_ms D'1'
@@ -299,7 +299,7 @@ _delay_wms:
 	return
 
 ;;;; generated code for False2
-_false_2:
+_false_5:
 
 	bcf STATUS, C
 	rrf DISPLAY, 1
@@ -309,7 +309,7 @@ _false_2:
 	goto _end_conditional_0;; go back to end of conditional
 
 ;;;; generated code for True2
-_true_2:
+_true_4:
 
 	bcf STATUS, C
 	rlf DISPLAY, 1

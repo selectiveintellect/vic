@@ -1,3 +1,7 @@
+use lib 'ext/pegex-pm/lib';
+use t::TestVIC skip_all => 'incomplete implementation';#tests => 0, debug => 0;
+
+my $input = <<'...';
 PIC P16F690;
 
 config variable bits = 16;
@@ -23,18 +27,17 @@ Main {
     $var4 = $var4 / $var2;
     $var3 = $var4 % 5;
     # sqrt is a modifier
-#    $var3 = sqrt $var4;
+    #$var3 = sqrt $var4;
     $var5 = $var3;
     --$var7;
     $var7 = $var3;
     --$var5;
     $var5 = ($var1 + (($var3 * ($var4 + $var7) + 5) + $var2));
-    $var6 = $var5 + !$var3;
-    if $var6 == 1, {
-        $var6++;
-    }, if $var6 == 2, {
-        ++$var6;
-    }, {
-        $var6 = 0;
-    };
 }
+...
+
+my $output = << '...';
+...
+
+#compiles_ok($input, $output);
+compile_fails_ok($input);

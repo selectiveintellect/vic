@@ -41,4 +41,5 @@ t/06_fail_instruction.t
 t/07_timer.t
 t/08_reversible.t
 t/09_interrupt.t
+t/10_math.t
 t/TestVIC.pm

@@ -25,6 +25,8 @@ has program_counter_size => 13; # PCL and PCLATH<4:0>
 
 has stack_size => 8; # 8-level x 13-bit wide
 
+has register_size => 8; # size of register W
+
 has banks => {
     # general purpose registers
     gpr => [
@@ -435,7 +437,7 @@ has code_config => {
         internal => 0,
     },
     variable => {
-        bits => 8, # bits
+        bits => 8, # bits. same as register_size
     },
 };
 
@@ -491,6 +493,30 @@ sub validate {
     return 0;
 }
 
+sub validate_operator {
+    my ($self, $mod) = @_;
+    my $vmod = "op_$mod" if $mod =~ /^
+            LE | GE | GT | LT | EQ | NE |
+            ADD | SUB | MUL | DIV | MOD |
+            BXOR | BOR | BAND | AND | OR |
+            ASSIGN | INC | DEC | NOT | COMP
+        /x;
+    return $vmod;
+}
+
+sub validate_modifier {
+    my ($self, $mod, $suffix) = @_;
+    my $vmod = "op_$mod" if $mod =~ /^
+            LE | GE | GT | LT | EQ | NE |
+            ADD | SUB | MUL | DIV | MOD |
+            BXOR | BOR | BAND | AND | OR |
+            ASSIGN | INC | DEC | NOT | COMP
+        /x;
+    $vmod = uc $mod unless defined $vmod;
+    $vmod .= "_$suffix" if defined $suffix;
+    return $vmod;
+}
+
 sub digital_output {
     my ($self, $outp) = @_;
     return unless defined $outp;
@@ -530,8 +556,8 @@ sub write {
 \tcomf PORT$port, 1
 ...
         }
-        return $self->assign_literal("PORT$port", $val) if ($val =~ /^\d+$/);
-        return $self->assign_variable("PORT$port", uc $val);
+        return $self->op_ASSIGN_literal("PORT$port", $val) if ($val =~ /^\d+$/);
+        return $self->op_ASSIGN_variable("PORT$port", uc $val);
     } elsif (exists $self->pins->{$outp}) {
         my ($port, $portbit) = @{$self->pins->{$outp}};
         if ($val =~ /^\d+$/) {
@@ -539,11 +565,11 @@ sub write {
             return "\tbsf PORT$port, $portbit\n" if "$val" eq '1';
             carp "$val cannot be applied to a pin $outp";
         }
-        return $self->assign_variable("PORT$port", uc $val);
+        return $self->op_ASSIGN_variable("PORT$port", uc $val);
     } elsif ($self->validate($outp)) {
         my $code = "\tbanksel $outp\n";
-        $code .= ($val =~ /^\d+$/) ? $self->assign_literal($outp, $val) :
-                                    $self->assign_variable($outp, uc $val);
+        $code .= ($val =~ /^\d+$/) ? $self->op_ASSIGN_literal($outp, $val) :
+                                    $self->op_ASSIGN_variable($outp, uc $val);
         return $code;
     } else {
         carp "Cannot find $outp in the list of ports or pins";
@@ -922,7 +948,7 @@ sub ror {
     return $code;
 }
 
-sub assign_literal {
+sub op_ASSIGN_literal {
     my ($self, $var, $val) = @_;
     my $bits = $self->address_bits($var);
     my $bytes = POSIX::ceil($bits / 8);
@@ -956,7 +982,7 @@ sub assign_literal {
     return $code;
 }
 
-sub assign_variable {
+sub op_ASSIGN_variable {
     my ($self, $var1, $var2) = @_;
     my $b1 = POSIX::ceil($self->address_bits($var1) / 8);
     my $b2 = POSIX::ceil($self->address_bits($var2) / 8);
@@ -997,46 +1023,33 @@ sub assign_variable {
     return $code;
 }
 
-sub get_not_code {
+sub op_ASSIGN_w {
+    my ($self, $var) = @_;
+    return unless $var;
+    return << "...";
+\tmovwf $var
+...
+}
+
+sub op_NOT {
     my ($self, $var2) = @_;
     return << "...";
-;; generate code for !$var2
+\t;;;; generate code for !$var2
 \tcomf $var2, W
 \tbtfsc STATUS, Z
 \tmovlw 1
 ...
 }
 
-sub get_comp_code {
+sub op_COMP {
     my ($self, $var2) = @_;
     return << "...";
-;; generate code for ~$var2
+\t;;;; generate code for ~$var2
 \tcomf $var2, W
 ...
 }
 
-sub assign_expression {
-    my $self = shift;
-    my $var1 = shift;
-    return unless scalar @_;
-    my @code = ("\tclrw\n");
-    foreach my $expr (@_) {
-        if ($expr =~ /^OP::(\w+)::(\w+)$/) {
-            # this is a unary operation
-            my $op = lc $1;
-            my $var2 = uc $2;
-            my $method = "get_$op\_code";
-            carp "Unable to handle operator '$op'\n" unless $self->can($method);
-            push @code, $self->$method($var2);
-        } else {
-            carp "Unable to handle $expr\n";
-        }
-    }
-    push @code, "\tmovwf $var1\n";
-    return join("\n", @code);
-}
-
-sub selfadd_literal {
+sub op_ADD_ASSIGN_literal {
     my ($self, $var, $val) = @_;
     my $b1 = POSIX::ceil($self->address_bits($var) / 8);
     my $nibbles = 2 * $b1;
@@ -1071,7 +1084,7 @@ sub selfadd_literal {
 }
 
 ## FIXME: handle carry bit
-sub selfadd_variable {
+sub op_ADD_ASSIGN_variable {
     my ($self, $var, $var2) = @_;
     return << "...";
 \t;;moves $var2 to W
@@ -1080,7 +1093,7 @@ sub selfadd_variable {
 ...
 }
 
-sub increment {
+sub op_INC {
     my ($self, $var) = @_;
     # we expect b1 == 1,2,4,8
     my $b1 = POSIX::ceil($self->address_bits($var) / 8);
@@ -1098,7 +1111,7 @@ sub increment {
     return $code;
 }
 
-sub decrement {
+sub op_DEC {
     my ($self, $var) = @_;
     my $b1 = POSIX::ceil($self->address_bits($var) / 8);
     my $code = "\t;; decrements $var in place\n";
@@ -1116,81 +1129,56 @@ sub decrement {
     return $code;
 }
 
-sub check_eq {
-    my ($self, $lhs, $rhs, $predicate, $ccount) = @_;
+sub op_EQ {
+    my ($self, $lhs, $rhs, %extra) = @_;
     my $pred = '';
-    my $end_label = "_end_conditional_$ccount";
-    my ($false_label, $true_label);
-    if (ref $predicate eq 'ARRAY') {
-        foreach my $p (@$predicate) {
-            $false_label = $1 if $p =~ /LABEL::(\w+)::False/;
-            $true_label = $1 if $p =~ /LABEL::(\w+)::True/;
-            last if (defined $false_label and defined $true_label);
-        }
-        if (defined $false_label) {
-            $pred .= "\tgoto $false_label\n";
-        } else {
-            $pred .= "\tgoto $end_label\n";
-        }
-        if (defined $true_label) {
-            $pred .= "\tgoto $true_label\n";
-        } else {
-            $pred .= "\tgoto $end_label\n";
-        }
-    } else {
-        carp "Predicate has to be an array";
-        return;
-    }
-    $pred .= "$end_label:\n";
-    if ($lhs =~ /OP::/ || $rhs =~ /OP::/) {
-        #TODO
-    } else {
-        if ($lhs !~ /^\d+$/ and $rhs !~ /^\d+$/) {
-            # lhs and rhs are variables
-            $rhs = uc $rhs;
-            $lhs = uc $lhs;
-            return << "...";
+    $pred .= "\tgoto $extra{FALSE}\n" if defined $extra{FALSE};
+    $pred .= "\tgoto $extra{TRUE}\n" if defined $extra{TRUE};
+    $pred .= "$extra{END}:\n" if defined $extra{END};
+    if ($lhs !~ /^\d+$/ and $rhs !~ /^\d+$/) {
+        # lhs and rhs are variables
+        $rhs = uc $rhs;
+        $lhs = uc $lhs;
+        return << "...";
 \tbcf STATUS, C
 \tmovf $rhs, W
 \txorwf $lhs, W
 \tbtfss STATUS, Z ;; they are equal
 $pred
 ...
-        } elsif ($rhs !~ /^\d+$/ and $lhs =~ /^\d+$/) {
-            # rhs is variable and lhs is a literal
-            $rhs = uc $rhs;
-            return << "...";
+    } elsif ($rhs !~ /^\d+$/ and $lhs =~ /^\d+$/) {
+        # rhs is variable and lhs is a literal
+        $rhs = uc $rhs;
+        return << "...";
 \tmovf $rhs, W
 \txorlw $lhs
 \tbtfss STATUS, Z ;; $rhs == $lhs ?
 $pred
 ...
-        } elsif ($rhs =~ /^\d+$/ and $lhs !~ /^\d+$/) {
-            # rhs is a literal and lhs is a variable
-            $lhs = uc $lhs;
-            return << "...";
+    } elsif ($rhs =~ /^\d+$/ and $lhs !~ /^\d+$/) {
+        # rhs is a literal and lhs is a variable
+        $lhs = uc $lhs;
+        return << "...";
 \tmovf $lhs, W
 \txorlw $rhs
 \tbtfss STATUS, Z ;; $lhs == $rhs ?
 $pred
 ...
+    } else {
+        # both rhs and lhs are literals
+        if ($lhs == $rhs) {
+            return << "...";
+\tgoto $extra{TRUE}
+$extra{END}:
+...
         } else {
-            # both rhs and lhs are literals
-            if ($lhs == $rhs) {
-                return << "...";
-\tgoto $true_label\n
-$end_label:
+            return << "...";
+\tgoto $extra{FALSE}
+$extra{END}:
 ...
-            } else {
-                return << "...";
-\tgoto $false_label\n
-$end_label:
-...
-            }
         }
     }
 }
-
 
 sub m_debounce_var {
     return <<'...';
@@ -1205,12 +1193,9 @@ DEBOUNCECOUNTER db 0x00
 ...
 }
 sub debounce {
-    my ($self, $inp, $action) = @_;
-    my ($end_label, $action_label);
-    if ($action =~ /LABEL::(\w+)::\w+::\w+::\w+::(\w+)/) {
-        $action_label = $1;
-        $end_label = $2;
-    }
+    my ($self, $inp, %action) = @_;
+    my $action_label = $action{ACTION};
+    my $end_label = $action{END};
     return unless $action_label;
     return unless $end_label;
     my ($port, $portbit);
@@ -1382,7 +1367,7 @@ _isr_exit:
 }
 
 sub timer_enable {
-    my ($self, $tmr, $scale, $isr) = @_;
+    my ($self, $tmr, $scale, %isr) = @_;
     unless (exists $self->timer_pins->{$tmr}) {
         carp "$tmr is not a timer.";
         return;
@@ -1407,16 +1392,13 @@ sub timer_enable {
 \tbanksel $tmr
 \tclrf $tmr
 ...
-    $code .= "\n$isr_code\n" if $isr;
+    $code .= "\n$isr_code\n" if %isr;
     $code .= "\n$end_code\n";
     my $funcs = {};
     my $macros = {};
-    if ($isr) {
-        my ($end_label, $action_label);
-        if ($isr =~ /LABEL::(\w+)::\w+::\w+::\w+::(\w+)/) {
-            $action_label = $1;
-            $end_label = $2;
-        }
+    if (%isr) {
+        my $action_label = $isr{ISR};
+        my $end_label = $isr{END};
         return unless $action_label;
         return unless $end_label;
         $funcs->{isr_timer} = << "..."
@@ -1450,20 +1432,15 @@ sub timer_disable {
 }
 
 sub timer {
-    my ($self, $action) = @_;
-    my ($end_label, $action_label);
-    if ($action =~ /LABEL::(\w+)::\w+::\w+::\w+::(\w+)/) {
-        $action_label = $1;
-        $end_label = $2;
-    }
-    return unless $action_label;
-    return unless $end_label;
+    my ($self, %action) = @_;
+    return unless exists $action{ACTION};
+    return unless exists $action{END};
     return << "...";
 \tbtfss INTCON, T0IF
-\tgoto $end_label
+\tgoto $action{END}
 \tbcf INTCON, T0IF
-\tgoto $action_label
-$end_label:
+\tgoto $action{ACTION}
+$action{END}:
 ...
 }
 

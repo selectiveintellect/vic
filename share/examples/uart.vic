@@ -7,7 +7,7 @@ Main {
     digital_input USART;
     $display = 0;
     Loop {
-        $display++;
+        ++$display;
         # modifiers like char/int act on 1 variable
         # unicode ?
         write USART, char $display;
