@@ -3,6 +3,8 @@ VIC
 
 VIC is a nice syntax that compiles to PIC assembly.
 
+![MeMe](http://i.imgur.com/Cr8GVrV.jpg)
+
 #Building as a user
 
     $ perl ./Build.PL --install_base=/usr/local/
