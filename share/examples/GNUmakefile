@@ -17,8 +17,10 @@ endif
 
 ifeq ($(VERBOSE),1)
  QUIET:=
+ VICOPT:=-i
 else
  QUIET:=-q
+ VICOPT:=
 endif
 
 ASMFILES:=$(patsubst %.vic,%.asm,$(wildcard *.vic))
@@ -67,6 +69,6 @@ $(TARGETS): %: %.hex
 	$(GPASM) -p$(PIC) -M -c $<
 
 %.asm: %.vic
-	$(VIC) $< -o $@
+	$(VIC) $(VICOPT) $< -o $@
 
 -include $(HEXFILES:.hex=.d)

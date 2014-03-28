@@ -723,9 +723,11 @@ sub generate_code_conditionals {
             my $tmp_code = $ast->{tmp_variables}->{$subj};
             my @deps = $self->find_tmpvar_dependencies($subj);
             my @vdeps = $self->find_var_dependencies($subj);
-            push @code, "\t;; TMP_VAR DEPS - $subj, ". join (',', @deps) if @deps;
-            push @code, "\t;; VAR DEPS - ". join (',', @vdeps) if @vdeps;
-            push @code, "\t;; $subj = $tmp_code\n";
+            if ($self->intermediate_inline) {
+                push @code, "\t;; TMP_VAR DEPS - $subj, ". join (',', @deps) if @deps;
+                push @code, "\t;; VAR DEPS - ". join (',', @vdeps) if @vdeps;
+                push @code, "\t;; $subj = $tmp_code\n";
+            }
             if (scalar @deps) {
                 # TODO: have to use stack or check for it
             } else {
