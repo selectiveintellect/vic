@@ -393,7 +393,14 @@ sub make_tree {
       ]
     },
     'number' => {
-      '.rgx' => qr/\G(0[xX][0-9a-fA-F]+|[0-9]+)/
+      '.any' => [
+        {
+          '.rgx' => qr/\G(0[xX][0-9a-fA-F]+|[0-9]+)/
+        },
+        {
+          '.ref' => 'boolean'
+        }
+      ]
     },
     'number_units' => {
       '.all' => [

@@ -24,6 +24,7 @@ syn region  vicString1      start=+'+  end=+'\|$+
 syn region  vicString2      start=+"+  end=+"\|$+
 syn match   vicNumberUnits  "\<\%([0-9][[:digit:]]*\)\%(s\|ms\|us\|MHz\|kHz\|Hz\)\>"
 syn match   vicNumber       "\<\%(0\%(x\x[[:xdigit:]_]*\|b[01][01_]*\|\o[0-7_]*\|\)\|[1-9][[:digit:]_]*\)\>"
+syn keyword vicBoolean      TRUE FALSE true false
 syn match   vicComment      "#.*"
 syn match   vicPIC          "\<PIC\s\+\%(\w\)*" contains=vicPICStatement
 syn match   vicVariable     "\$\w*"
@@ -39,6 +40,7 @@ highlight link vicString1       String
 highlight link vicString2       String
 highlight link vicNumber        Number
 highlight link vicNumberUnits   Number
+highlight link vicBoolean       Number
 highlight link vicComment       Comment
 highlight link vicPIC           Type
 highlight link vicPICStatement  Special
