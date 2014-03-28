@@ -5,7 +5,7 @@ use bigint;
 use POSIX ();
 use List::Util qw(max);
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 $VERSION = eval $VERSION;
 
 use Pegex::Base;

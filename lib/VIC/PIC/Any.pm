@@ -2,7 +2,7 @@ package VIC::PIC::Any;
 use strict;
 use warnings;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 $VERSION = eval $VERSION;
 
 use VIC::PIC::P16F690;

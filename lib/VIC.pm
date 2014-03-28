@@ -9,7 +9,7 @@ use VIC::PIC;
 our $Debug = 0;
 our $Intermediate = 0;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 $VERSION = eval $VERSION;
 
 sub compile {
