@@ -13,12 +13,20 @@ sub usage {
     Usage: vic [options] <input file>
 
         -h, --help            This help message
+        -V, --version         Version number
         -p, --pic <PIC>       Use this PIC choice instead of the one in the code
         -o, --output <file>   Writes the compiled syntax to the given output file
         -d, --debug           Dump the compile tree for debugging
         -i, --intermediate    Inline the intermediate code with the output
 ...
     die $usage;
+}
+
+sub version {
+    my $txt = << "...";
+VIC version $VERSION
+...
+    die $txt;
 }
 
 sub run {
@@ -30,6 +38,7 @@ sub run {
     my $help = 0;
     my $pic = undef;
     my $intermediate = undef;
+    my $version = 0;
 
     GetOptions(
         "output=s" => \$output,
@@ -37,8 +46,10 @@ sub run {
         "help" => \$help,
         "pic=s" => \$pic,
         "intermediate" => \$intermediate,
+        "version" => \$version,
     ) or usage();
     usage() if $help;
+    version() if $version;
 
     $VIC::Debug = $debug;
     $VIC::Intermediate = $intermediate;
