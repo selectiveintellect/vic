@@ -15,7 +15,7 @@ Main {
     # adc_enable clock, channel
     adc_enable 500kHz, AN0;
     $display = 0x08; # create a 8-bit register
-    $dirxn = 0;
+    $dirxn = FALSE;
     Loop {
         write PORTC, $display;
         adc_read $userval;
@@ -24,7 +24,7 @@ Main {
         debounce RA3, Action {
             $dirxn = !$dirxn;
         };
-        if $dirxn == 1, {
+        if $dirxn == TRUE, {
             rol $display, 1;
         }, {
             ror $display, 1;

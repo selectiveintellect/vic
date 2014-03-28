@@ -14,7 +14,7 @@ Main {
     digital_input RA3;
     adc_enable 500kHz, AN0;
     $display = 0x08; # create a 8-bit register
-    $dirxn = 0;
+    $dirxn = FALSE;
     timer_enable TMR0, 256, ISR {#set the interrupt service routine
         adc_read $userval;
         $userval += 100;
@@ -25,7 +25,7 @@ Main {
         debounce RA3, Action {
             $dirxn = !$dirxn;
         };
-        if $dirxn == 1, {
+        if $dirxn == TRUE, {
             rol $display, 1;
         }, {
             ror $display, 1;

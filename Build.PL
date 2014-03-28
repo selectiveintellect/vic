@@ -24,6 +24,8 @@ my $build = Module::Build->new(
         'Getopt::Long' => 0,
         'File::Spec' => 0,
         'Pegex' => 0.22, # needed for PL_files to work
+        'List::Util' => 0,
+        'List::MoreUtils' => 0,
     },
     recommends => {
         'XXX' => 0,
