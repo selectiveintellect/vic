@@ -48,9 +48,9 @@ assign-expr: - variable - assign-operator - rhs-expr
 
 comparison: expr-value compare-operator expr-value
 single-conditional: comparison | complement | boolean
-conditional-predicate: - (anonymous-block) - COMMA? - (anonymous-block | conditional-statement)* -
+conditional-predicate: - (anonymous-block) - / else / - (anonymous-block | conditional-statement)* -
 conditional-subject: (single-conditional % logic-operator)+
-conditional-statement: - / if / - conditional-subject - COMMA - conditional-predicate
+conditional-statement: - / if / - conditional-subject - conditional-predicate
 
 complement-operator: /(<TILDE> | <BANG>)/
 unary-operator: /(<PLUS> <PLUS> | <DASH> <DASH>)/
@@ -78,7 +78,7 @@ modifier-variable: identifier-without-keyword -  variable
 variable: DOLLAR identifier
 identifier-without-keyword: /(!<keyword>)(<ALPHA>[<WORDS>]*)/
 identifier: /(<ALPHA>[<WORDS>]*)/
-keyword: /if | while | true | false | TRUE | FALSE/
+keyword: /if | else | while | true | false | TRUE | FALSE/
 
 single_quoted_string:
     /(:

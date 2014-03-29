@@ -167,8 +167,7 @@ sub make_tree {
           '.ref' => '_'
         },
         {
-          '+max' => 1,
-          '.ref' => 'COMMA'
+          '.rgx' => qr/\Gelse/
         },
         {
           '.ref' => '_'
@@ -202,12 +201,6 @@ sub make_tree {
         },
         {
           '.ref' => 'conditional_subject'
-        },
-        {
-          '.ref' => '_'
-        },
-        {
-          '.ref' => 'COMMA'
         },
         {
           '.ref' => '_'
@@ -322,7 +315,7 @@ sub make_tree {
       '.rgx' => qr/\G([a-zA-Z][0-9A-Za-z_]*)/
     },
     'identifier_without_keyword' => {
-      '.rgx' => qr/\G(?!if|while|true|false|TRUE|FALSE)([a-zA-Z][0-9A-Za-z_]*)/
+      '.rgx' => qr/\G(?!if|else|while|true|false|TRUE|FALSE)([a-zA-Z][0-9A-Za-z_]*)/
     },
     'instruction' => {
       '.all' => [
