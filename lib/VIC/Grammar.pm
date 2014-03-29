@@ -44,6 +44,16 @@ sub make_tree {
         }
       ]
     },
+    'any_conditional' => {
+      '.any' => [
+        {
+          '.ref' => 'single_conditional'
+        },
+        {
+          '.ref' => 'nested_conditional'
+        }
+      ]
+    },
     'assign_expr' => {
       '.all' => [
         {
@@ -211,11 +221,14 @@ sub make_tree {
       ]
     },
     'conditional_subject' => {
-      '+min' => 1,
-      '.ref' => 'single_conditional',
-      '.sep' => {
-        '.ref' => 'logic_operator'
-      }
+      '.any' => [
+        {
+          '.ref' => 'single_conditional_subject'
+        },
+        {
+          '.ref' => 'nested_conditional_subject'
+        }
+      ]
     },
     'config_expression' => {
       '.all' => [
@@ -375,6 +388,32 @@ sub make_tree {
         }
       ]
     },
+    'nested_conditional' => {
+      '.all' => [
+        {
+          '.ref' => 'start_nested_expr'
+        },
+        {
+          '.ref' => 'single_conditional'
+        },
+        {
+          '.ref' => 'end_nested_expr'
+        }
+      ]
+    },
+    'nested_conditional_subject' => {
+      '.all' => [
+        {
+          '.ref' => 'start_nested_expr'
+        },
+        {
+          '.ref' => 'single_conditional_subject'
+        },
+        {
+          '.ref' => 'end_nested_expr'
+        }
+      ]
+    },
     'nested_expr_value' => {
       '.all' => [
         {
@@ -458,6 +497,13 @@ sub make_tree {
           '.ref' => 'boolean'
         }
       ]
+    },
+    'single_conditional_subject' => {
+      '+min' => 1,
+      '.ref' => 'any_conditional',
+      '.sep' => {
+        '.ref' => 'logic_operator'
+      }
     },
     'single_quoted_string' => {
       '.rgx' => qr/\G(?:'((?:[^\n\\']|\\'|\\\\)*?)')/
