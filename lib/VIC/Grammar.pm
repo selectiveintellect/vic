@@ -321,6 +321,9 @@ sub make_tree {
     'identifier' => {
       '.rgx' => qr/\G([a-zA-Z][0-9A-Za-z_]*)/
     },
+    'identifier_without_keyword' => {
+      '.rgx' => qr/\G(?!if|while|true|false|TRUE|FALSE)([a-zA-Z][0-9A-Za-z_]*)/
+    },
     'instruction' => {
       '.all' => [
         {
@@ -346,7 +349,7 @@ sub make_tree {
     'modifier_variable' => {
       '.all' => [
         {
-          '.ref' => 'identifier'
+          '.ref' => 'identifier_without_keyword'
         },
         {
           '.ref' => '_'
@@ -362,7 +365,7 @@ sub make_tree {
           '.ref' => '_'
         },
         {
-          '.ref' => 'identifier'
+          '.ref' => 'identifier_without_keyword'
         },
         {
           '.ref' => '_'
@@ -582,7 +585,7 @@ sub make_tree {
       '.rgx' => qr/\G(s|ms|us|kHz|Hz|MHz)/
     },
     'validated_variable' => {
-      '.ref' => 'identifier'
+      '.ref' => 'identifier_without_keyword'
     },
     'value' => {
       '.all' => [

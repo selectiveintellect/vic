@@ -32,7 +32,7 @@ end-block: /- <RCURLY> - <EOL>?/
 
 instruction: name values line-ending
 
-name: - identifier -
+name: - identifier-without-keyword -
 values: (value % COMMA)*
 value: - (string | number-units | number | variable | named-block | validated-variable | modifier-variable) -
 
@@ -73,10 +73,12 @@ number: /(0[xX]<HEX>+ | <DIGIT>+)/ | boolean
 units: /(s | ms | us | kHz | Hz | MHz)/
 boolean: /( TRUE | FALSE | true | false | 0 | 1)/
 
-validated-variable: identifier
-modifier-variable: identifier -  variable
+validated-variable: identifier-without-keyword
+modifier-variable: identifier-without-keyword -  variable
 variable: DOLLAR identifier
+identifier-without-keyword: /(!<keyword>)(<ALPHA>[<WORDS>]*)/
 identifier: /(<ALPHA>[<WORDS>]*)/
+keyword: /if | while | true | false | TRUE | FALSE/
 
 single_quoted_string:
     /(:

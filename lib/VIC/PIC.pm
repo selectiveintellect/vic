@@ -24,7 +24,7 @@ has ast => {
     variables => {},
     tmp_variables => {},
     conditionals => 0,
-    keywords => [qw/if while true false TRUE FALSE/],
+#    keywords => [qw/if while true false TRUE FALSE/],
 };
 has intermediate_inline => undef;
 
@@ -421,7 +421,7 @@ sub got_validated_variable {
         $varname = $list;
     }
     return $varname if $self->pic->validate($varname);
-    return if any { $_ eq $varname } @{$self->ast->{keywords}};
+#    return if any { $_ eq $varname } @{$self->ast->{keywords}};
     return $self->parser->throw_error("'$varname' is not a valid part of the " . uc $self->pic->type);
 }
 
