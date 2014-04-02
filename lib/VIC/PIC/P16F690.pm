@@ -1129,6 +1129,96 @@ sub op_DEC {
     return $code;
 }
 
+sub op_ADD {
+    my ($self, $var1, $var2, %extra) = @_;
+    my $literal = qr/^\d+$/;
+    my $code = '';
+    #TODO: temporary only 8-bit math
+    my ($b1, $b2);
+    if ($var1 !~ $literal and $var2 !~ $literal) {
+        $b1 = $self->address_bits($var1);
+        $b2 = $self->address_bits($var2);
+        # both are variables
+        $code .= << "...";
+\t;; add $var1 and $var2 without affecting either
+\tmovf $var1, W
+\taddwf $var2, W
+...
+    } elsif ($var1 =~ $literal and $var2 !~ $literal) {
+        $b2 = $self->address_bits($var2);
+        # var1 is literal and var2 is variable
+        # TODO: check for bits for var1
+        $code .= << "...";
+\t;; add $var1 and $var2 without affecting $var2
+\tmovf  $var2, W
+\taddlw $var1
+...
+    } elsif ($var1 !~ $literal and $var2 =~ $literal) {
+        # var2 is literal and var1 is variable
+        $b1 = $self->address_bits($var1);
+        # TODO: check for bits for var1
+        $code .= << "...";
+\t;; add $var2 and $var1 without affecting $var1
+\tmovf $var1, @
+\taddlw $var2
+...
+    } else {
+        # both are literals
+        # TODO: check for bits
+        my $var3 = $var1 + $var2;
+        $code .= << "...";
+\t;; $var1 + $var2 = $var3
+\tmovlw $var3
+...
+    }
+    return $code;
+}
+
+sub op_SUB {
+    my ($self, $var1, $var2, %extra) = @_;
+    my $literal = qr/^\d+$/;
+    my $code = '';
+    #TODO: temporary only 8-bit math
+    my ($b1, $b2);
+    if ($var1 !~ $literal and $var2 !~ $literal) {
+        $b1 = $self->address_bits($var1);
+        $b2 = $self->address_bits($var2);
+        # both are variables
+        $code .= << "...";
+\t;; perform $var1 - $var2 without affecting either
+\tmovf $var2, W
+\tsubwf $var1, W
+...
+    } elsif ($var1 =~ $literal and $var2 !~ $literal) {
+        $b2 = $self->address_bits($var2);
+        # var1 is literal and var2 is variable
+        # TODO: check for bits for var1
+        $code .= << "...";
+\t;; perform $var1 - $var2 without affecting $var2
+\tmovf $var2, W
+\tsublw $var1
+...
+    } elsif ($var1 !~ $literal and $var2 =~ $literal) {
+        # var2 is literal and var1 is variable
+        $b1 = $self->address_bits($var1);
+        # TODO: check for bits for var1
+        $code .= << "...";
+\t;; perform $var1 - $var2 without affecting $var1
+\tmovlw $var2
+\tsubwf $var1, W
+...
+    } else {
+        # both are literals
+        # TODO: check for bits
+        my $var3 = $var1 - $var2;
+        $code .= << "...";
+\t;; $var1 - $var2 = $var3
+\tmovlw $var3
+...
+    }
+    return $code;
+}
+
 sub op_EQ {
     my ($self, $lhs, $rhs, %extra) = @_;
     my $pred = '';

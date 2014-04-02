@@ -636,9 +636,11 @@ sub generate_code_assign_expr {
             my $tmp_code = $ast->{tmp_variables}->{$rhs};
             my @deps = $self->find_tmpvar_dependencies($rhs);
             my @vdeps = $self->find_var_dependencies($rhs);
-            push @code, "\t;; TMP_VAR DEPS - $rhs, ". join (',', @deps) if @deps;
-            push @code, "\t;; VAR DEPS - ". join (',', @vdeps) if @vdeps;
-            push @code, "\t;; $rhs = $tmp_code\n";
+            if ($self->intermediate_inline) {
+                push @code, "\t;; TMP_VAR DEPS - $rhs, ". join (',', @deps) if @deps;
+                push @code, "\t;; VAR DEPS - ". join (',', @vdeps) if @vdeps;
+                push @code, "\t;; $rhs = $tmp_code\n";
+            }
             if (scalar @deps) {
                 # TODO: have to use stack or check for it
             } else {
