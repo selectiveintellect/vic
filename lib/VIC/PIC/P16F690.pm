@@ -1122,10 +1122,10 @@ sub op_DEC {
         $code .= << "...";
 \t;; decrement byte[$i] iff byte[$j] == 0
 \tbtfsc STATUS, Z
-\tdecf $var + $i
+\tdecf $var + $i, F
 ...
     }
-    $code .= "\t;; decrement byte[0]\n\tdecf $var, W\n";
+    $code .= "\t;; decrement byte[0]\n\tdecf $var, F\n";
     return $code;
 }
 

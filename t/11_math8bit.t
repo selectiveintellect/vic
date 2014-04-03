@@ -70,7 +70,7 @@ _start:
 
 	;; decrements VAR3 in place
 	;; decrement byte[0]
-	decf VAR3, W
+	decf VAR3, F
 
 	;; increments VAR3 in place
 	;; increment byte[0]
