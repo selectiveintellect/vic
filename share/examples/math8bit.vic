@@ -7,7 +7,7 @@ Main {
     $var2 = 113;
     $var3 = $var2 + $var1;
     $var3 = $var2 - $var1;
-    #$var3 = $var2 * $var1;
+    $var3 = $var2 * $var1;
     #$var3 = $var2 / $var1;
     #$var3 = $var2 % $var1;
     --$var3;

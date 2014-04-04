@@ -1219,6 +1219,85 @@ sub op_SUB {
     return $code;
 }
 
+sub m_multiply_var {
+    # TODO: do more than 8 bits
+    return << "...";
+;;;;;; VIC_VAR_MULTIPLY VARIABLES ;;;;;;;
+
+VIC_VAR_MULTIPLY_UDATA udata
+VIC_VAR_MULTIPLICAND res 2
+VIC_VAR_MULTIPLIER res 2
+VIC_VAR_PRODUCT res 2
+...
+}
+
+sub m_multiply_macro {
+    return << "...";
+;;;;;; multiply v1 and v2 using shifting. multiplication of 8-bit values is done
+;;;;;; using 16-bit variables. v1 is a variable and v2 is a constant
+m_multiply_1 macro v1, v2
+    local _m_multiply1_loop_0, _m_multiply1_skip
+    movf v1, W
+    movwf VIC_VAR_MULTIPLIER
+    clrf VIC_VAR_MULTIPLIER + 1
+    movlw v2, W
+    movwf VIC_VAR_MULTIPLICAND
+    clrf VIC_VAR_MULTIPLICAND + 1
+    clrf VIC_VAR_PRODUCT
+    clrf VIC_VAR_PRODUCT + 1
+_m_multiply1_loop_0:
+    rrf VIC_VAR_MULTIPLICAND, F
+    btfss STATUS, C
+    goto _m_multiply1_skip
+    movf VIC_VAR_MULTIPLIER + 1, W
+    addwf VIC_VAR_PRODUCT + 1, F
+    movf VIC_VAR_MULTIPLIER, W
+    addwf VIC_VAR_PRODUCT, F
+    btfsc STATUS, C
+    incf VIC_VAR_PRODUCT + 1, F
+_m_multiply1_skip:
+    bcf STATUS, C
+    rlf VIC_VAR_MULTIPLIER, F
+    rlf VIC_VAR_MULTIPLIER + 1, F
+    movf VIC_VAR_MULTIPLICAND, F
+    btfss STATUS, Z
+    goto _m_multiply1_loop_0
+    movf VIC_VAR_PRODUCT, W
+    endm
+;;;;;; multiply v1 and v2 using shifting. multiplication of 8-bit values is done
+;;;;;; using 16-bit variables. v1 and v2 are variables
+m_multiply_2 macro v1, v2
+    local _m_multiply2_loop_0, _m_multiply2_skip
+    movf v1, W
+    movwf VIC_VAR_MULTIPLIER
+    clrf VIC_VAR_MULTIPLIER + 1
+    movf v2, W
+    movwf VIC_VAR_MULTIPLICAND
+    clrf VIC_VAR_MULTIPLICAND + 1
+    clrf VIC_VAR_PRODUCT
+    clrf VIC_VAR_PRODUCT + 1
+_m_multiply2_loop_0:
+    rrf VIC_VAR_MULTIPLICAND, F
+    btfss STATUS, C
+    goto _m_multiply2_skip
+    movf VIC_VAR_MULTIPLIER + 1, W
+    addwf VIC_VAR_PRODUCT + 1, F
+    movf VIC_VAR_MULTIPLIER, W
+    addwf VIC_VAR_PRODUCT, F
+    btfsc STATUS, C
+    incf VIC_VAR_PRODUCT + 1, F
+_m_multiply2_skip:
+    bcf STATUS, C
+    rlf VIC_VAR_MULTIPLIER, F
+    rlf VIC_VAR_MULTIPLIER + 1, F
+    movf VIC_VAR_MULTIPLICAND, F
+    btfss STATUS, Z
+    goto _m_multiply2_loop_0
+    movf VIC_VAR_PRODUCT, W
+    endm
+...
+}
+
 sub op_MUL {
     my ($self, $var1, $var2, %extra) = @_;
     my $literal = qr/^\d+$/;
@@ -1231,7 +1310,7 @@ sub op_MUL {
         # both are variables
         $code .= << "...";
 \t;; perform $var1 * $var2 without affecting either
-\tmovf $var1, W
+\tm_multiply_2 $var1, $var2
 ...
     } elsif ($var1 =~ $literal and $var2 !~ $literal) {
         $b2 = $self->address_bits($var2);
@@ -1239,6 +1318,7 @@ sub op_MUL {
         # TODO: check for bits for var1
         $code .= << "...";
 \t;; perform $var1 * $var2 without affecting $var2
+\tm_multiply_1 $var2, $var1
 ...
     } elsif ($var1 !~ $literal and $var2 =~ $literal) {
         # var2 is literal and var1 is variable
@@ -1246,6 +1326,7 @@ sub op_MUL {
         # TODO: check for bits for var1
         $code .= << "...";
 \t;; perform $var1 * $var2 without affecting $var1
+\tm_multiply_1 $var1, $var2
 ...
     } else {
         # both are literals
@@ -1256,7 +1337,11 @@ sub op_MUL {
 \tmovlw $var3
 ...
     }
-    return $code;
+    my $macros = {
+        m_multiply_var => $self->m_multiply_var,
+        m_multiply_macro => $self->m_multiply_macro,
+    };
+    return wantarray ? ($code, {}, $macros) : $code;
 }
 
 sub op_EQ {
