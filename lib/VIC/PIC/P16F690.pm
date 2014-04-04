@@ -1312,13 +1312,13 @@ $extra{END}:
 
 sub m_debounce_var {
     return <<'...';
-;;;;;; DEBOUNCE VARIABLES ;;;;;;;
+;;;;;; VIC_VAR_DEBOUNCE VARIABLES ;;;;;;;
 
-DEBOUNCE_VAR_IDATA idata
+VIC_VAR_DEBOUNCE_VAR_IDATA idata
 ;; initialize state to 1
-DEBOUNCESTATE db 0x01
+VIC_VAR_DEBOUNCESTATE db 0x01
 ;; initialize counter to 0
-DEBOUNCECOUNTER db 0x00
+VIC_VAR_DEBOUNCECOUNTER db 0x00
 
 ...
 }
@@ -1352,34 +1352,34 @@ sub debounce {
 $deb_code
 \t;; has debounce state changed to down (bit 0 is 0)
 \t;; if yes go to debounce-state-down
-\tbtfsc   DEBOUNCESTATE, 0
+\tbtfsc   VIC_VAR_DEBOUNCESTATE, 0
 \tgoto    _debounce_state_up
 _debounce_state_down:
 \tclrw
 \tbtfss   PORT$port, $portbit
 \t;; increment and move into counter
-\tincf    DEBOUNCECOUNTER, 0
-\tmovwf   DEBOUNCECOUNTER
+\tincf    VIC_VAR_DEBOUNCECOUNTER, 0
+\tmovwf   VIC_VAR_DEBOUNCECOUNTER
 \tgoto    _debounce_state_check
 
 _debounce_state_up:
 \tclrw
 \tbtfsc   PORT$port, $portbit
-\tincf    DEBOUNCECOUNTER, 0
-\tmovwf   DEBOUNCECOUNTER
+\tincf    VIC_VAR_DEBOUNCECOUNTER, 0
+\tmovwf   VIC_VAR_DEBOUNCECOUNTER
 \tgoto    _debounce_state_check
 
 _debounce_state_check:
-\tmovf    DEBOUNCECOUNTER, W
+\tmovf    VIC_VAR_DEBOUNCECOUNTER, W
 \txorlw   $debounce_count
 \t;; is counter == $debounce_count ?
 \tbtfss   STATUS, Z
 \tgoto    $end_label
 \t;; after $debounce_count straight, flip direction
-\tcomf    DEBOUNCESTATE, 1
-\tclrf    DEBOUNCECOUNTER
+\tcomf    VIC_VAR_DEBOUNCESTATE, 1
+\tclrf    VIC_VAR_DEBOUNCECOUNTER
 \t;; was it a key-down
-\tbtfss   DEBOUNCESTATE, 0
+\tbtfss   VIC_VAR_DEBOUNCESTATE, 0
 \tgoto    $end_label
 \tgoto    $action_label
 $end_label:\n

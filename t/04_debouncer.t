@@ -28,13 +28,13 @@ my $output = <<'...';
 GLOBAL_VAR_UDATA udata
 DISPLAY res 1
 
-;;;;;; DEBOUNCE VARIABLES ;;;;;;;
+;;;;;; VIC_VAR_DEBOUNCE VARIABLES ;;;;;;;
 
-DEBOUNCE_VAR_IDATA idata
+VIC_VAR_DEBOUNCE_VAR_IDATA idata
 ;; initialize state to 1
-DEBOUNCESTATE db 0x01
+VIC_VAR_DEBOUNCESTATE db 0x01
 ;; initialize counter to 0
-DEBOUNCECOUNTER db 0x00
+VIC_VAR_DEBOUNCECOUNTER db 0x00
 
 
 ;;;;;; DELAY FUNCTIONS ;;;;;;;
@@ -100,34 +100,34 @@ _loop_1:
 
 	;; has debounce state changed to down (bit 0 is 0)
 	;; if yes go to debounce-state-down
-	btfsc   DEBOUNCESTATE, 0
+	btfsc   VIC_VAR_DEBOUNCESTATE, 0
 	goto    _debounce_state_up
 _debounce_state_down:
 	clrw
 	btfss   PORTA, 3
 	;; increment and move into counter
-	incf    DEBOUNCECOUNTER, 0
-	movwf   DEBOUNCECOUNTER
+	incf    VIC_VAR_DEBOUNCECOUNTER, 0
+	movwf   VIC_VAR_DEBOUNCECOUNTER
 	goto    _debounce_state_check
 
 _debounce_state_up:
 	clrw
 	btfsc   PORTA, 3
-	incf    DEBOUNCECOUNTER, 0
-	movwf   DEBOUNCECOUNTER
+	incf    VIC_VAR_DEBOUNCECOUNTER, 0
+	movwf   VIC_VAR_DEBOUNCECOUNTER
 	goto    _debounce_state_check
 
 _debounce_state_check:
-	movf    DEBOUNCECOUNTER, W
+	movf    VIC_VAR_DEBOUNCECOUNTER, W
 	xorlw   5
 	;; is counter == 5 ?
 	btfss   STATUS, Z
 	goto _end_action_2
 	;; after 5 straight, flip direction
-	comf    DEBOUNCESTATE, 1
-	clrf    DEBOUNCECOUNTER
+	comf    VIC_VAR_DEBOUNCESTATE, 1
+	clrf    VIC_VAR_DEBOUNCECOUNTER
 	;; was it a key-down
-	btfss   DEBOUNCESTATE, 0
+	btfss   VIC_VAR_DEBOUNCESTATE, 0
 	goto _end_action_2
 	goto _action_2
 _end_action_2:
