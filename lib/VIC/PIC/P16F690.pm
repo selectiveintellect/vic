@@ -1240,7 +1240,7 @@ m_multiply_1 macro v1, v2
     movf v1, W
     movwf VIC_VAR_MULTIPLIER
     clrf VIC_VAR_MULTIPLIER + 1
-    movlw v2, W
+    movlw v2
     movwf VIC_VAR_MULTIPLICAND
     clrf VIC_VAR_MULTIPLICAND + 1
     clrf VIC_VAR_PRODUCT

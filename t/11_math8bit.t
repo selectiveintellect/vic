@@ -12,6 +12,7 @@ Main {
     $var3 = $var2 + $var1;
     $var3 = $var2 - $var1;
     $var3 = $var2 * $var1;
+    $var2 = $var2 * 5;
     #$var3 = $var2 / $var1;
     #$var3 = $var2 % $var1;
     --$var3;
@@ -49,7 +50,7 @@ m_multiply_1 macro v1, v2
     movf v1, W
     movwf VIC_VAR_MULTIPLIER
     clrf VIC_VAR_MULTIPLIER + 1
-    movlw v2, W
+    movlw v2
     movwf VIC_VAR_MULTIPLICAND
     clrf VIC_VAR_MULTIPLICAND + 1
     clrf VIC_VAR_PRODUCT
@@ -144,6 +145,10 @@ _start:
 
 	movwf VAR3
 
+	;; perform VAR2 * 5 without affecting VAR2
+	m_multiply_1 VAR2, 5
+
+	movwf VAR2
 	;; decrements VAR3 in place
 	;; decrement byte[0]
 	decf VAR3, F
