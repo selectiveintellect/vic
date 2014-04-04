@@ -31,8 +31,8 @@ DISPLAY res 1
 
 ;;;;;; DELAY FUNCTIONS ;;;;;;;
 
-DELAY_VAR_UDATA udata
-DELAY_VAR   res 3
+VIC_VAR_DELAY_UDATA udata
+VIC_VAR_DELAY   res 3
 
 
 
@@ -48,9 +48,9 @@ m_delay_us macro usecs
 if (usecs > D'6')
 usecs_1 = usecs / D'3'
     movlw   usecs_1
-    movwf   DELAY_VAR
+    movwf   VIC_VAR_DELAY
 _delay_usecs_loop_0:
-    decfsz  DELAY_VAR, F
+    decfsz  VIC_VAR_DELAY, F
     goto    _delay_usecs_loop_0
 else
     while usecs_1 < usecs
@@ -62,13 +62,13 @@ endif
 
 m_delay_wms macro
     local _delayw_msecs_loop_0, _delayw_msecs_loop_1
-    movwf   DELAY_VAR + 1
+    movwf   VIC_VAR_DELAY + 1
 _delayw_msecs_loop_1:
-    clrf   DELAY_VAR   ;; set to 0 which gets decremented to 0xFF
+    clrf   VIC_VAR_DELAY   ;; set to 0 which gets decremented to 0xFF
 _delayw_msecs_loop_0:
-    decfsz  DELAY_VAR, F
+    decfsz  VIC_VAR_DELAY, F
     goto    _delayw_msecs_loop_0
-    decfsz  DELAY_VAR + 1, F
+    decfsz  VIC_VAR_DELAY + 1, F
     goto    _delayw_msecs_loop_1
     endm
 

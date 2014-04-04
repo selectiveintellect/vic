@@ -674,8 +674,8 @@ sub m_delay_var {
     return <<'...';
 ;;;;;; DELAY FUNCTIONS ;;;;;;;
 
-DELAY_VAR_UDATA udata
-DELAY_VAR   res 3
+VIC_VAR_DELAY_UDATA udata
+VIC_VAR_DELAY   res 3
 
 ...
 }
@@ -693,9 +693,9 @@ m_delay_us macro usecs
 if (usecs > D'6')
 usecs_1 = usecs / D'3'
     movlw   usecs_1
-    movwf   DELAY_VAR
+    movwf   VIC_VAR_DELAY
 _delay_usecs_loop_0:
-    decfsz  DELAY_VAR, F
+    decfsz  VIC_VAR_DELAY, F
     goto    _delay_usecs_loop_0
 else
     while usecs_1 < usecs
@@ -711,9 +711,9 @@ sub m_delay_wus {
     return <<'...';
 m_delay_wus macro
     local _delayw_usecs_loop_0
-    movwf   DELAY_VAR
+    movwf   VIC_VAR_DELAY
 _delayw_usecs_loop_0:
-    decfsz  DELAY_VAR, F
+    decfsz  VIC_VAR_DELAY, F
     goto    _delayw_usecs_loop_0
     endm
 ...
@@ -732,13 +732,13 @@ m_delay_ms macro msecs
     variable msecs_1 = 0
 msecs_1 = (msecs * D'13') / D'10'
     movlw   msecs_1
-    movwf   DELAY_VAR + 1
+    movwf   VIC_VAR_DELAY + 1
 _delay_msecs_loop_1:
-    clrf   DELAY_VAR   ;; set to 0 which gets decremented to 0xFF
+    clrf   VIC_VAR_DELAY   ;; set to 0 which gets decremented to 0xFF
 _delay_msecs_loop_0:
-    decfsz  DELAY_VAR, F
+    decfsz  VIC_VAR_DELAY, F
     goto    _delay_msecs_loop_0
-    decfsz  DELAY_VAR + 1, F
+    decfsz  VIC_VAR_DELAY + 1, F
     goto    _delay_msecs_loop_1
     endm
 ...
@@ -748,13 +748,13 @@ sub m_delay_wms {
     return <<'...';
 m_delay_wms macro
     local _delayw_msecs_loop_0, _delayw_msecs_loop_1
-    movwf   DELAY_VAR + 1
+    movwf   VIC_VAR_DELAY + 1
 _delayw_msecs_loop_1:
-    clrf   DELAY_VAR   ;; set to 0 which gets decremented to 0xFF
+    clrf   VIC_VAR_DELAY   ;; set to 0 which gets decremented to 0xFF
 _delayw_msecs_loop_0:
-    decfsz  DELAY_VAR, F
+    decfsz  VIC_VAR_DELAY, F
     goto    _delayw_msecs_loop_0
-    decfsz  DELAY_VAR + 1, F
+    decfsz  VIC_VAR_DELAY + 1, F
     goto    _delayw_msecs_loop_1
     endm
 ...
@@ -774,17 +774,17 @@ m_delay_s macro secs
     variable secs_1 = 0
 secs_1 = secs * D'1000000' / D'197379'
     movlw   secs_1
-    movwf   DELAY_VAR + 2
+    movwf   VIC_VAR_DELAY + 2
 _delay_secs_loop_2:
-    clrf    DELAY_VAR + 1   ;; set to 0 which gets decremented to 0xFF
+    clrf    VIC_VAR_DELAY + 1   ;; set to 0 which gets decremented to 0xFF
 _delay_secs_loop_1:
-    clrf    DELAY_VAR   ;; set to 0 which gets decremented to 0xFF
+    clrf    VIC_VAR_DELAY   ;; set to 0 which gets decremented to 0xFF
 _delay_secs_loop_0:
-    decfsz  DELAY_VAR, F
+    decfsz  VIC_VAR_DELAY, F
     goto    _delay_secs_loop_0
-    decfsz  DELAY_VAR + 1, F
+    decfsz  VIC_VAR_DELAY + 1, F
     goto    _delay_secs_loop_1
-    decfsz  DELAY_VAR + 2, F
+    decfsz  VIC_VAR_DELAY + 2, F
     goto    _delay_secs_loop_2
     endm
 ...
@@ -794,17 +794,17 @@ sub m_delay_ws {
     return <<'...';
 m_delay_ws macro
     local _delayw_secs_loop_0, _delayw_secs_loop_1, _delayw_secs_loop_2
-    movwf   DELAY_VAR + 2
+    movwf   VIC_VAR_DELAY + 2
 _delayw_secs_loop_2:
-    clrf    DELAY_VAR + 1   ;; set to 0 which gets decremented to 0xFF
+    clrf    VIC_VAR_DELAY + 1   ;; set to 0 which gets decremented to 0xFF
 _delayw_secs_loop_1:
-    clrf    DELAY_VAR   ;; set to 0 which gets decremented to 0xFF
+    clrf    VIC_VAR_DELAY   ;; set to 0 which gets decremented to 0xFF
 _delayw_secs_loop_0:
-    decfsz  DELAY_VAR, F
+    decfsz  VIC_VAR_DELAY, F
     goto    _delayw_secs_loop_0
-    decfsz  DELAY_VAR + 1, F
+    decfsz  VIC_VAR_DELAY + 1, F
     goto    _delayw_secs_loop_1
-    decfsz  DELAY_VAR + 2, F
+    decfsz  VIC_VAR_DELAY + 2, F
     goto    _delayw_secs_loop_2
     endm
 ...
@@ -1213,6 +1213,46 @@ sub op_SUB {
         my $var3 = $var1 - $var2;
         $code .= << "...";
 \t;; $var1 - $var2 = $var3
+\tmovlw $var3
+...
+    }
+    return $code;
+}
+
+sub op_MUL {
+    my ($self, $var1, $var2, %extra) = @_;
+    my $literal = qr/^\d+$/;
+    my $code = '';
+    #TODO: temporary only 8-bit math
+    my ($b1, $b2);
+    if ($var1 !~ $literal and $var2 !~ $literal) {
+        $b1 = $self->address_bits($var1);
+        $b2 = $self->address_bits($var2);
+        # both are variables
+        $code .= << "...";
+\t;; perform $var1 * $var2 without affecting either
+\tmovf $var1, W
+...
+    } elsif ($var1 =~ $literal and $var2 !~ $literal) {
+        $b2 = $self->address_bits($var2);
+        # var1 is literal and var2 is variable
+        # TODO: check for bits for var1
+        $code .= << "...";
+\t;; perform $var1 * $var2 without affecting $var2
+...
+    } elsif ($var1 !~ $literal and $var2 =~ $literal) {
+        # var2 is literal and var1 is variable
+        $b1 = $self->address_bits($var1);
+        # TODO: check for bits for var1
+        $code .= << "...";
+\t;; perform $var1 * $var2 without affecting $var1
+...
+    } else {
+        # both are literals
+        # TODO: check for bits
+        my $var3 = $var1 * $var2;
+        $code .= << "...";
+\t;; $var1 * $var2 = $var3
 \tmovlw $var3
 ...
     }

@@ -23,25 +23,25 @@ my $output = <<'...';
 GLOBAL_VAR_UDATA udata
 DISPLAY res 1
 
-DELAY_VAR_UDATA udata
-DELAY_VAR   res 3
+VIC_VAR_DELAY_UDATA udata
+VIC_VAR_DELAY   res 3
 
 m_delay_s macro secs
     local _delay_secs_loop_0, _delay_secs_loop_1, _delay_secs_loop_2
     variable secs_1 = 0
 secs_1 = secs * D'1000000' / D'197379'
     movlw   secs_1
-    movwf   DELAY_VAR + 2
+    movwf   VIC_VAR_DELAY + 2
 _delay_secs_loop_2:
-    clrf    DELAY_VAR + 1   ;; set to 0 which gets decremented to 0xFF
+    clrf    VIC_VAR_DELAY + 1   ;; set to 0 which gets decremented to 0xFF
 _delay_secs_loop_1:
-    clrf    DELAY_VAR   ;; set to 0 which gets decremented to 0xFF
+    clrf    VIC_VAR_DELAY   ;; set to 0 which gets decremented to 0xFF
 _delay_secs_loop_0:
-    decfsz  DELAY_VAR, F
+    decfsz  VIC_VAR_DELAY, F
     goto    _delay_secs_loop_0
-    decfsz  DELAY_VAR + 1, F
+    decfsz  VIC_VAR_DELAY + 1, F
     goto    _delay_secs_loop_1
-    decfsz  DELAY_VAR + 2, F
+    decfsz  VIC_VAR_DELAY + 2, F
     goto    _delay_secs_loop_2
     endm
 
