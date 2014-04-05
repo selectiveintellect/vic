@@ -1236,65 +1236,49 @@ sub m_multiply_macro {
 ;;;;;; Taken from Microchip PIC examples.
 ;;;;;; multiply v1 and v2 using shifting. multiplication of 8-bit values is done
 ;;;;;; using 16-bit variables. v1 is a variable and v2 is a constant
+m_multiply_internal macro
+    local _m_multiply_loop_0, _m_multiply_skip
+    clrf VIC_VAR_PRODUCT
+    clrf VIC_VAR_PRODUCT + 1
+_m_multiply_loop_0:
+    rrf VIC_VAR_MULTIPLICAND, F
+    btfss STATUS, C
+    goto _m_multiply_skip
+    movf VIC_VAR_MULTIPLIER + 1, W
+    addwf VIC_VAR_PRODUCT + 1, F
+    movf VIC_VAR_MULTIPLIER, W
+    addwf VIC_VAR_PRODUCT, F
+    btfsc STATUS, C
+    incf VIC_VAR_PRODUCT + 1, F
+_m_multiply_skip:
+    bcf STATUS, C
+    rlf VIC_VAR_MULTIPLIER, F
+    rlf VIC_VAR_MULTIPLIER + 1, F
+    movf VIC_VAR_MULTIPLICAND, F
+    btfss STATUS, Z
+    goto _m_multiply_loop_0
+    movf VIC_VAR_PRODUCT, W
+    endm
+;;;;;;; v1 is variable and v2 is literal
 m_multiply_1 macro v1, v2
-    local _m_multiply1_loop_0, _m_multiply1_skip
     movf v1, W
     movwf VIC_VAR_MULTIPLIER
     clrf VIC_VAR_MULTIPLIER + 1
     movlw v2
     movwf VIC_VAR_MULTIPLICAND
     clrf VIC_VAR_MULTIPLICAND + 1
-    clrf VIC_VAR_PRODUCT
-    clrf VIC_VAR_PRODUCT + 1
-_m_multiply1_loop_0:
-    rrf VIC_VAR_MULTIPLICAND, F
-    btfss STATUS, C
-    goto _m_multiply1_skip
-    movf VIC_VAR_MULTIPLIER + 1, W
-    addwf VIC_VAR_PRODUCT + 1, F
-    movf VIC_VAR_MULTIPLIER, W
-    addwf VIC_VAR_PRODUCT, F
-    btfsc STATUS, C
-    incf VIC_VAR_PRODUCT + 1, F
-_m_multiply1_skip:
-    bcf STATUS, C
-    rlf VIC_VAR_MULTIPLIER, F
-    rlf VIC_VAR_MULTIPLIER + 1, F
-    movf VIC_VAR_MULTIPLICAND, F
-    btfss STATUS, Z
-    goto _m_multiply1_loop_0
-    movf VIC_VAR_PRODUCT, W
+    m_multiply_internal
     endm
 ;;;;;; multiply v1 and v2 using shifting. multiplication of 8-bit values is done
 ;;;;;; using 16-bit variables. v1 and v2 are variables
 m_multiply_2 macro v1, v2
-    local _m_multiply2_loop_0, _m_multiply2_skip
     movf v1, W
     movwf VIC_VAR_MULTIPLIER
     clrf VIC_VAR_MULTIPLIER + 1
     movf v2, W
     movwf VIC_VAR_MULTIPLICAND
     clrf VIC_VAR_MULTIPLICAND + 1
-    clrf VIC_VAR_PRODUCT
-    clrf VIC_VAR_PRODUCT + 1
-_m_multiply2_loop_0:
-    rrf VIC_VAR_MULTIPLICAND, F
-    btfss STATUS, C
-    goto _m_multiply2_skip
-    movf VIC_VAR_MULTIPLIER + 1, W
-    addwf VIC_VAR_PRODUCT + 1, F
-    movf VIC_VAR_MULTIPLIER, W
-    addwf VIC_VAR_PRODUCT, F
-    btfsc STATUS, C
-    incf VIC_VAR_PRODUCT + 1, F
-_m_multiply2_skip:
-    bcf STATUS, C
-    rlf VIC_VAR_MULTIPLIER, F
-    rlf VIC_VAR_MULTIPLIER + 1, F
-    movf VIC_VAR_MULTIPLICAND, F
-    btfss STATUS, Z
-    goto _m_multiply2_loop_0
-    movf VIC_VAR_PRODUCT, W
+    m_multiply_internal
     endm
 ...
 }
