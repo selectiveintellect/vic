@@ -19,6 +19,9 @@ Main {
     ++$var3;
     $var4 = 64;
     $var4 -= $var1;
+    $var3 *= 3;
+    $var2 /= 5;
+    $var4 %= $var2;
     # sqrt is a modifier
     #$var3 = sqrt $var4;
     #$var5 = ($var1 + (($var3 * ($var4 + $var7) + 5) + $var2));
@@ -265,6 +268,19 @@ _start:
     ;;moves VAR1 to W and subtracts from VAR4
     movf VAR1, W
     subwf VAR4, F
+    ;; perform VAR3 * 3 without affecting VAR3
+    m_multiply_1 VAR3, 3
+    movwf VAR3
+
+    ;; SET::DIV_ASSIGN::var2::5
+    ;; perform VAR2 / 5 without affecting VAR2
+    m_divide_1b VAR2, 5
+    movwf VAR2
+
+    ;; SET::MOD_ASSIGN::var4::var2
+    ;; perform VAR4 / VAR2 without affecting either
+    m_mod_2 VAR4, VAR2
+    movwf VAR4
 
 	goto $
 

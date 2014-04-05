@@ -1119,6 +1119,24 @@ sub op_SUB_ASSIGN {
     }
 }
 
+sub op_MUL_ASSIGN {
+    my ($self, $var, $var2) = @_;
+    my ($code, $funcs, $macros) = $self->op_MUL($var, $var2);
+    $code .= $self->op_ASSIGN_w($var);
+}
+
+sub op_DIV_ASSIGN {
+    my ($self, $var, $var2) = @_;
+    my ($code, $funcs, $macros) = $self->op_DIV($var, $var2);
+    $code .= $self->op_ASSIGN_w($var);
+}
+
+sub op_MOD_ASSIGN {
+    my ($self, $var, $var2) = @_;
+    my ($code, $funcs, $macros) = $self->op_MOD($var, $var2);
+    $code .= $self->op_ASSIGN_w($var);
+}
+
 sub op_INC {
     my ($self, $var) = @_;
     # we expect b1 == 1,2,4,8
@@ -1316,6 +1334,8 @@ sub op_MUL {
     #TODO: temporary only 8-bit math
     my ($b1, $b2);
     if ($var1 !~ $literal and $var2 !~ $literal) {
+        $var1 = uc $var1;
+        $var2 = uc $var2;
         $b1 = $self->address_bits($var1);
         $b2 = $self->address_bits($var2);
         # both are variables
@@ -1324,6 +1344,7 @@ sub op_MUL {
 \tm_multiply_2 $var1, $var2
 ...
     } elsif ($var1 =~ $literal and $var2 !~ $literal) {
+        $var2 = uc $var2;
         $b2 = $self->address_bits($var2);
         # var1 is literal and var2 is variable
         # TODO: check for bits for var1
@@ -1332,6 +1353,7 @@ sub op_MUL {
 \tm_multiply_1 $var2, $var1
 ...
     } elsif ($var1 !~ $literal and $var2 =~ $literal) {
+        $var1 = uc $var1;
         # var2 is literal and var1 is variable
         $b1 = $self->address_bits($var1);
         # TODO: check for bits for var1
@@ -1472,6 +1494,8 @@ sub op_DIV {
     #TODO: temporary only 8-bit math
     my ($b1, $b2);
     if ($var1 !~ $literal and $var2 !~ $literal) {
+        $var1 = uc $var1;
+        $var2 = uc $var2;
         $b1 = $self->address_bits($var1);
         $b2 = $self->address_bits($var2);
         # both are variables
@@ -1480,6 +1504,7 @@ sub op_DIV {
 \tm_divide_2 $var1, $var2
 ...
     } elsif ($var1 =~ $literal and $var2 !~ $literal) {
+        $var2 = uc $var2;
         $b2 = $self->address_bits($var2);
         # var1 is literal and var2 is variable
         # TODO: check for bits for var1
@@ -1488,6 +1513,7 @@ sub op_DIV {
 \tm_divide_1a $var1, $var2
 ...
     } elsif ($var1 !~ $literal and $var2 =~ $literal) {
+        $var1 = uc $var1;
         # var2 is literal and var1 is variable
         $b1 = $self->address_bits($var1);
         # TODO: check for bits for var1
@@ -1518,6 +1544,8 @@ sub op_MOD {
     #TODO: temporary only 8-bit math
     my ($b1, $b2);
     if ($var1 !~ $literal and $var2 !~ $literal) {
+        $var1 = uc $var1;
+        $var2 = uc $var2;
         $b1 = $self->address_bits($var1);
         $b2 = $self->address_bits($var2);
         # both are variables
@@ -1526,6 +1554,7 @@ sub op_MOD {
 \tm_mod_2 $var1, $var2
 ...
     } elsif ($var1 =~ $literal and $var2 !~ $literal) {
+        $var2 = uc $var2;
         $b2 = $self->address_bits($var2);
         # var1 is literal and var2 is variable
         # TODO: check for bits for var1
@@ -1534,6 +1563,7 @@ sub op_MOD {
 \tm_mod_1a $var1, $var2
 ...
     } elsif ($var1 !~ $literal and $var2 =~ $literal) {
+        $var1 = uc $var1;
         # var2 is literal and var1 is variable
         $b1 = $self->address_bits($var1);
         # TODO: check for bits for var1
