@@ -1741,7 +1741,6 @@ sub op_EQ {
         $rhs = uc $rhs;
         $lhs = uc $lhs;
         return << "...";
-\tbcf STATUS, C
 \tmovf $rhs, W
 \txorwf $lhs, W
 \tbtfss STATUS, Z ;; they are equal
@@ -1785,9 +1784,17 @@ $extra{END}:
 
 sub op_NE {
     my ($self, $lhs, $rhs, %extra) = @_;
+    my %extra2 = (%extra);
+    $extra2{TRUE} = $extra{FALSE};
+    $extra2{FALSE} = $extra{TRUE};
+    return $self->op_EQ($lhs, $rhs, %extra2);
+}
+
+sub op_LT {
+    my ($self, $lhs, $rhs, %extra) = @_;
     my $pred = '';
-    $pred .= "\tgoto $extra{TRUE}\n" if defined $extra{TRUE};
     $pred .= "\tgoto $extra{FALSE}\n" if defined $extra{FALSE};
+    $pred .= "\tgoto $extra{TRUE}\n" if defined $extra{TRUE};
     $pred .= "$extra{END}:\n" if defined $extra{END};
     my $literal = qr/^\d+$/;
     if ($lhs !~ $literal and $rhs !~ $literal) {
@@ -1795,10 +1802,11 @@ sub op_NE {
         $rhs = uc $rhs;
         $lhs = uc $lhs;
         return << "...";
+\t;; perform check for $lhs < $rhs or $rhs > $lhs
 \tbcf STATUS, C
 \tmovf $rhs, W
-\txorwf $lhs, W
-\tbtfss STATUS, Z ;; skip next if they are equal
+\tsubwf $lhs, W
+\tbtfsc STATUS, C ;; W($rhs) > F($lhs) => C = 0
 $pred
 ...
     } elsif ($rhs !~ $literal and $lhs =~ $literal) {
@@ -1806,9 +1814,11 @@ $pred
         $rhs = uc $rhs;
         $lhs = sprintf "0x%02X", $lhs;
         return << "...";
+\t;; perform check for $lhs < $rhs or $rhs > $lhs
+\tbcf STATUS, C
 \tmovf $rhs, W
-\txorlw $lhs
-\tbtfss STATUS, Z ;; $rhs == $lhs then skip
+\tsublw $lhs
+\tbtfsc STATUS, C ;; W($rhs) > k($lhs) => C = 0
 $pred
 ...
     } elsif ($rhs =~ $literal and $lhs !~ $literal) {
@@ -1816,27 +1826,97 @@ $pred
         $lhs = uc $lhs;
         $rhs = sprintf "0x%02X", $rhs;
         return << "...";
-\tmovf $lhs, W
-\txorlw $rhs
-\tbtfss STATUS, Z ;; $lhs == $rhs then skip
+\t;; perform check for $lhs < $rhs or $rhs > $lhs
+\tbcf STATUS, C
+\tmovlw $rhs
+\tsubwf $lhs, W
+\tbtfsc STATUS, C ;; W($rhs) > F($lhs) => C = 0
 $pred
 ...
     } else {
         # both rhs and lhs are literals
-        if ($lhs == $rhs) {
+        if ($lhs < $rhs) {
             return << "...";
-\tgoto $extra{FALSE}
+\tgoto $extra{TRUE}
 $extra{END}:
 ...
         } else {
             return << "...";
-\tgoto $extra{TRUE}
+\tgoto $extra{FALSE}
 $extra{END}:
 ...
         }
     }
 }
 
+sub op_GE {
+    my ($self, $lhs, $rhs, %extra) = @_;
+    my $pred = '';
+    $pred .= "\tgoto $extra{FALSE}\n" if defined $extra{FALSE};
+    $pred .= "\tgoto $extra{TRUE}\n" if defined $extra{TRUE};
+    $pred .= "$extra{END}:\n" if defined $extra{END};
+    my $literal = qr/^\d+$/;
+    if ($lhs !~ $literal and $rhs !~ $literal) {
+        # lhs and rhs are variables
+        $rhs = uc $rhs;
+        $lhs = uc $lhs;
+        return << "...";
+\t;; perform check for $lhs >= $rhs or $rhs <= $lhs
+\tbcf STATUS, C
+\tmovf $rhs, W
+\tsubwf $lhs, W
+\tbtfss STATUS, C ;; W($rhs) <= F($lhs) => C = 1
+$pred
+...
+    } elsif ($rhs !~ $literal and $lhs =~ $literal) {
+        # rhs is variable and lhs is a literal
+        $rhs = uc $rhs;
+        $lhs = sprintf "0x%02X", $lhs;
+        return << "...";
+\t;; perform check for $lhs >= $rhs or $rhs <= $lhs
+\tbcf STATUS, C
+\tmovf $rhs, W
+\tsublw $lhs
+\tbtfss STATUS, C ;; W($rhs) <= k($lhs) => C = 1
+$pred
+...
+    } elsif ($rhs =~ $literal and $lhs !~ $literal) {
+        # rhs is a literal and lhs is a variable
+        $lhs = uc $lhs;
+        $rhs = sprintf "0x%02X", $rhs;
+        return << "...";
+\t;; perform check for $lhs >= $rhs or $rhs <= $lhs
+\tbcf STATUS, C
+\tmovlw $rhs
+\tsubwf $lhs, W
+\tbtfss STATUS, C ;; W($rhs) <= F($lhs) => C = 1
+$pred
+...
+    } else {
+        # both rhs and lhs are literals
+        if ($lhs >= $rhs) {
+            return << "...";
+\tgoto $extra{TRUE}
+$extra{END}:
+...
+        } else {
+            return << "...";
+\tgoto $extra{FALSE}
+$extra{END}:
+...
+        }
+    }
+}
+
+sub op_LE {
+    my ($self, $lhs, $rhs, %extra) = @_;
+    return $self->op_GE($rhs, $lhs, %extra);
+}
+
+sub op_GT {
+    my ($self, $lhs, $rhs, %extra) = @_;
+    return $self->op_LT($rhs, $lhs, %extra);
+}
 
 sub m_debounce_var {
     return <<'...';
