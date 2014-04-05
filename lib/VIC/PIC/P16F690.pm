@@ -1780,6 +1780,61 @@ $extra{END}:
     }
 }
 
+sub op_NE {
+    my ($self, $lhs, $rhs, %extra) = @_;
+    my $pred = '';
+    $pred .= "\tgoto $extra{TRUE}\n" if defined $extra{TRUE};
+    $pred .= "\tgoto $extra{FALSE}\n" if defined $extra{FALSE};
+    $pred .= "$extra{END}:\n" if defined $extra{END};
+    my $literal = qr/^\d+$/;
+    if ($lhs !~ $literal and $rhs !~ $literal) {
+        # lhs and rhs are variables
+        $rhs = uc $rhs;
+        $lhs = uc $lhs;
+        return << "...";
+\tbcf STATUS, C
+\tmovf $rhs, W
+\txorwf $lhs, W
+\tbtfss STATUS, Z ;; skip next if they are equal
+$pred
+...
+    } elsif ($rhs !~ $literal and $lhs =~ $literal) {
+        # rhs is variable and lhs is a literal
+        $rhs = uc $rhs;
+        $lhs = sprintf "0x%02X", $lhs;
+        return << "...";
+\tmovf $rhs, W
+\txorlw $lhs
+\tbtfss STATUS, Z ;; $rhs == $lhs then skip
+$pred
+...
+    } elsif ($rhs =~ $literal and $lhs !~ $literal) {
+        # rhs is a literal and lhs is a variable
+        $lhs = uc $lhs;
+        $rhs = sprintf "0x%02X", $rhs;
+        return << "...";
+\tmovf $lhs, W
+\txorlw $rhs
+\tbtfss STATUS, Z ;; $lhs == $rhs then skip
+$pred
+...
+    } else {
+        # both rhs and lhs are literals
+        if ($lhs == $rhs) {
+            return << "...";
+\tgoto $extra{FALSE}
+$extra{END}:
+...
+        } else {
+            return << "...";
+\tgoto $extra{TRUE}
+$extra{END}:
+...
+        }
+    }
+}
+
+
 sub m_debounce_var {
     return <<'...';
 ;;;;;; VIC_VAR_DEBOUNCE VARIABLES ;;;;;;;
