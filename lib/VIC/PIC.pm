@@ -658,11 +658,7 @@ sub generate_code_assign_expr {
                 }
             }
         } else {
-            my $suffix = '';
-            $suffix = '_literal' if $rhs =~ /^\d+$/;
-            $suffix = '_variable' if exists $ast->{variables}->{$rhs};
             my $method = $self->pic->validate_operator($op);
-            $method .= $suffix if $method;
             $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
             my $nvar = $ast->{variables}->{$varname}->{name} || uc $varname;
             my ($code, $funcs, $macros) = $self->pic->$method($nvar, $rhs);

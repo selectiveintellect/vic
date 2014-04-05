@@ -556,8 +556,7 @@ sub write {
 \tcomf PORT$port, 1
 ...
         }
-        return $self->op_ASSIGN_literal("PORT$port", $val) if ($val =~ /^\d+$/);
-        return $self->op_ASSIGN_variable("PORT$port", uc $val);
+        return $self->op_ASSIGN("PORT$port", $val);
     } elsif (exists $self->pins->{$outp}) {
         my ($port, $portbit) = @{$self->pins->{$outp}};
         if ($val =~ /^\d+$/) {
@@ -565,11 +564,10 @@ sub write {
             return "\tbsf PORT$port, $portbit\n" if "$val" eq '1';
             carp "$val cannot be applied to a pin $outp";
         }
-        return $self->op_ASSIGN_variable("PORT$port", uc $val);
+        return $self->op_ASSIGN("PORT$port", $val);
     } elsif ($self->validate($outp)) {
         my $code = "\tbanksel $outp\n";
-        $code .= ($val =~ /^\d+$/) ? $self->op_ASSIGN_literal($outp, $val) :
-                                    $self->op_ASSIGN_variable($outp, uc $val);
+        $code .= $self->op_ASSIGN($outp, $val);
         return $code;
     } else {
         carp "Cannot find $outp in the list of ports or pins";
@@ -953,6 +951,7 @@ sub op_ASSIGN_literal {
     my $bits = $self->address_bits($var);
     my $bytes = POSIX::ceil($bits / 8);
     my $nibbles = 2 * $bytes;
+    $var = uc $var;
     my $code = sprintf "\t;; moves $val (0x%0${nibbles}X) to $var\n", $val;
     if ($val >= 2 ** $bits) {
         carp "Warning: Value $val doesn't fit in $bits-bits";
@@ -982,8 +981,10 @@ sub op_ASSIGN_literal {
     return $code;
 }
 
-sub op_ASSIGN_variable {
+sub op_ASSIGN {
     my ($self, $var1, $var2) = @_;
+    my $literal = qr/^\d+$/;
+    return $self->op_ASSIGN_literal($var1, $var2) if $var2 =~ $literal;
     my $b1 = POSIX::ceil($self->address_bits($var1) / 8);
     my $b2 = POSIX::ceil($self->address_bits($var2) / 8);
     $var2 = uc $var2;
@@ -1084,8 +1085,10 @@ sub op_ADD_ASSIGN_literal {
 }
 
 ## FIXME: handle carry bit
-sub op_ADD_ASSIGN_variable {
+sub op_ADD_ASSIGN {
     my ($self, $var, $var2) = @_;
+    my $literal = qr/^\d+$/;
+    return $self->op_ADD_ASSIGN_literal($var, $var2) if $var2 =~ $literal;
     return << "...";
 \t;;moves $var2 to W
 \tmovf $var2, W
