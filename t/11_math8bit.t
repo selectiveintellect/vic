@@ -13,14 +13,15 @@ Main {
     $var3 = $var2 - $var1;
     $var3 = $var2 * $var1;
     $var2 = $var2 * 5;
-    #$var3 = $var2 / $var1;
-    #$var3 = $var2 % $var1;
+    $var3 = $var2 / $var1;
+    $var3 = $var2 % $var1;
     --$var3;
     ++$var3;
     #$var4 = 64;
     # sqrt is a modifier
     #$var3 = sqrt $var4;
     #$var5 = ($var1 + (($var3 * ($var4 + $var7) + 5) + $var2));
+    hang;
 }
 ...
 
@@ -34,6 +35,16 @@ VAR1 res 1
 VAR2 res 1
 VAR3 res 1
 
+;;;;;; VIC_VAR_DIVIDE VARIABLES ;;;;;;;
+
+VIC_VAR_DIVIDE_UDATA udata
+VIC_VAR_DIVISOR res 2
+VIC_VAR_REMAINDER res 2
+VIC_VAR_QUOTIENT res 2
+VIC_VAR_BITSHIFT res 2
+VIC_VAR_DIVTEMP res 1
+
+
 ;;;;;; VIC_VAR_MULTIPLY VARIABLES ;;;;;;;
 
 VIC_VAR_MULTIPLY_UDATA udata
@@ -43,6 +54,99 @@ VIC_VAR_PRODUCT res 2
 
 
 ;;;; generated code for macros
+;;;;;; Taken from Microchip PIC examples.
+m_divide_internal macro
+    local _m_divide_shiftuploop, _m_divide_loop, _m_divide_shift
+    clrf VIC_VAR_QUOTIENT
+    clrf VIC_VAR_QUOTIENT + 1
+    clrf VIC_VAR_BITSHIFT + 1
+    movlw 0x01
+    movwf VIC_VAR_BITSHIFT
+_m_divide_shiftuploop:
+    bcf STATUS, C
+    rlf VIC_VAR_DIVISOR, F
+    rlf VIC_VAR_DIVISOR + 1, F
+    bcf STATUS, C
+    rlf VIC_VAR_BITSHIFT, F
+    rlf VIC_VAR_BITSHIFT + 1, F
+    btfss VIC_VAR_DIVISOR + 1, 7
+    goto _m_divide_shiftuploop
+_m_divide_loop:
+    movf VIC_VAR_DIVISOR, W
+    subwf VIC_VAR_REMAINDER, W
+    movwf VIC_VAR_DIVTEMP
+    movf VIC_VAR_DIVISOR + 1, W
+    btfss STATUS, C
+    addlw 1
+    subwf VIC_VAR_REMAINDER + 1, W
+    btfss STATUS, C
+    goto _m_divide_shift
+    movwf VIC_VAR_REMAINDER + 1
+    movf VIC_VAR_DIVTEMP, W
+    movwf VIC_VAR_REMAINDER
+    movf VIC_VAR_BITSHIFT + 1, W
+    addwf VIC_VAR_QUOTIENT + 1, F
+    movf VIC_VAR_BITSHIFT, W
+    addwf VIC_VAR_QUOTIENT, F
+_m_divide_shift:
+    bcf STATUS, C
+    rrf VIC_VAR_DIVISOR + 1, F
+    rrf VIC_VAR_DIVISOR, F
+    bcf STATUS, C
+    rrf VIC_VAR_BITSHIFT + 1, F
+    rrf VIC_VAR_BITSHIFT, F
+    btfss STATUS, C
+    goto _m_divide_loop
+    endm
+;;;;;; v1 and v2 are variables
+m_divide_2 macro v1, v2
+    movf v1, W
+    movwf VIC_VAR_REMAINDER
+    clrf VIC_VAR_REMAINDER + 1
+    movf v2, W
+    movwf VIC_VAR_DIVISOR
+    clrf VIC_VAR_DIVISOR + 1
+    m_divide_internal
+    movf VIC_VAR_QUOTIENT, W
+    endm
+;;;;;; v1 is literal and v2 is variable
+m_divide_1a macro v1, v2
+    movlw v1
+    movwf VIC_VAR_REMAINDER
+    clrf VIC_VAR_REMAINDER + 1
+    movf v2, W
+    movwf VIC_VAR_DIVISOR
+    clrf VIC_VAR_DIVISOR + 1
+    m_divide_internal
+    movf VIC_VAR_QUOTIENT, W
+    endm
+;;;;;;; v2 is literal and v1 is variable
+m_divide_1b macro v1, v2
+    movf v1, W
+    movwf VIC_VAR_REMAINDER
+    clrf VIC_VAR_REMAINDER + 1
+    movlw v2
+    movwf VIC_VAR_DIVISOR
+    clrf VIC_VAR_DIVISOR + 1
+    m_divide_internal
+    movf VIC_VAR_QUOTIENT, W
+    endm
+m_mod_2 macro v1, v2
+    m_divide_2 v1, v2
+    movf VIC_VAR_REMAINDER, W
+    endm
+;;;;;; v1 is literal and v2 is variable
+m_mod_1a macro v1, v2
+    m_divide_1a v1, v2
+    movf VIC_VAR_REMAINDER, W
+    endm
+;;;;;;; v2 is literal and v1 is variable
+m_mod_1b macro v1, v2
+    m_divide_1b v1, v2
+    movf VIC_VAR_REMAINDER, W
+    endm
+
+;;;;;; Taken from Microchip PIC examples.
 ;;;;;; multiply v1 and v2 using shifting. multiplication of 8-bit values is done
 ;;;;;; using 16-bit variables. v1 is a variable and v2 is a constant
 m_multiply_1 macro v1, v2
@@ -149,6 +253,17 @@ _start:
 	m_multiply_1 VAR2, 5
 
 	movwf VAR2
+
+	;; perform VAR2 / VAR1 without affecting either
+	m_divide_2 VAR2, VAR1
+
+	movwf VAR3
+
+	;; perform VAR2 / VAR1 without affecting either
+	m_mod_2 VAR2, VAR1
+
+	movwf VAR3
+
 	;; decrements VAR3 in place
 	;; decrement byte[0]
 	decf VAR3, F
@@ -157,6 +272,7 @@ _start:
 	;; increment byte[0]
 	incf VAR3, F
 
+	goto $
 
 ;;;; generated code for functions
 

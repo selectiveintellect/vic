@@ -1233,6 +1233,7 @@ VIC_VAR_PRODUCT res 2
 
 sub m_multiply_macro {
     return << "...";
+;;;;;; Taken from Microchip PIC examples.
 ;;;;;; multiply v1 and v2 using shifting. multiplication of 8-bit values is done
 ;;;;;; using 16-bit variables. v1 is a variable and v2 is a constant
 m_multiply_1 macro v1, v2
@@ -1340,6 +1341,208 @@ sub op_MUL {
     my $macros = {
         m_multiply_var => $self->m_multiply_var,
         m_multiply_macro => $self->m_multiply_macro,
+    };
+    return wantarray ? ($code, {}, $macros) : $code;
+}
+
+sub m_divide_var {
+    # TODO: do more than 8 bits
+    return << "...";
+;;;;;; VIC_VAR_DIVIDE VARIABLES ;;;;;;;
+
+VIC_VAR_DIVIDE_UDATA udata
+VIC_VAR_DIVISOR res 2
+VIC_VAR_REMAINDER res 2
+VIC_VAR_QUOTIENT res 2
+VIC_VAR_BITSHIFT res 2
+VIC_VAR_DIVTEMP res 1
+...
+}
+
+sub m_divide_macro {
+    return << "...";
+;;;;;; Taken from Microchip PIC examples.
+m_divide_internal macro
+    local _m_divide_shiftuploop, _m_divide_loop, _m_divide_shift
+    clrf VIC_VAR_QUOTIENT
+    clrf VIC_VAR_QUOTIENT + 1
+    clrf VIC_VAR_BITSHIFT + 1
+    movlw 0x01
+    movwf VIC_VAR_BITSHIFT
+_m_divide_shiftuploop:
+    bcf STATUS, C
+    rlf VIC_VAR_DIVISOR, F
+    rlf VIC_VAR_DIVISOR + 1, F
+    bcf STATUS, C
+    rlf VIC_VAR_BITSHIFT, F
+    rlf VIC_VAR_BITSHIFT + 1, F
+    btfss VIC_VAR_DIVISOR + 1, 7
+    goto _m_divide_shiftuploop
+_m_divide_loop:
+    movf VIC_VAR_DIVISOR, W
+    subwf VIC_VAR_REMAINDER, W
+    movwf VIC_VAR_DIVTEMP
+    movf VIC_VAR_DIVISOR + 1, W
+    btfss STATUS, C
+    addlw 1
+    subwf VIC_VAR_REMAINDER + 1, W
+    btfss STATUS, C
+    goto _m_divide_shift
+    movwf VIC_VAR_REMAINDER + 1
+    movf VIC_VAR_DIVTEMP, W
+    movwf VIC_VAR_REMAINDER
+    movf VIC_VAR_BITSHIFT + 1, W
+    addwf VIC_VAR_QUOTIENT + 1, F
+    movf VIC_VAR_BITSHIFT, W
+    addwf VIC_VAR_QUOTIENT, F
+_m_divide_shift:
+    bcf STATUS, C
+    rrf VIC_VAR_DIVISOR + 1, F
+    rrf VIC_VAR_DIVISOR, F
+    bcf STATUS, C
+    rrf VIC_VAR_BITSHIFT + 1, F
+    rrf VIC_VAR_BITSHIFT, F
+    btfss STATUS, C
+    goto _m_divide_loop
+    endm
+;;;;;; v1 and v2 are variables
+m_divide_2 macro v1, v2
+    movf v1, W
+    movwf VIC_VAR_REMAINDER
+    clrf VIC_VAR_REMAINDER + 1
+    movf v2, W
+    movwf VIC_VAR_DIVISOR
+    clrf VIC_VAR_DIVISOR + 1
+    m_divide_internal
+    movf VIC_VAR_QUOTIENT, W
+    endm
+;;;;;; v1 is literal and v2 is variable
+m_divide_1a macro v1, v2
+    movlw v1
+    movwf VIC_VAR_REMAINDER
+    clrf VIC_VAR_REMAINDER + 1
+    movf v2, W
+    movwf VIC_VAR_DIVISOR
+    clrf VIC_VAR_DIVISOR + 1
+    m_divide_internal
+    movf VIC_VAR_QUOTIENT, W
+    endm
+;;;;;;; v2 is literal and v1 is variable
+m_divide_1b macro v1, v2
+    movf v1, W
+    movwf VIC_VAR_REMAINDER
+    clrf VIC_VAR_REMAINDER + 1
+    movlw v2
+    movwf VIC_VAR_DIVISOR
+    clrf VIC_VAR_DIVISOR + 1
+    m_divide_internal
+    movf VIC_VAR_QUOTIENT, W
+    endm
+m_mod_2 macro v1, v2
+    m_divide_2 v1, v2
+    movf VIC_VAR_REMAINDER, W
+    endm
+;;;;;; v1 is literal and v2 is variable
+m_mod_1a macro v1, v2
+    m_divide_1a v1, v2
+    movf VIC_VAR_REMAINDER, W
+    endm
+;;;;;;; v2 is literal and v1 is variable
+m_mod_1b macro v1, v2
+    m_divide_1b v1, v2
+    movf VIC_VAR_REMAINDER, W
+    endm
+...
+}
+
+sub op_DIV {
+    my ($self, $var1, $var2, %extra) = @_;
+    my $literal = qr/^\d+$/;
+    my $code = '';
+    #TODO: temporary only 8-bit math
+    my ($b1, $b2);
+    if ($var1 !~ $literal and $var2 !~ $literal) {
+        $b1 = $self->address_bits($var1);
+        $b2 = $self->address_bits($var2);
+        # both are variables
+        $code .= << "...";
+\t;; perform $var1 / $var2 without affecting either
+\tm_divide_2 $var1, $var2
+...
+    } elsif ($var1 =~ $literal and $var2 !~ $literal) {
+        $b2 = $self->address_bits($var2);
+        # var1 is literal and var2 is variable
+        # TODO: check for bits for var1
+        $code .= << "...";
+\t;; perform $var1 / $var2 without affecting $var2
+\tm_divide_1a $var1, $var2
+...
+    } elsif ($var1 !~ $literal and $var2 =~ $literal) {
+        # var2 is literal and var1 is variable
+        $b1 = $self->address_bits($var1);
+        # TODO: check for bits for var1
+        $code .= << "...";
+\t;; perform $var1 / $var2 without affecting $var1
+\tm_divide_1b $var1, $var2
+...
+    } else {
+        # both are literals
+        # TODO: check for bits
+        my $var3 = int($var1 / $var2);
+        $code .= << "...";
+\t;; $var1 / $var2 = $var3
+\tmovlw $var3
+...
+    }
+    my $macros = {
+        m_divide_var => $self->m_divide_var,
+        m_divide_macro => $self->m_divide_macro,
+    };
+    return wantarray ? ($code, {}, $macros) : $code;
+}
+
+sub op_MOD {
+    my ($self, $var1, $var2, %extra) = @_;
+    my $literal = qr/^\d+$/;
+    my $code = '';
+    #TODO: temporary only 8-bit math
+    my ($b1, $b2);
+    if ($var1 !~ $literal and $var2 !~ $literal) {
+        $b1 = $self->address_bits($var1);
+        $b2 = $self->address_bits($var2);
+        # both are variables
+        $code .= << "...";
+\t;; perform $var1 / $var2 without affecting either
+\tm_mod_2 $var1, $var2
+...
+    } elsif ($var1 =~ $literal and $var2 !~ $literal) {
+        $b2 = $self->address_bits($var2);
+        # var1 is literal and var2 is variable
+        # TODO: check for bits for var1
+        $code .= << "...";
+\t;; perform $var1 / $var2 without affecting $var2
+\tm_mod_1a $var1, $var2
+...
+    } elsif ($var1 !~ $literal and $var2 =~ $literal) {
+        # var2 is literal and var1 is variable
+        $b1 = $self->address_bits($var1);
+        # TODO: check for bits for var1
+        $code .= << "...";
+\t;; perform $var1 / $var2 without affecting $var1
+\tm_mod_1b $var1, $var2
+...
+    } else {
+        # both are literals
+        # TODO: check for bits
+        my $var3 = int($var1 % $var2);
+        $code .= << "...";
+\t;; $var1 / $var2 = $var3
+\tmovlw $var3
+...
+    }
+    my $macros = {
+        m_divide_var => $self->m_divide_var,
+        m_divide_macro => $self->m_divide_macro,
     };
     return wantarray ? ($code, {}, $macros) : $code;
 }
