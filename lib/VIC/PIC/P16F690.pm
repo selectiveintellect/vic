@@ -1027,6 +1027,7 @@ sub op_ASSIGN {
 sub op_ASSIGN_w {
     my ($self, $var) = @_;
     return unless $var;
+    $var = uc $var;
     return << "...";
 \tmovwf $var
 ...
@@ -1034,6 +1035,7 @@ sub op_ASSIGN_w {
 
 sub op_NOT {
     my ($self, $var2) = @_;
+    $var2 = uc $var2;
     return << "...";
 \t;;;; generate code for !$var2
 \tcomf $var2, W
@@ -1044,6 +1046,7 @@ sub op_NOT {
 
 sub op_COMP {
     my ($self, $var2) = @_;
+    $var2 = uc $var2;
     return << "...";
 \t;;;; generate code for ~$var2
 \tcomf $var2, W
@@ -1053,6 +1056,7 @@ sub op_COMP {
 sub op_ADD_ASSIGN_literal {
     my ($self, $var, $val) = @_;
     my $b1 = POSIX::ceil($self->address_bits($var) / 8);
+    $var = uc $var;
     my $nibbles = 2 * $b1;
     my $code = sprintf "\t;; $var = $var + 0x%0${nibbles}X\n", $val;
     return $code if $val == 0;
@@ -1180,6 +1184,8 @@ sub op_ADD {
     #TODO: temporary only 8-bit math
     my ($b1, $b2);
     if ($var1 !~ $literal and $var2 !~ $literal) {
+        $var1 = uc $var1;
+        $var2 = uc $var2;
         $b1 = $self->address_bits($var1);
         $b2 = $self->address_bits($var2);
         # both are variables
@@ -1189,6 +1195,7 @@ sub op_ADD {
 \taddwf $var2, W
 ...
     } elsif ($var1 =~ $literal and $var2 !~ $literal) {
+        $var2 = uc $var2;
         $b2 = $self->address_bits($var2);
         # var1 is literal and var2 is variable
         # TODO: check for bits for var1
@@ -1198,6 +1205,7 @@ sub op_ADD {
 \taddlw $var1
 ...
     } elsif ($var1 !~ $literal and $var2 =~ $literal) {
+        $var1 = uc $var1;
         # var2 is literal and var1 is variable
         $b1 = $self->address_bits($var1);
         # TODO: check for bits for var1
@@ -1225,6 +1233,8 @@ sub op_SUB {
     #TODO: temporary only 8-bit math
     my ($b1, $b2);
     if ($var1 !~ $literal and $var2 !~ $literal) {
+        $var1 = uc $var1;
+        $var2 = uc $var2;
         $b1 = $self->address_bits($var1);
         $b2 = $self->address_bits($var2);
         # both are variables
@@ -1234,6 +1244,7 @@ sub op_SUB {
 \tsubwf $var1, W
 ...
     } elsif ($var1 =~ $literal and $var2 !~ $literal) {
+        $var2 = uc $var2;
         $b2 = $self->address_bits($var2);
         # var1 is literal and var2 is variable
         # TODO: check for bits for var1
@@ -1243,6 +1254,7 @@ sub op_SUB {
 \tsublw $var1
 ...
     } elsif ($var1 !~ $literal and $var2 =~ $literal) {
+        $var1 = uc $var1;
         # var2 is literal and var1 is variable
         $b1 = $self->address_bits($var1);
         # TODO: check for bits for var1

@@ -522,7 +522,7 @@ sub generate_code_unary_expr {
     $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
     # check if temporary variable or not
     if (exists $ast->{variables}->{$varname}) {
-        my $nvar = $ast->{variables}->{$varname}->{name} || uc $varname;
+        my $nvar = $ast->{variables}->{$varname}->{name} || $varname;
         my ($code, $funcs, $macros) = $self->pic->$method($nvar);
         return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
         push @code, "\t;; $line" if $self->intermediate_inline;
@@ -542,13 +542,10 @@ sub generate_code_operations {
     if (scalar @args == 2) {
         $op = shift @args;
         $var1 = shift @args;
-        $var1 = uc $var1;
     } elsif (scalar @args == 3) {
         $var1 = shift @args;
-        $var1 = uc $var1;
         $op = shift @args;
         $var2 = shift @args;
-        $var2 = uc $var2;
     } else {
         return $self->parser->throw_error("Error in intermediate code '$line'");
     }
@@ -649,7 +646,7 @@ sub generate_code_assign_expr {
                 unless ($use_stack) {
                     my @newcode = $self->generate_code_operations($tmp_code);
                     push @code, @newcode if @newcode;
-                    my ($code) = $self->pic->op_ASSIGN_w(uc $varname);
+                    my ($code) = $self->pic->op_ASSIGN_w($varname);
                     return $self->parser->throw_error("Error in intermediate code '$tmp_code'") unless $code;
                     push @code, "\t;; $line" if $self->intermediate_inline;
                     push @code, $code if $code;
@@ -660,7 +657,7 @@ sub generate_code_assign_expr {
         } else {
             my $method = $self->pic->validate_operator($op);
             $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
-            my $nvar = $ast->{variables}->{$varname}->{name} || uc $varname;
+            my $nvar = $ast->{variables}->{$varname}->{name} || $varname;
             my ($code, $funcs, $macros) = $self->pic->$method($nvar, $rhs);
             return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
             push @code, "\t;; $line" if $self->intermediate_inline;
