@@ -1,4 +1,4 @@
-package VIC::PIC;
+package VIC::Receiver;
 use strict;
 use warnings;
 use bigint;
@@ -875,7 +875,7 @@ $funcs
 
 =head1 NAME
 
-VIC::PIC
+VIC::Receiver
 
 =head1 SYNOPSIS
 

@@ -1850,6 +1850,7 @@ VIC_VAR_DEBOUNCECOUNTER db 0x00
 
 ...
 }
+
 sub debounce {
     my ($self, $inp, %action) = @_;
     my $action_label = $action{ACTION};
