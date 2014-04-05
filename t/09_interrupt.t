@@ -251,7 +251,7 @@ _debounce_state_up:
 
 _debounce_state_check:
 	movf    VIC_VAR_DEBOUNCECOUNTER, W
-	xorlw   2
+	xorlw   0x02
 	;; is counter == 2 ?
 	btfss   STATUS, Z
 	goto    _end_action_3
@@ -266,7 +266,7 @@ _end_action_3:
 
 
 	movf DIRXN, W
-	xorlw 1
+	xorlw 0x01
 	btfss STATUS, Z ;; DIRXN == 1 ?
 	goto _false_5
 	goto _true_4

@@ -119,7 +119,7 @@ _debounce_state_up:
 
 _debounce_state_check:
 	movf    VIC_VAR_DEBOUNCECOUNTER, W
-	xorlw   5
+	xorlw   0x05
 	;; is counter == 5 ?
 	btfss   STATUS, Z
 	goto _end_action_2

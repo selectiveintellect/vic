@@ -1735,7 +1735,8 @@ sub op_EQ {
     $pred .= "\tgoto $extra{FALSE}\n" if defined $extra{FALSE};
     $pred .= "\tgoto $extra{TRUE}\n" if defined $extra{TRUE};
     $pred .= "$extra{END}:\n" if defined $extra{END};
-    if ($lhs !~ /^\d+$/ and $rhs !~ /^\d+$/) {
+    my $literal = qr/^\d+$/;
+    if ($lhs !~ $literal and $rhs !~ $literal) {
         # lhs and rhs are variables
         $rhs = uc $rhs;
         $lhs = uc $lhs;
@@ -1746,18 +1747,20 @@ sub op_EQ {
 \tbtfss STATUS, Z ;; they are equal
 $pred
 ...
-    } elsif ($rhs !~ /^\d+$/ and $lhs =~ /^\d+$/) {
+    } elsif ($rhs !~ $literal and $lhs =~ $literal) {
         # rhs is variable and lhs is a literal
         $rhs = uc $rhs;
+        $lhs = sprintf "0x%02X", $lhs;
         return << "...";
 \tmovf $rhs, W
 \txorlw $lhs
 \tbtfss STATUS, Z ;; $rhs == $lhs ?
 $pred
 ...
-    } elsif ($rhs =~ /^\d+$/ and $lhs !~ /^\d+$/) {
+    } elsif ($rhs =~ $literal and $lhs !~ $literal) {
         # rhs is a literal and lhs is a variable
         $lhs = uc $lhs;
+        $rhs = sprintf "0x%02X", $rhs;
         return << "...";
 \tmovf $lhs, W
 \txorlw $rhs
@@ -1872,6 +1875,7 @@ sub debounce {
     $funcs = {} unless defined $funcs;
     $deb_code = 'nop' unless defined $deb_code;
     $macros->{m_debounce_var} = $self->m_debounce_var;
+    $debounce_count = sprintf "0x%02X", $debounce_count;
     my $code = <<"...";
 \t;;; generate code for debounce $port<$portbit>
 $deb_code
