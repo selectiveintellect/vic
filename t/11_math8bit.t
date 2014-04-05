@@ -17,7 +17,8 @@ Main {
     $var3 = $var2 % $var1;
     --$var3;
     ++$var3;
-    #$var4 = 64;
+    $var4 = 64;
+    $var4 -= $var1;
     # sqrt is a modifier
     #$var3 = sqrt $var4;
     #$var5 = ($var1 + (($var3 * ($var4 + $var7) + 5) + $var2));
@@ -34,6 +35,7 @@ GLOBAL_VAR_UDATA udata
 VAR1 res 1
 VAR2 res 1
 VAR3 res 1
+VAR4 res 1
 
 ;;;;;; VIC_VAR_DIVIDE VARIABLES ;;;;;;;
 
@@ -255,6 +257,14 @@ _start:
 	;; increments VAR3 in place
 	;; increment byte[0]
 	incf VAR3, F
+
+    ;; moves 64 (0x40) to VAR4
+    movlw 0x40
+    movwf VAR4
+
+    ;;moves VAR1 to W and subtracts from VAR4
+    movf VAR1, W
+    subwf VAR4, F
 
 	goto $
 

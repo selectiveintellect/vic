@@ -1084,16 +1084,39 @@ sub op_ADD_ASSIGN_literal {
     return $code;
 }
 
-## FIXME: handle carry bit
+## TODO: handle carry bit
 sub op_ADD_ASSIGN {
     my ($self, $var, $var2) = @_;
     my $literal = qr/^\d+$/;
     return $self->op_ADD_ASSIGN_literal($var, $var2) if $var2 =~ $literal;
+    $var = uc $var;
+    $var2 = uc $var2;
     return << "...";
 \t;;moves $var2 to W
 \tmovf $var2, W
 \taddwf $var, F
 ...
+}
+
+## TODO: handle carry bit
+sub op_SUB_ASSIGN {
+    my ($self, $var, $var2) = @_;
+    my $literal = qr/^\d+$/;
+    $var = uc $var;
+    if ($var2 =~ $literal) {
+        return << "....";
+\t;; moves $var2 to W and subtracts from $var
+\tmovlw $var2
+\tsubwf $var, F
+....
+    } else {
+        $var2 = uc $var2;
+        return << "...";
+\t;;moves $var2 to W and subtracts from $var
+\tmovf $var2, W
+\tsubwf $var, F
+...
+    }
 }
 
 sub op_INC {
