@@ -1105,22 +1105,8 @@ sub op_ADD_ASSIGN {
 ## TODO: handle carry bit
 sub op_SUB_ASSIGN {
     my ($self, $var, $var2) = @_;
-    my $literal = qr/^\d+$/;
-    $var = uc $var;
-    if ($var2 =~ $literal) {
-        return << "....";
-\t;; moves $var2 to W and subtracts from $var
-\tmovlw $var2
-\tsubwf $var, F
-....
-    } else {
-        $var2 = uc $var2;
-        return << "...";
-\t;;moves $var2 to W and subtracts from $var
-\tmovf $var2, W
-\tsubwf $var, F
-...
-    }
+    my ($code, $funcs, $macros) = $self->op_SUB($var, $var2);
+    $code .= $self->op_ASSIGN_w($var);
 }
 
 sub op_MUL_ASSIGN {
@@ -1138,6 +1124,24 @@ sub op_DIV_ASSIGN {
 sub op_MOD_ASSIGN {
     my ($self, $var, $var2) = @_;
     my ($code, $funcs, $macros) = $self->op_MOD($var, $var2);
+    $code .= $self->op_ASSIGN_w($var);
+}
+
+sub op_BXOR_ASSIGN {
+    my ($self, $var, $var2) = @_;
+    my ($code, $funcs, $macros) = $self->op_BXOR($var, $var2);
+    $code .= $self->op_ASSIGN_w($var);
+}
+
+sub op_BAND_ASSIGN {
+    my ($self, $var, $var2) = @_;
+    my ($code, $funcs, $macros) = $self->op_BAND($var, $var2);
+    $code .= $self->op_ASSIGN_w($var);
+}
+
+sub op_BOR_ASSIGN {
+    my ($self, $var, $var2) = @_;
+    my ($code, $funcs, $macros) = $self->op_BOR($var, $var2);
     $code .= $self->op_ASSIGN_w($var);
 }
 
@@ -1196,6 +1200,7 @@ sub op_ADD {
 ...
     } elsif ($var1 =~ $literal and $var2 !~ $literal) {
         $var2 = uc $var2;
+        $var1 = sprintf "0x%02X", $var1;
         $b2 = $self->address_bits($var2);
         # var1 is literal and var2 is variable
         # TODO: check for bits for var1
@@ -1206,6 +1211,7 @@ sub op_ADD {
 ...
     } elsif ($var1 !~ $literal and $var2 =~ $literal) {
         $var1 = uc $var1;
+        $var2 = sprintf "0x%02X", $var2;
         # var2 is literal and var1 is variable
         $b1 = $self->address_bits($var1);
         # TODO: check for bits for var1
@@ -1218,6 +1224,7 @@ sub op_ADD {
         # both are literals
         # TODO: check for bits
         my $var3 = $var1 + $var2;
+        $var3 = sprintf "0x%02X", $var3;
         $code .= << "...";
 \t;; $var1 + $var2 = $var3
 \tmovlw $var3
@@ -1245,6 +1252,7 @@ sub op_SUB {
 ...
     } elsif ($var1 =~ $literal and $var2 !~ $literal) {
         $var2 = uc $var2;
+        $var1 = sprintf "0x%02X", $var1;
         $b2 = $self->address_bits($var2);
         # var1 is literal and var2 is variable
         # TODO: check for bits for var1
@@ -1255,6 +1263,7 @@ sub op_SUB {
 ...
     } elsif ($var1 !~ $literal and $var2 =~ $literal) {
         $var1 = uc $var1;
+        $var2 = sprintf "0x%02X", $var2;
         # var2 is literal and var1 is variable
         $b1 = $self->address_bits($var1);
         # TODO: check for bits for var1
@@ -1267,6 +1276,7 @@ sub op_SUB {
         # both are literals
         # TODO: check for bits
         my $var3 = $var1 - $var2;
+        $var3 = sprintf "0x%02X", $var3;
         $code .= << "...";
 \t;; $var1 - $var2 = $var3
 \tmovlw $var3
@@ -1357,6 +1367,7 @@ sub op_MUL {
 ...
     } elsif ($var1 =~ $literal and $var2 !~ $literal) {
         $var2 = uc $var2;
+        $var1 = sprintf "0x%02X", $var1;
         $b2 = $self->address_bits($var2);
         # var1 is literal and var2 is variable
         # TODO: check for bits for var1
@@ -1366,6 +1377,7 @@ sub op_MUL {
 ...
     } elsif ($var1 !~ $literal and $var2 =~ $literal) {
         $var1 = uc $var1;
+        $var2 = sprintf "0x%02X", $var2;
         # var2 is literal and var1 is variable
         $b1 = $self->address_bits($var1);
         # TODO: check for bits for var1
@@ -1377,6 +1389,7 @@ sub op_MUL {
         # both are literals
         # TODO: check for bits
         my $var3 = $var1 * $var2;
+        $var3 = sprintf "0x%02X", $var3;
         $code .= << "...";
 \t;; $var1 * $var2 = $var3
 \tmovlw $var3
@@ -1428,7 +1441,7 @@ _m_divide_loop:
     movwf VIC_VAR_DIVTEMP
     movf VIC_VAR_DIVISOR + 1, W
     btfss STATUS, C
-    addlw 1
+    addlw 0x01
     subwf VIC_VAR_REMAINDER + 1, W
     btfss STATUS, C
     goto _m_divide_shift
@@ -1517,6 +1530,7 @@ sub op_DIV {
 ...
     } elsif ($var1 =~ $literal and $var2 !~ $literal) {
         $var2 = uc $var2;
+        $var1 = sprintf "0x%02X", $var1;
         $b2 = $self->address_bits($var2);
         # var1 is literal and var2 is variable
         # TODO: check for bits for var1
@@ -1526,6 +1540,7 @@ sub op_DIV {
 ...
     } elsif ($var1 !~ $literal and $var2 =~ $literal) {
         $var1 = uc $var1;
+        $var2 = sprintf "0x%02X", $var2;
         # var2 is literal and var1 is variable
         $b1 = $self->address_bits($var1);
         # TODO: check for bits for var1
@@ -1537,6 +1552,7 @@ sub op_DIV {
         # both are literals
         # TODO: check for bits
         my $var3 = int($var1 / $var2);
+        $var3 = sprintf "0x%02X", $var3;
         $code .= << "...";
 \t;; $var1 / $var2 = $var3
 \tmovlw $var3
@@ -1567,6 +1583,7 @@ sub op_MOD {
 ...
     } elsif ($var1 =~ $literal and $var2 !~ $literal) {
         $var2 = uc $var2;
+        $var1 = sprintf "0x%02X", $var1;
         $b2 = $self->address_bits($var2);
         # var1 is literal and var2 is variable
         # TODO: check for bits for var1
@@ -1576,6 +1593,7 @@ sub op_MOD {
 ...
     } elsif ($var1 !~ $literal and $var2 =~ $literal) {
         $var1 = uc $var1;
+        $var2 = sprintf "0x%02X", $var2;
         # var2 is literal and var1 is variable
         $b1 = $self->address_bits($var1);
         # TODO: check for bits for var1
@@ -1587,6 +1605,7 @@ sub op_MOD {
         # both are literals
         # TODO: check for bits
         my $var3 = int($var1 % $var2);
+        $var3 = sprintf "0x%02X", $var3;
         $code .= << "...";
 \t;; $var1 / $var2 = $var3
 \tmovlw $var3
@@ -1597,6 +1616,117 @@ sub op_MOD {
         m_divide_macro => $self->m_divide_macro,
     };
     return wantarray ? ($code, {}, $macros) : $code;
+}
+
+sub op_BXOR {
+    my ($self, $var1, $var2, %extra) = @_;
+    my $literal = qr/^\d+$/;
+    if ($var1 !~ $literal and $var2 !~ $literal) {
+        $var1 = uc $var1;
+        $var2 = uc $var2;
+        return << "...";
+\t;; perform $var1 ^ $var2 and move into W
+\tmovf $var1, W
+\txorwf $var2, W
+...
+    } elsif ($var1 !~ $literal and $var2 =~ $literal) {
+        $var1 = uc $var1;
+        $var2 = sprintf "0x%02X", $var2;
+        return << "...";
+\t;; perform $var1 ^ $var2 and move into W
+\tmovlw $var2
+\txorwf $var1, W
+...
+    } elsif ($var1 =~ $literal and $var2 !~ $literal) {
+        $var2 = uc $var2;
+        $var1 = sprintf "0x%02X", $var1;
+        return << "...";
+\t;; perform $var1 ^ $var2 and move into W
+\tmovlw $var1
+\txorwf $var2, W
+...
+    } else {
+        my $var3 = $var1 ^ $var2;
+        $var3 = sprintf "0x%02X", $var3;
+        return << "...";
+\t;; $var3 = $var1 ^ $var2. move into W
+\tmovlw $var3
+...
+    }
+}
+
+sub op_BAND {
+    my ($self, $var1, $var2, %extra) = @_;
+    my $literal = qr/^\d+$/;
+    if ($var1 !~ $literal and $var2 !~ $literal) {
+        $var1 = uc $var1;
+        $var2 = uc $var2;
+        return << "...";
+\t;; perform $var1 & $var2 and move into W
+\tmovf $var1, W
+\tandwf $var2, W
+...
+    } elsif ($var1 !~ $literal and $var2 =~ $literal) {
+        $var1 = uc $var1;
+        $var2 = sprintf "0x%02X", $var2;
+        return << "...";
+\t;; perform $var1 & $var2 and move into W
+\tmovlw $var2
+\tandwf $var1, W
+...
+    } elsif ($var1 =~ $literal and $var2 !~ $literal) {
+        $var2 = uc $var2;
+        $var1 = sprintf "0x%02X", $var1;
+        return << "...";
+\t;; perform $var1 & $var2 and move into W
+\tmovlw $var1
+\tandwf $var2, W
+...
+    } else {
+        my $var3 = $var2 & $var1;
+        $var3 = sprintf "0x%02X", $var3;
+        return << "...";
+\t;; $var3 = $var1 & $var2. move into W
+\tmovlw $var3
+...
+    }
+}
+
+sub op_BOR {
+    my ($self, $var1, $var2, %extra) = @_;
+    my $literal = qr/^\d+$/;
+    if ($var1 !~ $literal and $var2 !~ $literal) {
+        $var1 = uc $var1;
+        $var2 = uc $var2;
+        return << "...";
+\t;; perform $var1 | $var2 and move into W
+\tmovf $var1, W
+\tiorwf $var2, W
+...
+    } elsif ($var1 !~ $literal and $var2 =~ $literal) {
+        $var1 = uc $var1;
+        $var2 = sprintf "0x%02X", $var2;
+        return << "...";
+\t;; perform $var1 | $var2 and move into W
+\tmovlw $var2
+\tiorwf $var1, W
+...
+    } elsif ($var1 =~ $literal and $var2 !~ $literal) {
+        $var2 = uc $var2;
+        $var1 = sprintf "0x%02X", $var1;
+        return << "...";
+\t;; perform $var1 | $var2 and move into W
+\tmovlw $var1
+\tiorwf $var2, W
+...
+    } else {
+        my $var3 = $var1 | $var2;
+        $var3 = sprintf "0x%02X", $var3;
+        return << "...";
+\t;; $var3 = $var1 | $var2. move into W
+\tmovlw $var3
+...
+    }
 }
 
 sub op_EQ {

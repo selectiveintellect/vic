@@ -22,6 +22,10 @@ Main {
     $var3 *= 3;
     $var2 /= 5;
     $var4 %= $var2;
+    $var4 = 64;
+    $var4 ^= 0xFF;
+    $var4 |= 0x80;
+    $var4 &= 0xAA;
     # sqrt is a modifier
     #$var3 = sqrt $var4;
     #$var5 = ($var1 + (($var3 * ($var4 + $var7) + 5) + $var2));
@@ -82,7 +86,7 @@ _m_divide_loop:
     movwf VIC_VAR_DIVTEMP
     movf VIC_VAR_DIVISOR + 1, W
     btfss STATUS, C
-    addlw 1
+    addlw 0x01
     subwf VIC_VAR_REMAINDER + 1, W
     btfss STATUS, C
     goto _m_divide_shift
@@ -238,8 +242,8 @@ _start:
 
 	movwf VAR3
 
-	;; perform VAR2 * 5 without affecting VAR2
-	m_multiply_1 VAR2, 5
+	;; perform VAR2 * 0x05 without affecting VAR2
+	m_multiply_1 VAR2, 0x05
 
 	movwf VAR2
 
@@ -267,14 +271,15 @@ _start:
 
     ;;moves VAR1 to W and subtracts from VAR4
     movf VAR1, W
-    subwf VAR4, F
-    ;; perform VAR3 * 3 without affecting VAR3
-    m_multiply_1 VAR3, 3
+    subwf VAR4, W
+    movwf VAR4
+    ;; perform VAR3 * 0x03 without affecting VAR3
+    m_multiply_1 VAR3, 0x03
     movwf VAR3
 
     ;; SET::DIV_ASSIGN::var2::5
-    ;; perform VAR2 / 5 without affecting VAR2
-    m_divide_1b VAR2, 5
+    ;; perform VAR2 / 0x05 without affecting VAR2
+    m_divide_1b VAR2, 0x05
     movwf VAR2
 
     ;; SET::MOD_ASSIGN::var4::var2
@@ -282,7 +287,27 @@ _start:
     m_mod_2 VAR4, VAR2
     movwf VAR4
 
-	goto $
+
+    ;; moves 64 (0x40) to VAR4
+    movlw 0x40
+    movwf VAR4
+
+    ;; perform VAR4 ^ 0xFF and move into W
+    movlw 0xFF
+    xorwf VAR4, W
+    movwf VAR4
+
+    ;; perform VAR4 | 0x80 and move into W
+    movlw 0x80
+    iorwf VAR4, W
+    movwf VAR4
+
+    ;; perform VAR4 & 0xAA and move into W
+    movlw 0xAA
+    andwf VAR4, W
+    movwf VAR4
+
+    goto $
 
 ;;;; generated code for functions
 

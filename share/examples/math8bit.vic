@@ -18,6 +18,10 @@ Main {
     $var3 *= 3;
     $var2 /= 5;
     $var4 %= $var2;
+    $var4 = 64;
+    $var4 ^= 0xFF;
+    $var4 |= 0x80;
+    $var4 &= 0xAA;
     # sqrt is a modifier
     #$var3 = sqrt $var4;
     #$var5 = ($var1 + (($var3 * ($var4 + $var7) + 5) + $var2));
