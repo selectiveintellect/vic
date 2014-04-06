@@ -14,7 +14,7 @@ sub make_tree {
   {
     '+grammar' => 'vic',
     '+toprule' => 'program',
-    '+version' => '0.0.7',
+    '+version' => '0.0.8',
     'COMMA' => {
       '.rgx' => qr/\G,/
     },
@@ -245,6 +245,9 @@ sub make_tree {
             },
             {
               '.ref' => 'number'
+            },
+            {
+              '.ref' => 'string'
             }
           ]
         },
@@ -551,15 +554,23 @@ sub make_tree {
         {
           '.any' => [
             {
-              '.ref' => 'name'
+              '.ref' => 'variable'
             },
             {
-              '.ref' => 'variable'
+              '.ref' => 'name'
             }
           ]
         },
         {
-          '.ref' => 'config_expression'
+          '+max' => 1,
+          '.any' => [
+            {
+              '.ref' => 'config_expression'
+            },
+            {
+              '.ref' => 'name'
+            }
+          ]
         },
         {
           '.ref' => 'line_ending'

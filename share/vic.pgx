@@ -1,5 +1,5 @@
 %grammar vic
-%version 0.0.7
+%version 0.0.8
 #COPYRIGHT: 2014 Vikas N Kumar <vikas@cpan.org>. All Rights Reserved
 
 # uc-select is necessary.
@@ -10,8 +10,8 @@ uc-select: /PIC <BLANK>+ (<uc-types>) <line-ending>/
 
 # P16F690X is fake just to show how to enumerate.
 uc-types: /(?i:P16F690 | P16F690X)/
-uc-config: /config/ + (name | variable) config-expression line-ending
-config-expression: name /<EQUAL> -/ (number-units | number) -
+uc-config: /config/ + (variable | name) (config-expression | name)? line-ending
+config-expression: name /<EQUAL> -/ (number-units | number | string) -
 
 comment: /- <HASH> <ANY>* <EOL>/ | blank-line
 blank-line: /- <EOL>/
