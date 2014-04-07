@@ -1,6 +1,6 @@
 PIC P16F690;
 
-config adc right_justify = 0;
+pragma adc right_justify = 0;
 
 Main {
     digital_output PORTC; # all pins

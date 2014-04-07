@@ -230,32 +230,6 @@ sub make_tree {
         }
       ]
     },
-    'config_expression' => {
-      '.all' => [
-        {
-          '.ref' => 'name'
-        },
-        {
-          '.rgx' => qr/\G=[\ \t]*/
-        },
-        {
-          '.any' => [
-            {
-              '.ref' => 'number_units'
-            },
-            {
-              '.ref' => 'number'
-            },
-            {
-              '.ref' => 'string'
-            }
-          ]
-        },
-        {
-          '.ref' => '_'
-        }
-      ]
-    },
     'double_quoted_string' => {
       '.rgx' => qr/\G(?:"((?:[^\n\\"]|\\"|\\\\|\\[0nt])*?)")/
     },
@@ -320,7 +294,7 @@ sub make_tree {
     'header' => {
       '.any' => [
         {
-          '.ref' => 'uc_config'
+          '.ref' => 'pragmas'
         },
         {
           '.ref' => 'comment'
@@ -453,6 +427,66 @@ sub make_tree {
         }
       ]
     },
+    'pragma_expression' => {
+      '.all' => [
+        {
+          '.ref' => 'name'
+        },
+        {
+          '.rgx' => qr/\G=[\ \t]*/
+        },
+        {
+          '.any' => [
+            {
+              '.ref' => 'number_units'
+            },
+            {
+              '.ref' => 'number'
+            },
+            {
+              '.ref' => 'string'
+            }
+          ]
+        },
+        {
+          '.ref' => '_'
+        }
+      ]
+    },
+    'pragmas' => {
+      '.all' => [
+        {
+          '.rgx' => qr/\Gpragma/
+        },
+        {
+          '.ref' => '__'
+        },
+        {
+          '.any' => [
+            {
+              '.ref' => 'variable'
+            },
+            {
+              '.ref' => 'name'
+            }
+          ]
+        },
+        {
+          '+max' => 1,
+          '.any' => [
+            {
+              '.ref' => 'pragma_expression'
+            },
+            {
+              '.ref' => 'name'
+            }
+          ]
+        },
+        {
+          '.ref' => 'line_ending'
+        }
+      ]
+    },
     'program' => {
       '.all' => [
         {
@@ -540,40 +574,6 @@ sub make_tree {
         },
         {
           '.ref' => 'double_quoted_string'
-        }
-      ]
-    },
-    'uc_config' => {
-      '.all' => [
-        {
-          '.rgx' => qr/\Gconfig/
-        },
-        {
-          '.ref' => '__'
-        },
-        {
-          '.any' => [
-            {
-              '.ref' => 'variable'
-            },
-            {
-              '.ref' => 'name'
-            }
-          ]
-        },
-        {
-          '+max' => 1,
-          '.any' => [
-            {
-              '.ref' => 'config_expression'
-            },
-            {
-              '.ref' => 'name'
-            }
-          ]
-        },
-        {
-          '.ref' => 'line_ending'
         }
       ]
     },

@@ -1,8 +1,8 @@
 PIC P16F690;
 
-config debounce count = 2;
-config debounce delay = 1ms;
-config adc right_justify = 0;
+pragma debounce count = 2;
+pragma debounce delay = 1ms;
+pragma adc right_justify = 0;
 
 Main {
     digital_output PORTC;

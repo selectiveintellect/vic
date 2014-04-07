@@ -44,7 +44,7 @@ sub got_uc_select {
     return;
 }
 
-sub got_uc_config {
+sub got_pragmas {
     my ($self, $list) = @_;
     $self->flatten($list);
     $self->pic->update_config(@$list);
@@ -432,7 +432,7 @@ sub got_variable {
     # we do not want to store it yet and definitely not store the size yet
     # we could remove this if we set the size after the code generation or so
     # but that may lead to more complexity. this is much easier
-    return $varname if $parent eq 'uc_config';
+    return $varname if $parent eq 'pragmas';
     $self->ast->{variables}->{$varname} = {
         name => uc $varname,
         scope => $self->ast->{block_stack}->[-1],

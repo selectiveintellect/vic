@@ -4,7 +4,7 @@ use t::TestVIC tests => 1, debug => 0;
 my $input = <<'...';
 PIC P16F690;
 
-config variable bits = 8;
+pragma variable bits = 8;
 
 Main {
     $var1 = 12345;

@@ -1,6 +1,6 @@
 PIC P16F690;
 
-config USART baud = 9600;
+pragma USART baud = 9600;
 
 Main {
     digital_output USART; # is this necessary ?

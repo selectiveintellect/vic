@@ -4,7 +4,7 @@ use t::TestVIC tests => 1, debug => 0;
 my $input = <<'...';
 PIC P16F690;
 
-config adc right_justify = 0;
+pragma adc right_justify = 0;
 Main {
     digital_output RC0;
     analog_input RA0;

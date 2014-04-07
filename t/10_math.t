@@ -4,10 +4,10 @@ use t::TestVIC skip_all => 'incomplete implementation';#tests => 0, debug => 0;
 my $input = <<'...';
 PIC P16F690;
 
-config variable bits = 16;
-config $var5 bits = 8;
-config $var6 bits = 32;
-config $var7 bits = 64;
+pragma variable bits = 16;
+pragma $var5 bits = 8;
+pragma $var6 bits = 32;
+pragma $var7 bits = 64;
 
 Main {
     digital_output PORTC;

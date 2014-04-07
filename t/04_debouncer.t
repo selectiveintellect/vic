@@ -4,8 +4,8 @@ use t::TestVIC tests => 1, debug => 0;
 my $input = <<'...';
 PIC P16F690;
 
-config debounce count = 5;
-config debounce delay = 1ms;
+pragma debounce count = 5;
+pragma debounce delay = 1ms;
 
 Main {
     digital_output PORTC;
