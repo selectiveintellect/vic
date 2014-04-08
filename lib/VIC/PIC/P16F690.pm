@@ -501,7 +501,7 @@ sub validate_operator {
     my $vop = "op_$op" if $op =~ /^
             LE | GE | GT | LT | EQ | NE |
             ADD | SUB | MUL | DIV | MOD |
-            BXOR | BOR | BAND | AND | OR |
+            BXOR | BOR | BAND | AND | OR | SHL | SHR |
             ASSIGN | INC | DEC | NOT | COMP
         /x;
     return $vop;
@@ -884,6 +884,58 @@ sub delay {
     return wantarray ? ($code, $funcs, $macros) : $code;
 }
 
+sub op_SHL {
+    my ($self, $var, $bits) = @_;
+    my $literal = qr/^\d+$/;
+    my $code = '';
+    if ($var !~ $literal and $bits =~ $literal) {
+        $var = uc $var;
+        $code .= "\t;;;; perform $var << $bits\n";
+        if ($bits == 1) {
+            $code .= "\trlf $var, W\n";
+        } elsif ($bits == 0) {
+            $code .= "\tmovf $var, W\n";
+        } else {
+            carp "Not implemented. use the 'shl' instruction\n";
+            return;
+        }
+    } elsif ($var =~ $literal and $bits =~ $literal) {
+        my $res = $var << $bits;
+        $code .= "\t;;;; perform $var << $bits = $res\n";
+        $code .= sprintf "\tmovlw 0x%02X\n", $res;
+    } else {
+        carp "Unable to handle $var << $bits";
+        return;
+    }
+    return $code;
+}
+
+sub op_SHR {
+    my ($self, $var, $bits) = @_;
+    my $literal = qr/^\d+$/;
+    my $code = '';
+    if ($var !~ $literal and $bits =~ $literal) {
+        $var = uc $var;
+        $code .= "\t;;;; perform $var >> $bits\n";
+        if ($bits == 1) {
+            $code .= "\trrf $var, W\n";
+        } elsif ($bits == 0) {
+            $code .= "\tmovf $var, W\n";
+        } else {
+            carp "Not implemented. use the 'shr' instruction\n";
+            return;
+        }
+    } elsif ($var =~ $literal and $bits =~ $literal) {
+        my $res = $var >> $bits;
+        $code .= "\t;;;; perform $var >> $bits = $res\n";
+        $code .= sprintf "\tmovlw 0x%02X\n", $res;
+    } else {
+        carp "Unable to handle $var >> $bits";
+        return;
+    }
+    return $code;
+}
+
 sub shl {
     my ($self, $var, $bits) = @_;
     $var = uc $var;
@@ -1103,42 +1155,63 @@ sub op_SUB_ASSIGN {
     my ($self, $var, $var2) = @_;
     my ($code, $funcs, $macros) = $self->op_SUB($var, $var2);
     $code .= $self->op_ASSIGN_w($var);
+    return wantarray ? ($code, $funcs, $macros) : $code;
 }
 
 sub op_MUL_ASSIGN {
     my ($self, $var, $var2) = @_;
     my ($code, $funcs, $macros) = $self->op_MUL($var, $var2);
     $code .= $self->op_ASSIGN_w($var);
+    return wantarray ? ($code, $funcs, $macros) : $code;
 }
 
 sub op_DIV_ASSIGN {
     my ($self, $var, $var2) = @_;
     my ($code, $funcs, $macros) = $self->op_DIV($var, $var2);
     $code .= $self->op_ASSIGN_w($var);
+    return wantarray ? ($code, $funcs, $macros) : $code;
 }
 
 sub op_MOD_ASSIGN {
     my ($self, $var, $var2) = @_;
     my ($code, $funcs, $macros) = $self->op_MOD($var, $var2);
     $code .= $self->op_ASSIGN_w($var);
+    return wantarray ? ($code, $funcs, $macros) : $code;
 }
 
 sub op_BXOR_ASSIGN {
     my ($self, $var, $var2) = @_;
     my ($code, $funcs, $macros) = $self->op_BXOR($var, $var2);
     $code .= $self->op_ASSIGN_w($var);
+    return wantarray ? ($code, $funcs, $macros) : $code;
 }
 
 sub op_BAND_ASSIGN {
     my ($self, $var, $var2) = @_;
     my ($code, $funcs, $macros) = $self->op_BAND($var, $var2);
     $code .= $self->op_ASSIGN_w($var);
+    return wantarray ? ($code, $funcs, $macros) : $code;
 }
 
 sub op_BOR_ASSIGN {
     my ($self, $var, $var2) = @_;
     my ($code, $funcs, $macros) = $self->op_BOR($var, $var2);
     $code .= $self->op_ASSIGN_w($var);
+    return wantarray ? ($code, $funcs, $macros) : $code;
+}
+
+sub op_SHL_ASSIGN {
+    my ($self, $var, $var2) = @_;
+    my ($code, $funcs, $macros) = $self->op_SHL($var, $var2);
+    $code .= $self->op_ASSIGN_w($var);
+    return wantarray ? ($code, $funcs, $macros) : $code;
+}
+
+sub op_SHR_ASSIGN {
+    my ($self, $var, $var2) = @_;
+    my ($code, $funcs, $macros) = $self->op_SHR($var, $var2);
+    $code .= $self->op_ASSIGN_w($var);
+    return wantarray ? ($code, $funcs, $macros) : $code;
 }
 
 sub op_INC {

@@ -357,6 +357,13 @@ sub got_expr_value {
                 splice @arr, $idx, 2; # remove the extra elements
                 $idx = firstidx { $_ =~ /^ADD|SUB$/ } @arr;
             }
+            $idx = firstidx { $_ =~ /^SHL|SHR$/ } @arr;
+            while ($idx >= 0) {
+                my $res = $self->got_expr_value([$arr[$idx - 1], $arr[$idx], $arr[$idx + 1]]);
+                $arr[$idx - 1] = $res;
+                splice @arr, $idx, 2; # remove the extra elements
+                $idx = firstidx { $_ =~ /^SHL|SHR$/ } @arr;
+            }
             $idx = firstidx { $_ =~ /^BAND|BXOR|BOR$/ } @arr;
             while ($idx >= 0) {
                 my $res = $self->got_expr_value([$arr[$idx - 1], $arr[$idx], $arr[$idx + 1]]);
@@ -380,6 +387,13 @@ sub got_math_operator {
     return 'DIV' if $op eq '/';
     return 'MOD' if $op eq '%';
     return $self->parser->throw_error("Math operator '$op' is not supported");
+}
+
+sub got_shift_operator {
+    my ($self, $op) = @_;
+    return 'SHL' if $op eq '<<';
+    return 'SHR' if $op eq '>>';
+    return $self->parser->throw_error("Shift operator '$op' is not supported");
 }
 
 sub got_bit_operator {
@@ -417,6 +431,10 @@ sub got_complement_operator {
 
 sub got_assign_operator {
     my ($self, $op) = @_;
+    if (ref $op eq 'ARRAY') {
+        $self->flatten($op);
+        $op = shift @$op;
+    }
     return 'ASSIGN' if $op eq '=';
     return 'ADD_ASSIGN'  if $op eq '+=';
     return 'SUB_ASSIGN'  if $op eq '-=';
@@ -426,6 +444,8 @@ sub got_assign_operator {
     return 'BXOR_ASSIGN' if $op eq '^=';
     return 'BOR_ASSIGN'  if $op eq '|=';
     return 'BAND_ASSIGN' if $op eq '&=';
+    return 'SHL_ASSIGN' if $op eq '<<=';
+    return 'SHR_ASSIGN' if $op eq '>>=';
     return $self->parser->throw_error("Assignment operator '$op' is not supported");
 }
 

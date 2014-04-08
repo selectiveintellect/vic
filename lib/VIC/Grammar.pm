@@ -77,7 +77,14 @@ sub make_tree {
       ]
     },
     'assign_operator' => {
-      '.rgx' => qr/\G([\+\-%\^\*\|&\/]?=)/
+      '.any' => [
+        {
+          '.rgx' => qr/\G([\+\-%\^\*\|&\/]?=)/
+        },
+        {
+          '.ref' => 'shift_assign_operator'
+        }
+      ]
     },
     'bit_operator' => {
       '.rgx' => qr/\G([\|\^&])/
@@ -519,8 +526,17 @@ sub make_tree {
         },
         {
           '.ref' => 'bit_operator'
+        },
+        {
+          '.ref' => 'shift_operator'
         }
       ]
+    },
+    'shift_assign_operator' => {
+      '.rgx' => qr/\G(<<=|>>=)/
+    },
+    'shift_operator' => {
+      '.rgx' => qr/\G(<<|>>)/
     },
     'single_conditional' => {
       '.any' => [

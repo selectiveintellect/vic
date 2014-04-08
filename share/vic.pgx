@@ -58,12 +58,14 @@ conditional-statement: - / if / - conditional-subject - conditional-predicate
 
 complement-operator: /(<TILDE> | <BANG>)/
 unary-operator: /(<PLUS> <PLUS> | <DASH> <DASH>)/
-assign-operator: /([<PLUS> <DASH> <PERCENT> <CARET> <STAR> <PIPE> <AMP> <SLASH>]? <EQUAL>)/
+assign-operator: /([<PLUS> <DASH> <PERCENT> <CARET> <STAR> <PIPE> <AMP> <SLASH>]? <EQUAL>)/ | shift-assign-operator
 compare-operator: /([<BANG> <EQUAL> <LANGLE> <RANGLE>] <EQUAL> | (: <LANGLE> | <RANGLE> ))/
 logic-operator: /([<AMP> <PIPE>]{2})/
 math-operator: /([<PLUS> <DASH> <STAR> <SLASH> <PERCENT>])/
+shift-operator: /(<LANGLE><LANGLE> | <RANGLE><RANGLE>)/
+shift-assign-operator: /(<LANGLE><LANGLE><EQUAL> | <RANGLE><RANGLE><EQUAL>)/
 bit-operator: /([<PIPE> <CARET> <AMP>])/
-rhs-operator: math-operator | bit-operator
+rhs-operator: math-operator | bit-operator | shift-operator
 # parentheses
 start-nested-expr: /- <LPAREN> -/
 end-nested-expr: /- <RPAREN> -/

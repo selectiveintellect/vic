@@ -27,6 +27,10 @@ Main {
     $var4 ^= 0xFF;
     $var4 |= 0x80;
     $var4 &= 0xAA;
+    $var4 = $var4 << 1;
+    $var4 = $var4 >> 1;
+    $var4 <<= 1;
+    $var4 >>= 1;
     $var5 = $var1 - $var2 + $var3 * ($var4 + 8) / $var1;
     $var5 = ($var1 + (($var3 * ($var4 + $var7) + 5) + $var2));
     $var8 = ($var1 + $var2) - ($var3 * $var4) / ($var5 % $var6);
@@ -382,6 +386,15 @@ _start:
 	movlw 0xAA
 	andwf VAR4, W
 	movwf VAR4
+
+    rlf VAR4, W
+    movwf VAR4
+    rrf VAR4, W
+    movwf VAR4
+    rlf VAR4, W
+    movwf VAR4
+    rrf VAR4, W
+    movwf VAR4
 
 	;; add 0x08 and VAR4 without affecting VAR4
 	movf VAR4, W
