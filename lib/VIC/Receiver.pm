@@ -4,7 +4,7 @@ use warnings;
 use bigint;
 use POSIX ();
 use List::Util qw(max);
-use List::MoreUtils qw(any);
+use List::MoreUtils qw(any firstidx);
 
 our $VERSION = '0.05';
 $VERSION = eval $VERSION;
@@ -315,21 +315,38 @@ sub got_expr_value {
             my $tvar = sprintf "_vic_tmp_%02d", scalar(keys %$vref);
             $vref->{$tvar} = "OP::${op}::${var}";
             return $tvar;
+        } elsif (scalar @$list == 3) {
+            my ($var1, $op, $var2) = @$list;
+            my $vref = $self->ast->{tmp_variables};
+            my $tvar = sprintf "_vic_tmp_%02d", scalar(keys %$vref);
+            $vref->{$tvar} = "OP::${var1}::${op}::${var2}";
+            return $tvar;
         } else {
-            # TODO: handle precedence
-            while (scalar @$list >= 3) {
-                # using Quadruples method as per Dragon book Chapter 8 Page 470
-                my $var1 = shift @$list;
-                my $op = shift @$list;
-                my $var2 = shift @$list;
-                my $vref = $self->ast->{tmp_variables};
-                my $tvar = sprintf "_vic_tmp_%02d", scalar(keys %$vref);
-                $vref->{$tvar} = "OP::${var1}::${op}::${var2}";
-                unshift @$list, $tvar;
+            # handle precedence with left-to-right association
+            my @arr = @$list;
+            my $idx = firstidx { $_ eq 'MUL' or $_ eq 'DIV' or $_ eq 'MOD' } @arr;
+            while ($idx >= 0) {
+                my $res = $self->got_expr_value([$arr[$idx - 1], $arr[$idx], $arr[$idx + 1]]);
+                $arr[$idx - 1] = $res;
+                splice @arr, $idx, 2; # remove the extra elements
+                $idx = firstidx { $_ eq 'MUL' || $_ eq 'DIV' || $_ eq 'MOD' } @arr;
+            }
+            $idx = firstidx { $_ eq 'ADD' or $_ eq 'SUB' } @arr;
+            while ($idx >= 0) {
+                my $res = $self->got_expr_value([$arr[$idx - 1], $arr[$idx], $arr[$idx + 1]]);
+                $arr[$idx - 1] = $res;
+                splice @arr, $idx, 2; # remove the extra elements
+                $idx = firstidx { $_ eq 'ADD' or $_ eq 'SUB' } @arr;
+            }
+            $idx = firstidx { $_ eq 'BAND' or $_ eq 'BXOR' or $_ eq 'BOR' } @arr;
+            while ($idx >= 0) {
+                my $res = $self->got_expr_value([$arr[$idx - 1], $arr[$idx], $arr[$idx + 1]]);
+                $arr[$idx - 1] = $res;
+                splice @arr, $idx, 2; # remove the extra elements
+                $idx = firstidx { $_ eq 'BAND' or $_ eq 'BXOR' or $_ eq 'BOR' } @arr;
             }
 #            YYY $self->ast->{tmp_variables};
-#            YYY $list;
-            return $list;
+            return $self->got_expr_value([@arr]);
         }
     } else {
         return $list;

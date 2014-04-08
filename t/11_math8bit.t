@@ -27,9 +27,11 @@ Main {
     $var4 ^= 0xFF;
     $var4 |= 0x80;
     $var4 &= 0xAA;
+    $var5 = $var1 - $var2 + $var3 * ($var4 + 8) / $var1;
+    $var5 = ($var1 + (($var3 * ($var4 + $var7) + 5) + $var2));
+    $var8 = ($var1 + $var2) - ($var3 * $var4) / ($var5 % $var6);
     # sqrt is a modifier
     #$var3 = sqrt $var4;
-    #$var5 = ($var1 + (($var3 * ($var4 + $var7) + 5) + $var2));
     hang;
 }
 ...
@@ -44,7 +46,12 @@ VAR1 res 1
 VAR2 res 1
 VAR3 res 1
 VAR4 res 1
-    global VAR1, VAR2, VAR3, VAR4
+VAR5 res 1
+VAR6 res 1
+VAR7 res 1
+VAR8 res 1
+VIC_STACK res 5	;; temporary stack
+	global VAR1, VAR2, VAR3, VAR4, VAR5, VAR6, VAR7, VAR8
 
 ;;;;;; VIC_VAR_DIVIDE VARIABLES ;;;;;;;
 
@@ -267,49 +274,137 @@ _start:
 	;; increment byte[0]
 	incf VAR3, F
 
-    ;; moves 64 (0x40) to VAR4
-    movlw 0x40
-    movwf VAR4
+	;; moves 64 (0x40) to VAR4
+	movlw 0x40
+	movwf VAR4
 
-    ;;moves VAR1 to W and subtracts from VAR4
-    movf VAR1, W
-    subwf VAR4, W
-    movwf VAR4
-    ;; perform VAR3 * 0x03 without affecting VAR3
-    m_multiply_1 VAR3, 0x03
-    movwf VAR3
+	;; perform VAR4 - VAR1 without affecting either
+	movf VAR1, W
+	subwf VAR4, W
+	movwf VAR4
 
-    ;; SET::DIV_ASSIGN::var2::5
-    ;; perform VAR2 / 0x05 without affecting VAR2
-    m_divide_1b VAR2, 0x05
-    movwf VAR2
+	;; perform VAR3 * 0x03 without affecting VAR3
+	m_multiply_1 VAR3, 0x03
+	movwf VAR3
 
-    ;; SET::MOD_ASSIGN::var4::var2
-    ;; perform VAR4 / VAR2 without affecting either
-    m_mod_2 VAR4, VAR2
-    movwf VAR4
+	;; perform VAR2 / 0x05 without affecting VAR2
+	m_divide_1b VAR2, 0x05
+	movwf VAR2
 
+	;; perform VAR4 / VAR2 without affecting either
+	m_mod_2 VAR4, VAR2
+	movwf VAR4
 
-    ;; moves 64 (0x40) to VAR4
-    movlw 0x40
-    movwf VAR4
+	;; moves 64 (0x40) to VAR4
+	movlw 0x40
+	movwf VAR4
 
-    ;; perform VAR4 ^ 0xFF and move into W
-    movlw 0xFF
-    xorwf VAR4, W
-    movwf VAR4
+	;; perform VAR4 ^ 0xFF and move into W
+	movlw 0xFF
+	xorwf VAR4, W
+	movwf VAR4
 
-    ;; perform VAR4 | 0x80 and move into W
-    movlw 0x80
-    iorwf VAR4, W
-    movwf VAR4
+	;; perform VAR4 | 0x80 and move into W
+	movlw 0x80
+	iorwf VAR4, W
+	movwf VAR4
 
-    ;; perform VAR4 & 0xAA and move into W
-    movlw 0xAA
-    andwf VAR4, W
-    movwf VAR4
+	;; perform VAR4 & 0xAA and move into W
+	movlw 0xAA
+	andwf VAR4, W
+	movwf VAR4
 
-    goto $
+	;; add 0x08 and VAR4 without affecting VAR4
+	movf VAR4, W
+	addlw 0x08
+
+	movwf VIC_STACK + 0
+
+	;; perform VAR3 * VIC_STACK + 0 without affecting either
+	m_multiply_2 VAR3, VIC_STACK + 0
+
+	movwf VIC_STACK + 1
+
+	;; perform VIC_STACK + 1 / VAR1 without affecting either
+	m_divide_2 VIC_STACK + 1, VAR1
+
+	movwf VIC_STACK + 2
+
+	;; perform VAR1 - VAR2 without affecting either
+	movf VAR2, W
+	subwf VAR1, W
+
+	movwf VIC_STACK + 3
+
+	;; add VIC_STACK + 3 and VIC_STACK + 2 without affecting either
+	movf VIC_STACK + 3, W
+	addwf VIC_STACK + 2, W
+
+	movwf VIC_STACK + 4
+
+	movwf VAR5
+
+	;; add VAR4 and VAR7 without affecting either
+	movf VAR4, W
+	addwf VAR7, W
+
+	movwf VIC_STACK + 0
+
+	;; perform VAR3 * VIC_STACK + 0 without affecting either
+	m_multiply_2 VAR3, VIC_STACK + 0
+
+	movwf VIC_STACK + 1
+
+	;; add 0x05 and VIC_STACK + 1 without affecting VIC_STACK + 1
+	movf VIC_STACK + 1, W
+	addlw 0x05
+
+	movwf VIC_STACK + 2
+
+	;; add VIC_STACK + 2 and VAR2 without affecting either
+	movf VIC_STACK + 2, W
+	addwf VAR2, W
+
+	movwf VIC_STACK + 3
+
+	;; add VAR1 and VIC_STACK + 3 without affecting either
+	movf VAR1, W
+	addwf VIC_STACK + 3, W
+
+	movwf VIC_STACK + 4
+
+	movwf VAR5
+
+	;; add VAR1 and VAR2 without affecting either
+	movf VAR1, W
+	addwf VAR2, W
+
+	movwf VIC_STACK + 0
+
+	;; perform VAR3 * VAR4 without affecting either
+	m_multiply_2 VAR3, VAR4
+
+	movwf VIC_STACK + 1
+
+	;; perform VAR5 / VAR6 without affecting either
+	m_mod_2 VAR5, VAR6
+
+	movwf VIC_STACK + 2
+
+	;; perform VIC_STACK + 1 / VIC_STACK + 2 without affecting either
+	m_divide_2 VIC_STACK + 1, VIC_STACK + 2
+
+	movwf VIC_STACK + 3
+
+	;; perform VIC_STACK + 0 - VIC_STACK + 3 without affecting either
+	movf VIC_STACK + 3, W
+	subwf VIC_STACK + 0, W
+
+	movwf VIC_STACK + 4
+
+	movwf VAR8
+
+	goto $
 
 ;;;; generated code for functions
 
