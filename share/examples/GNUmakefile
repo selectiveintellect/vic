@@ -37,7 +37,7 @@ rebuild: clean all
 .PHONY: rebuild
 
 clean:
-	rm -f *.hex *.d *.lst *.cod *.o *.asm
+	rm -f *.hex *.d *.lst *.cod *.o *.asm *.map
 .PHONY: clean
 
 test:
@@ -63,7 +63,7 @@ $(TARGETS): %: %.hex
 .PHONY: $(TARGETS)
 
 %.hex: %.o
-	$(GPLINK) $(QUIET) -o $@ $*.o
+	$(GPLINK) $(QUIET) -m -o $@ $*.o
 
 %.o: %.asm
 	$(GPASM) -p$(PIC) -M -c $<

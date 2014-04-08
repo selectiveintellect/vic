@@ -24,6 +24,7 @@ has ast => {
     variables => {},
     tmp_variables => {},
     conditionals => 0,
+    tmp_stack_size => 0,
 };
 has intermediate_inline => undef;
 
@@ -276,7 +277,7 @@ sub got_conditional_subject {
         } elsif (scalar @$list == 2) {
             my ($op, $var) = @$list;
             my $vref = $self->ast->{tmp_variables};
-            my $tvar = '_vic_tmp_' . scalar(keys %$vref);
+            my $tvar = sprintf "_vic_tmp_%02d", scalar(keys %$vref);
             $vref->{$tvar} = "OP::${op}::${var}";
             return $tvar;
         } else {
@@ -286,7 +287,7 @@ sub got_conditional_subject {
                 my $op = shift @$list;
                 my $var2 = shift @$list;
                 my $vref = $self->ast->{tmp_variables};
-                my $tvar = '_vic_tmp_' . scalar(keys %$vref);
+                my $tvar = sprintf "_vic_tmp_%02d", scalar(keys %$vref);
                 $vref->{$tvar} = "OP::${var1}::${op}::${var2}";
                 $vref->{$tvar} = "OP::${var1}::${op}::${var2}";
                 unshift @$list, $tvar;
@@ -309,7 +310,7 @@ sub got_expr_value {
         } elsif (scalar @$list == 2) {
             my ($op, $var) = @$list;
             my $vref = $self->ast->{tmp_variables};
-            my $tvar = '_vic_tmp_' . scalar(keys %$vref);
+            my $tvar = sprintf "_vic_tmp_%02d", scalar(keys %$vref);
             $vref->{$tvar} = "OP::${op}::${var}";
             return $tvar;
         } else {
@@ -320,7 +321,7 @@ sub got_expr_value {
                 my $op = shift @$list;
                 my $var2 = shift @$list;
                 my $vref = $self->ast->{tmp_variables};
-                my $tvar = '_vic_tmp_' . scalar(keys %$vref);
+                my $tvar = sprintf "_vic_tmp_%02d", scalar(keys %$vref);
                 $vref->{$tvar} = "OP::${var1}::${op}::${var2}";
                 unshift @$list, $tvar;
             }
@@ -549,6 +550,10 @@ sub generate_code_operations {
     } else {
         return $self->parser->throw_error("Error in intermediate code '$line'");
     }
+    if (exists $extra{STACK}) {
+        $var1 = $extra{STACK}->{$var1} || $var1;
+        $var2 = $extra{STACK}->{$var2} || $var2;
+    }
     my $method = $self->pic->validate_operator($op) if defined $op;
     $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
     push @code, "\t;; $line" if $self->intermediate_inline;
@@ -633,25 +638,49 @@ sub generate_code_assign_expr {
             my $tmp_code = $ast->{tmp_variables}->{$rhs};
             my @deps = $self->find_tmpvar_dependencies($rhs);
             my @vdeps = $self->find_var_dependencies($rhs);
+            push @deps, $rhs if @deps;
             if ($self->intermediate_inline) {
                 push @code, "\t;; TMP_VAR DEPS - $rhs, ". join (',', @deps) if @deps;
                 push @code, "\t;; VAR DEPS - ". join (',', @vdeps) if @vdeps;
-                push @code, "\t;; $rhs = $tmp_code\n";
+                foreach (sort @deps) {
+                    my $tcode = $ast->{tmp_variables}->{$_};
+                    push @code, "\t;; $_ = $tcode";
+                }
+                push @code, "\t;; $line";
             }
             if (scalar @deps) {
-                # TODO: have to use stack or check for it
+                $ast->{tmp_stack_size} = max(scalar(@deps), $ast->{tmp_stack_size});
+                ## it is assumed that the dependencies and intermediate code are
+                #arranged in expected order
+                # TODO: bits check
+                my $counter = 0;
+                my %tmpstack = map { $_ => 'VIC_STACK + ' . $counter++ } sort(@deps);
+                foreach (sort @deps) {
+                    my $tcode = $ast->{tmp_variables}->{$_};
+                    my @newcode = $self->generate_code_operations($tcode,
+                                        STACK => \%tmpstack) if $tcode;
+                    push @code, @newcode if @newcode;
+                    push @code, "\t;; $_ = $tcode" if $self->intermediate_inline;
+                    my ($code) = $self->pic->op_ASSIGN_w($tmpstack{$_});
+                    return $self->parser->throw_error("Error in intermediate code '$tcode'") unless $code;
+                    push @code, $code if $code;
+                }
+                my ($code) = $self->pic->op_ASSIGN_w($varname);
+                return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
+                push @code, "\t;; $line" if $self->intermediate_inline;
+                push @code, $code if $code;
             } else {
                 # no tmp-var dependencies
-                my $use_stack = $self->do_i_use_stack(@vdeps);
+                my $use_stack = $self->do_i_use_stack(@vdeps) unless scalar @deps;
                 unless ($use_stack) {
                     my @newcode = $self->generate_code_operations($tmp_code);
                     push @code, @newcode if @newcode;
                     my ($code) = $self->pic->op_ASSIGN_w($varname);
                     return $self->parser->throw_error("Error in intermediate code '$tmp_code'") unless $code;
-                    push @code, "\t;; $line" if $self->intermediate_inline;
                     push @code, $code if $code;
                 } else {
                     # TODO: stack
+                    XXX @vdeps;
                 }
             }
         } else {
@@ -724,6 +753,7 @@ sub generate_code_conditionals {
             }
             if (scalar @deps) {
                 # TODO: have to use stack or check for it
+                XXX @deps;
             } else {
                 # no tmp-var dependencies
                 my $use_stack = $self->do_i_use_stack(@vdeps);
@@ -798,6 +828,9 @@ sub final {
         # should we care about scope ?
         # FIXME: initialized variables ?
         $variables .= "$vhref->{$var}->{name} res $vhref->{$var}->{size}\n";
+    }
+    if ($ast->{tmp_stack_size}) {
+        $variables .= "VIC_STACK res $ast->{tmp_stack_size}\t;; temporary stack\n";
     }
     my $macros = '';
     foreach my $mac (sort(keys %{$ast->{macros}})) {

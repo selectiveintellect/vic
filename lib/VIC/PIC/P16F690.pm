@@ -1028,9 +1028,7 @@ sub op_ASSIGN_w {
     my ($self, $var) = @_;
     return unless $var;
     $var = uc $var;
-    return << "...";
-\tmovwf $var
-...
+    return "\tmovwf $var\n";
 }
 
 sub op_NOT {
@@ -1217,7 +1215,7 @@ sub op_ADD {
         # TODO: check for bits for var1
         $code .= << "...";
 \t;; add $var2 and $var1 without affecting $var1
-\tmovf $var1, @
+\tmovf $var1, W
 \taddlw $var2
 ...
     } else {
