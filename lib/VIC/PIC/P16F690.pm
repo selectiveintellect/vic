@@ -497,26 +497,21 @@ sub validate {
 }
 
 sub validate_operator {
-    my ($self, $mod) = @_;
-    my $vmod = "op_$mod" if $mod =~ /^
+    my ($self, $op) = @_;
+    my $vop = "op_$op" if $op =~ /^
             LE | GE | GT | LT | EQ | NE |
             ADD | SUB | MUL | DIV | MOD |
             BXOR | BOR | BAND | AND | OR |
             ASSIGN | INC | DEC | NOT | COMP
         /x;
-    return $vmod;
+    return $vop;
 }
 
 sub validate_modifier {
     my ($self, $mod, $suffix) = @_;
     my $vmod = "op_$mod" if $mod =~ /^
-            LE | GE | GT | LT | EQ | NE |
-            ADD | SUB | MUL | DIV | MOD |
-            BXOR | BOR | BAND | AND | OR |
-            ASSIGN | INC | DEC | NOT | COMP
+            SQRT | HIGH | LOW
         /x;
-    $vmod = uc $mod unless defined $vmod;
-    $vmod .= "_$suffix" if defined $suffix;
     return $vmod;
 }
 
@@ -1917,6 +1912,113 @@ sub op_LE {
 sub op_GT {
     my ($self, $lhs, $rhs, %extra) = @_;
     return $self->op_LT($rhs, $lhs, %extra);
+}
+
+sub m_sqrt_var {
+    return << '...';
+;;;;;; VIC_VAR_SQRT VARIABLES ;;;;;;
+VIC_VAR_SQRT_UDATA udata
+VIC_VAR_SQRT_VAL res 2
+VIC_VAR_SQRT_RES res 2
+VIC_VAR_SQRT_SUM res 2
+VIC_VAR_SQRT_ODD res 2
+VIC_VAR_SQRT_TMP res 2
+...
+}
+
+sub m_sqrt_macro {
+    return << '...';
+;;;;;; Taken from Microchip PIC examples.
+;;;;;; reverse of Finite Difference Squaring
+m_sqrt_internal macro
+    local _m_sqrt_loop, _m_sqrt_loop_break
+    movlw 0x01
+    movwf VIC_VAR_SQRT_ODD
+    clrf VIC_VAR_SQRT_ODD + 1
+    clrf VIC_VAR_SQRT_RES
+    clrf VIC_VAR_SQRT_RES + 1
+    clrf VIC_VAR_SQRT_SUM
+    clrf VIC_VAR_SQRT_SUM + 1
+    clrf VIC_VAR_SQRT_TMP
+    clrf VIC_VAR_SQRT_TMP + 1
+_m_sqrt_loop:
+    movf VIC_VAR_SQRT_SUM + 1, W
+    addwf VIC_VAR_SQRT_ODD + 1, W
+    movwf VIC_VAR_SQRT_TMP + 1
+    movf VIC_VAR_SQRT_SUM, W
+    addwf VIC_VAR_SQRT_ODD, W
+    movwf VIC_VAR_SQRT_TMP
+    btfsc STATUS, C
+    incf VIC_VAR_SQRT_TMP + 1, F
+    movf VIC_VAR_SQRT_TMP, W
+    subwf VIC_VAR_SQRT_VAL, W
+    movf VIC_VAR_SQRT_TMP + 1, W
+    btfss STATUS, C
+    addlw 0x01
+    subwf VIC_VAR_SQRT_VAL + 1, W
+    btfss STATUS, C
+    goto _m_sqrt_loop_break
+    movf VIC_VAR_SQRT_TMP + 1, W
+    movwf VIC_VAR_SQRT_SUM + 1
+    movf VIC_VAR_SQRT_TMP, W
+    movwf VIC_VAR_SQRT_SUM
+    movlw 0x02
+    addwf VIC_VAR_SQRT_ODD, F
+    btfsc STATUS, C
+    incf VIC_VAR_SQRT_ODD + 1, F
+    incf VIC_VAR_SQRT_RES, F
+    btfsc STATUS, Z
+    incf VIC_VAR_SQRT_RES + 1, F
+    goto _m_sqrt_loop
+_m_sqrt_loop_break:
+    endm
+m_sqrt_8bit macro v1
+    movf v1, W
+    movwf VIC_VAR_SQRT_VAL
+    clrf VIC_VAR_SQRT_VAL + 1
+    m_sqrt_internal
+    movf VIC_VAR_SQRT_RES, W
+    endm
+m_sqrt_16bit macro v1
+    movf high v1, W
+    movwf VIC_VAR_SQRT_VAL + 1
+    movf low v1, W
+    movwf VIC_VAR_SQRT_VAL
+    m_sqrt_internal
+    movf VIC_VAR_SQRT_RES, W
+    endm
+...
+}
+
+sub op_SQRT {
+    my ($self, $var1) = @_;
+    my $literal = qr/^\d+$/;
+    my $code = '';
+    #TODO: temporary only 8-bit math
+    if ($var1 !~ $literal) {
+        $var1 = uc $var1;
+        my $b1 = $self->address_bits($var1) || 8;
+        # both are variables
+        $code .= << "...";
+\t;; perform sqrt($var1)
+\tm_sqrt_${b1}bit $var1
+...
+    } elsif ($var1 =~ $literal) {
+        my $svar = sqrt $var1;
+        my $var2 = sprintf "0x%02X", int($svar);
+        $code .= << "...";
+\t;; sqrt($var1) = $svar -> $var2;
+\tmovlw $var2
+...
+    } else {
+        carp "Warning: $var1 cannot have a square root";
+        return;
+    }
+    my $macros = {
+        m_sqrt_var => $self->m_sqrt_var,
+        m_sqrt_macro => $self->m_sqrt_macro,
+    };
+    return wantarray ? ($code, {}, $macros) : $code;
 }
 
 sub m_debounce_var {

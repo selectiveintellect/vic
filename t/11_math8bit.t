@@ -31,7 +31,7 @@ Main {
     $var5 = ($var1 + (($var3 * ($var4 + $var7) + 5) + $var2));
     $var8 = ($var1 + $var2) - ($var3 * $var4) / ($var5 % $var6);
     # sqrt is a modifier
-    #$var3 = sqrt $var4;
+    $var3 = sqrt $var4;
     hang;
 }
 ...
@@ -69,6 +69,15 @@ VIC_VAR_MULTIPLY_UDATA udata
 VIC_VAR_MULTIPLICAND res 2
 VIC_VAR_MULTIPLIER res 2
 VIC_VAR_PRODUCT res 2
+
+
+;;;;;; VIC_VAR_SQRT VARIABLES ;;;;;;
+VIC_VAR_SQRT_UDATA udata
+VIC_VAR_SQRT_VAL res 2
+VIC_VAR_SQRT_RES res 2
+VIC_VAR_SQRT_SUM res 2
+VIC_VAR_SQRT_ODD res 2
+VIC_VAR_SQRT_TMP res 2
 
 
 ;;;; generated code for macros
@@ -210,6 +219,66 @@ m_multiply_2 macro v1, v2
     movwf VIC_VAR_MULTIPLICAND
     clrf VIC_VAR_MULTIPLICAND + 1
     m_multiply_internal
+    endm
+
+;;;;;; Taken from Microchip PIC examples.
+;;;;;; reverse of Finite Difference Squaring
+m_sqrt_internal macro
+    local _m_sqrt_loop, _m_sqrt_loop_break
+    movlw 0x01
+    movwf VIC_VAR_SQRT_ODD
+    clrf VIC_VAR_SQRT_ODD + 1
+    clrf VIC_VAR_SQRT_RES
+    clrf VIC_VAR_SQRT_RES + 1
+    clrf VIC_VAR_SQRT_SUM
+    clrf VIC_VAR_SQRT_SUM + 1
+    clrf VIC_VAR_SQRT_TMP
+    clrf VIC_VAR_SQRT_TMP + 1
+_m_sqrt_loop:
+    movf VIC_VAR_SQRT_SUM + 1, W
+    addwf VIC_VAR_SQRT_ODD + 1, W
+    movwf VIC_VAR_SQRT_TMP + 1
+    movf VIC_VAR_SQRT_SUM, W
+    addwf VIC_VAR_SQRT_ODD, W
+    movwf VIC_VAR_SQRT_TMP
+    btfsc STATUS, C
+    incf VIC_VAR_SQRT_TMP + 1, F
+    movf VIC_VAR_SQRT_TMP, W
+    subwf VIC_VAR_SQRT_VAL, W
+    movf VIC_VAR_SQRT_TMP + 1, W
+    btfss STATUS, C
+    addlw 0x01
+    subwf VIC_VAR_SQRT_VAL + 1, W
+    btfss STATUS, C
+    goto _m_sqrt_loop_break
+    movf VIC_VAR_SQRT_TMP + 1, W
+    movwf VIC_VAR_SQRT_SUM + 1
+    movf VIC_VAR_SQRT_TMP, W
+    movwf VIC_VAR_SQRT_SUM
+    movlw 0x02
+    addwf VIC_VAR_SQRT_ODD, F
+    btfsc STATUS, C
+    incf VIC_VAR_SQRT_ODD + 1, F
+    incf VIC_VAR_SQRT_RES, F
+    btfsc STATUS, Z
+    incf VIC_VAR_SQRT_RES + 1, F
+    goto _m_sqrt_loop
+_m_sqrt_loop_break:
+    endm
+m_sqrt_8bit macro v1
+    movf v1, W
+    movwf VIC_VAR_SQRT_VAL
+    clrf VIC_VAR_SQRT_VAL + 1
+    m_sqrt_internal
+    movf VIC_VAR_SQRT_RES, W
+    endm
+m_sqrt_16bit macro v1
+    movf high v1, W
+    movwf VIC_VAR_SQRT_VAL + 1
+    movf low v1, W
+    movwf VIC_VAR_SQRT_VAL
+    m_sqrt_internal
+    movf VIC_VAR_SQRT_RES, W
     endm
 
 
@@ -403,6 +472,11 @@ _start:
 	movwf VIC_STACK + 4
 
 	movwf VAR8
+
+	;; perform sqrt(VAR4)
+	m_sqrt_8bit VAR4
+
+	movwf VAR3
 
 	goto $
 

@@ -319,7 +319,15 @@ sub got_expr_value {
     if (ref $list eq 'ARRAY') {
         $self->flatten($list);
         if (scalar @$list == 1) {
-            return shift @$list;
+            my $val = shift @$list;
+            if ($val =~ /MOP::/) {
+                my $vref = $self->ast->{tmp_variables};
+                my $tvar = sprintf "_vic_tmp_%02d", scalar(keys %$vref);
+                $vref->{$tvar} = $val;
+                return $tvar;
+            } else {
+                return $val;
+            }
         } elsif (scalar @$list == 2) {
             my ($op, $var) = @$list;
             my $vref = $self->ast->{tmp_variables};
@@ -434,11 +442,10 @@ sub got_modifier_variable {
     $self->flatten($list) if ref $list eq 'ARRAY';
     $modifier = shift @$list;
     $varname = shift @$list;
-    $self->parser->throw_error("Modifying operator '$modifier' not supported") unless
-        $self->pic->validate_modifier($modifier);
     $modifier = uc $modifier;
-    #TODO: figure out a better way
-    return "MOP::$modifier\::$varname";
+    my $method = $self->pic->validate_modifier($modifier);
+    $self->parser->throw_error("Modifying operator '$modifier' not supported") unless $method;
+    return $self->got_expr_value(["MOP::${modifier}::${varname}"]);
 }
 
 sub got_validated_variable {
@@ -589,7 +596,8 @@ sub generate_code_operations {
         $var1 = $extra{STACK}->{$var1} || $var1;
         $var2 = $extra{STACK}->{$var2} || $var2;
     }
-    my $method = $self->pic->validate_operator($op) if defined $op;
+    my $method = $self->pic->validate_operator($op) if $tag eq 'OP';
+    $method = $self->pic->validate_modifier($op) if $tag eq 'MOP';
     $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
     push @code, "\t;; $line" if $self->intermediate_inline;
     my ($code, $funcs, $macros) = $self->pic->$method($var1, $var2, %extra);
