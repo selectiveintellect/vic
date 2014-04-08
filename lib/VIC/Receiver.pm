@@ -492,7 +492,12 @@ sub got_number {
     # if it is a hexadecimal number we can just convert it to number using int()
     # since hex is returned here as a string
     return hex($list) if $list =~ /0x|0X/;
-    return int($list);
+    my $val = int($list);
+    return $val if $val >= 0;
+    ##TODO: check the negative value
+    my $bits = (2 ** $self->pic->address_bits) - 1;
+    $val = sprintf "0x%02X", $val;
+    return hex($val) & $bits;
 }
 
 # convert the number to appropriate units

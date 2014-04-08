@@ -73,7 +73,7 @@ string: single-quoted-string | double-quoted-string
 # most microcontrollers cannot do floating point math so ignore real numbers
 number-units: number - units
 # number handles both hex and non-hex values for ease of use
-number: /(0[xX]<HEX>+ | <DIGIT>+)/ | boolean
+number: /(0[xX]<HEX>+ | -?<DIGIT>+)/ | boolean
 units: /(s | ms | us | kHz | Hz | MHz)/
 boolean: /( TRUE | FALSE | true | false | 0 | 1)/
 
