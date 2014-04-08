@@ -5,6 +5,7 @@ my $input = <<'...';
 PIC P16F690;
 
 pragma variable bits = 8;
+pragma variable export;
 
 Main {
     $var1 = 12345;
@@ -43,6 +44,7 @@ VAR1 res 1
 VAR2 res 1
 VAR3 res 1
 VAR4 res 1
+    global VAR1, VAR2, VAR3, VAR4
 
 ;;;;;; VIC_VAR_DIVIDE VARIABLES ;;;;;;;
 

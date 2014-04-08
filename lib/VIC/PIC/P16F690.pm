@@ -421,7 +421,7 @@ has pwm_pins => {
     5 => 'P1A',
 };
 
-has config => <<"...";
+has chip_config => <<"...";
 \t__config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _BOR_OFF & _IESO_OFF & _FCMEN_OFF)
 
 ...
@@ -438,22 +438,25 @@ has code_config => {
     },
     variable => {
         bits => 8, # bits. same as register_size
+        export => 0, # do not export variables
     },
 };
 
-sub update_config {
+sub update_code_config {
     my ($self, $grp, $key, $val) = @_;
     return unless defined $grp;
     $self->code_config->{$grp} = {} unless exists $self->code_config->{$grp};
     my $grpref = $self->code_config->{$grp};
     if ($key eq 'bits') {
-        carp "$val-bits is not supported. Maximum supported size is 64-bit"
-            if $val > 64;
+        $val = 8 unless defined $val;
         $val = 8 if $val <= 8;
         $val = 16 if ($val > 8 and $val <= 16);
         $val = 32 if ($val > 16 and $val <= 32);
+        carp "$val-bits is not supported. Maximum supported size is 64-bit"
+            if $val > 64;
         $val = 64 if $val > 32;
     }
+    $val = 1 unless defined $val;
     if (ref $grpref eq 'HASH') {
         $grpref->{$key} = $val;
     } else {

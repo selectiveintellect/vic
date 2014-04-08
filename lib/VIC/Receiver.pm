@@ -41,16 +41,18 @@ sub got_uc_select {
     $self->ast->{include} = $self->pic->include;
     # set the defaults in case the headers are not provided by the user
     $self->ast->{org} = $self->pic->org;
-    $self->ast->{config} = $self->pic->config;
+    $self->ast->{chip_config} = $self->pic->chip_config;
+    $self->ast->{code_config} = $self->pic->code_config;
     return;
 }
 
 sub got_pragmas {
     my ($self, $list) = @_;
     $self->flatten($list);
-    $self->pic->update_config(@$list);
+    $self->pic->update_code_config(@$list);
     # get the updated config
-    $self->ast->{config} = $self->pic->config;
+    $self->ast->{chip_config} = $self->pic->chip_config;
+    $self->ast->{code_config} = $self->pic->code_config;
     return;
 }
 
@@ -824,13 +826,19 @@ sub final {
     my $variables = '';
     my $vhref = $ast->{variables};
     $variables .= "GLOBAL_VAR_UDATA udata\n" if keys %$vhref;
+    my @global_vars = ();
     foreach my $var (sort(keys %$vhref)) {
         # should we care about scope ?
-        # FIXME: initialized variables ?
         $variables .= "$vhref->{$var}->{name} res $vhref->{$var}->{size}\n";
+        push @global_vars, $vhref->{$var}->{name};
     }
     if ($ast->{tmp_stack_size}) {
         $variables .= "VIC_STACK res $ast->{tmp_stack_size}\t;; temporary stack\n";
+    }
+    #XXX $ast->{code_config}->{variable};
+    if ($ast->{code_config}->{variable}->{export} and scalar @global_vars) {
+        # export the variables
+        $variables .= "\tglobal ". join (", ", @global_vars) . "\n";
     }
     my $macros = '';
     foreach my $mac (sort(keys %{$ast->{macros}})) {
@@ -885,7 +893,7 @@ $variables
 ;;;; generated code for macros
 $macros
 
-$ast->{config}
+$ast->{chip_config}
 
 \torg $ast->{org}
 

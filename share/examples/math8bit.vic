@@ -1,6 +1,7 @@
 PIC P16F690;
 
 pragma variable bits = 8;
+pragma variable export;
 
 Main {
     $var1 = 12345;
