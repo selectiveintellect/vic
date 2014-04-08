@@ -271,7 +271,6 @@ sub got_conditional_statement {
 # so maybe not
 sub got_conditional_subject {
     my ($self, $list) = @_;
-    #TODO: handle complex-conditionals using temp vars
     if (ref $list eq 'ARRAY') {
         $self->flatten($list);
         if (scalar @$list == 1) {
@@ -282,19 +281,31 @@ sub got_conditional_subject {
             my $tvar = sprintf "_vic_tmp_%02d", scalar(keys %$vref);
             $vref->{$tvar} = "OP::${op}::${var}";
             return $tvar;
+        } elsif (scalar @$list == 3) {
+            my ($var1, $op, $var2) = @$list;
+            my $vref = $self->ast->{tmp_variables};
+            my $tvar = sprintf "_vic_tmp_%02d", scalar(keys %$vref);
+            $vref->{$tvar} = "OP::${var1}::${op}::${var2}";
+            return $tvar;
         } else {
-            # TODO: handle precedence
-            while (scalar @$list >= 3) {
-                my $var1 = shift @$list;
-                my $op = shift @$list;
-                my $var2 = shift @$list;
-                my $vref = $self->ast->{tmp_variables};
-                my $tvar = sprintf "_vic_tmp_%02d", scalar(keys %$vref);
-                $vref->{$tvar} = "OP::${var1}::${op}::${var2}";
-                $vref->{$tvar} = "OP::${var1}::${op}::${var2}";
-                unshift @$list, $tvar;
+            # handle precedence with left-to-right association
+            my @arr = @$list;
+            my $idx = firstidx { $_ =~ /^GE|GT|LE|LT|EQ|NE$/ } @arr;
+            while ($idx >= 0) {
+                my $res = $self->got_conditional_subject([$arr[$idx - 1], $arr[$idx], $arr[$idx + 1]]);
+                $arr[$idx - 1] = $res;
+                splice @arr, $idx, 2; # remove the extra elements
+                $idx = firstidx { $_ =~ /^GE|GT|LE|LT|EQ|NE$/ } @arr;
             }
-            return $list;
+            $idx = firstidx { $_ =~ /^AND|OR$/ } @arr;
+            while ($idx >= 0) {
+                my $res = $self->got_conditional_subject([$arr[$idx - 1], $arr[$idx], $arr[$idx + 1]]);
+                $arr[$idx - 1] = $res;
+                splice @arr, $idx, 2; # remove the extra elements
+                $idx = firstidx { $_ =~ /^AND|OR$/ } @arr;
+            }
+#            YYY $self->ast->{tmp_variables};
+            return $self->got_conditional_subject([@arr]);
         }
     } else {
         return $list;
@@ -324,26 +335,26 @@ sub got_expr_value {
         } else {
             # handle precedence with left-to-right association
             my @arr = @$list;
-            my $idx = firstidx { $_ eq 'MUL' or $_ eq 'DIV' or $_ eq 'MOD' } @arr;
+            my $idx = firstidx { $_ =~ /^MUL|DIV|MOD$/ } @arr;
             while ($idx >= 0) {
                 my $res = $self->got_expr_value([$arr[$idx - 1], $arr[$idx], $arr[$idx + 1]]);
                 $arr[$idx - 1] = $res;
                 splice @arr, $idx, 2; # remove the extra elements
-                $idx = firstidx { $_ eq 'MUL' || $_ eq 'DIV' || $_ eq 'MOD' } @arr;
+                $idx = firstidx { $_ =~ /^MUL|DIV|MOD$/ } @arr;
             }
-            $idx = firstidx { $_ eq 'ADD' or $_ eq 'SUB' } @arr;
+            $idx = firstidx { $_ =~ /^ADD|SUB$/ } @arr;
             while ($idx >= 0) {
                 my $res = $self->got_expr_value([$arr[$idx - 1], $arr[$idx], $arr[$idx + 1]]);
                 $arr[$idx - 1] = $res;
                 splice @arr, $idx, 2; # remove the extra elements
-                $idx = firstidx { $_ eq 'ADD' or $_ eq 'SUB' } @arr;
+                $idx = firstidx { $_ =~ /^ADD|SUB$/ } @arr;
             }
-            $idx = firstidx { $_ eq 'BAND' or $_ eq 'BXOR' or $_ eq 'BOR' } @arr;
+            $idx = firstidx { $_ =~ /^BAND|BXOR|BOR$/ } @arr;
             while ($idx >= 0) {
                 my $res = $self->got_expr_value([$arr[$idx - 1], $arr[$idx], $arr[$idx + 1]]);
                 $arr[$idx - 1] = $res;
                 splice @arr, $idx, 2; # remove the extra elements
-                $idx = firstidx { $_ eq 'BAND' or $_ eq 'BXOR' or $_ eq 'BOR' } @arr;
+                $idx = firstidx { $_ =~ /^BAND|BXOR|BOR$/ } @arr;
             }
 #            YYY $self->ast->{tmp_variables};
             return $self->got_expr_value([@arr]);
