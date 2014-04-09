@@ -264,7 +264,7 @@ _debounce_state_check:
 	goto    _action_3
 _end_action_3:
 
-
+    bcf STATUS, Z
 	movf DIRXN, W
 	xorlw 0x01
 	btfss STATUS, Z ;; DIRXN == 1 ?

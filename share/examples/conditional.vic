@@ -1,0 +1,22 @@
+PIC P16F690;
+
+Main {
+    digital_output PORTC;
+    $var1 = TRUE;
+    $var2 = FALSE;
+    Loop {
+        if $var1 != FALSE && $var2 != FALSE {
+            write PORTC, 1;
+            $var1 = !$var2;
+        } else if $var1 != FALSE {
+            write PORTC, 2;
+            $var2 = !$var1;
+        } else if $var2 != FALSE {
+            write PORTC, 4;
+            $var2 = !$var1;
+        } else {
+            write PORTC, 8;
+            $var1 = !$var2;
+        }
+    }
+}

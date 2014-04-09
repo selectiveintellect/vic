@@ -255,7 +255,8 @@ sub got_conditional_statement {
                 SUBJ => $subj,
                 FALSE => $false_label,
                 TRUE => $true_label,
-                END => $end_label);
+                END => $end_label,
+                SUBCOND => $subcond);
     } else {
         return $self->parser->throw_error("Multiple predicate conditionals not implemented");
     }
@@ -796,27 +797,59 @@ sub generate_code_blocks {
 sub generate_code_conditionals {
     my ($self, @condblocks) = @_;
     my @code = ();
-    if (scalar @condblocks == 1) {
-        my $line = shift @condblocks;
+    my $ast = $self->ast;
+    my $end_label;
+    my $blockcount = scalar @condblocks;
+    my $index = 0;
+    foreach my $line (@condblocks) {
+        push @code, "\t;; $line" if $self->intermediate_inline;
         my %hh = split /::/, $line;
-        my $ast = $self->ast;
         my $subj = $hh{SUBJ};
+        $index++ if $hh{SUBCOND};
+        # for multiple if-else-if-else we adjust the labels
+        # for single ones we do not
+        if ($blockcount > 1) {
+            my $el = "$hh{END}_$index"; # new label
+            $hh{FALSE} = $el if $hh{FALSE} eq $hh{END};
+            $hh{TRUE} = $el if $hh{TRUE} eq $hh{END};
+            $end_label = $hh{END} unless defined $end_label;
+            $hh{END} = $el;
+        }
         if ($subj =~ /^\d+?$/) { # if subject is a literal
-            push @code, "\t;; $line" if $self->intermediate_inline;
+            XXX $subj;
         } elsif (exists $ast->{variables}->{$subj}) {
-
+            XXX \%hh;
         } elsif (exists $ast->{tmp_variables}->{$subj}) {
             my $tmp_code = $ast->{tmp_variables}->{$subj};
             my @deps = $self->find_tmpvar_dependencies($subj);
             my @vdeps = $self->find_var_dependencies($subj);
+            push @deps, $subj if @deps;
             if ($self->intermediate_inline) {
                 push @code, "\t;; TMP_VAR DEPS - $subj, ". join (',', @deps) if @deps;
                 push @code, "\t;; VAR DEPS - ". join (',', @vdeps) if @vdeps;
                 push @code, "\t;; $subj = $tmp_code\n";
             }
             if (scalar @deps) {
-                # TODO: have to use stack or check for it
-                XXX @deps;
+                #YYY \%hh, { CODE => $tmp_code };
+                $ast->{tmp_stack_size} = max(scalar(@deps), $ast->{tmp_stack_size});
+                ## it is assumed that the dependencies and intermediate code are
+                #arranged in expected order
+                # TODO: bits check
+                my $counter = 0;
+                my %tmpstack = map { $_ => 'VIC_STACK + ' . $counter++ } sort(@deps);
+                $counter = 0; # reset
+                foreach (sort @deps) {
+                    my $tcode = $ast->{tmp_variables}->{$_};
+                    my %extra = (%hh, COUNTER => $counter++);
+                    $extra{RESULT} = $tmpstack{$_} if $_ ne $subj;
+                    my @newcode = $self->generate_code_operations($tcode,
+                                                STACK => \%tmpstack, %extra) if $tcode;
+                    push @code, @newcode if @newcode;
+#                    push @code, "\t;; $_ = $tcode" if $self->intermediate_inline;
+#                    my ($code) = $self->pic->op_ASSIGN_w($tmpstack{$_}) unless $_ eq $subj;
+#                    return $self->parser->throw_error("Error in intermediate code '$tcode'") unless $code;
+#                    push @code, $code if $code;
+                }
             } else {
                 # no tmp-var dependencies
                 my $use_stack = $self->do_i_use_stack(@vdeps);
@@ -827,12 +860,14 @@ sub generate_code_conditionals {
                         unless @newcode;
                 } else {
                     # TODO: stack
+                    XXX \%hh;
                 }
             }
         } else {
             return $self->parser->throw_error("Error in intermediate code '$line'");
         }
     }
+    push @code, "$end_label:\n" if defined $end_label and $blockcount > 1;
     return @code;
 }
 

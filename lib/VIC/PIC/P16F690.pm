@@ -1797,22 +1797,78 @@ sub op_BOR {
 ...
     }
 }
+sub get_predicate {
+    my ($self, $comment, %extra) = @_;
+    my $pred = '';
+    ## predicate can be either a result or a jump block
+    unless (defined $extra{RESULT}) {
+        my $flabel = $extra{SWAP} ? $extra{TRUE} : $extra{FALSE};
+        my $tlabel = $extra{SWAP} ? $extra{FALSE} : $extra{TRUE};
+        my $elabel = $extra{END};
+        $pred .= << "..."
+\tbtfss STATUS, Z ;; $comment ?
+\tgoto $flabel
+\tgoto $tlabel
+$elabel:
+...
+    } else {
+        my $flabel = $extra{SWAP} ? "$extra{END}_t_$extra{COUNTER}" :
+                        "$extra{END}_f_$extra{COUNTER}";
+        my $tlabel = $extra{SWAP} ? "$extra{END}_f_$extra{COUNTER}" :
+                        "$extra{END}_t_$extra{COUNTER}";
+        my $elabel = "$extra{END}_e_$extra{COUNTER}";
+        $pred .=  << "...";
+\tbtfss STATUS, Z ;; $comment ?
+\tgoto $flabel
+\tgoto $tlabel
+$flabel:
+\tclrw
+\tgoto $elabel
+$tlabel:
+\tmovlw 0x01
+$elabel:
+\tmovwf $extra{RESULT}
+...
+    }
+    return $pred;
+}
+
+sub get_predicate_literals {
+    my ($self, $comment, $res, %extra) = @_;
+    if (defined $extra{RESULT}) {
+        my $tcode = 'movlw 0x01';
+        my $fcode = 'clrw';
+        my $code;
+        if ($res) {
+            $code = $extra{SWAP} ? $fcode : $tcode;
+        } else {
+            $code = $extra{SWAP} ? $tcode : $fcode;
+        }
+        return "\t$code ;;$comment\n\tmovwf $extra{RESULT}\n";
+    } else {
+        my $label;
+        if ($res) {
+            $label = $extra{SWAP} ? $extra{FALSE} : $extra{TRUE};
+        } else {
+            $label = $extra{SWAP} ? $extra{TRUE} : $extra{FALSE};
+        }
+        return "\tgoto $label ;; $comment\n$extra{END}:\n";
+    }
+}
 
 sub op_EQ {
     my ($self, $lhs, $rhs, %extra) = @_;
-    my $pred = '';
-    $pred .= "\tgoto $extra{FALSE}\n" if defined $extra{FALSE};
-    $pred .= "\tgoto $extra{TRUE}\n" if defined $extra{TRUE};
-    $pred .= "$extra{END}:\n" if defined $extra{END};
+    my $comment = $extra{SWAP} ? "$lhs != $rhs" : "$lhs == $rhs";
+    my $pred = $self->get_predicate($comment, %extra);
     my $literal = qr/^\d+$/;
     if ($lhs !~ $literal and $rhs !~ $literal) {
         # lhs and rhs are variables
         $rhs = uc $rhs;
         $lhs = uc $lhs;
         return << "...";
+\tbcf STATUS, Z
 \tmovf $rhs, W
 \txorwf $lhs, W
-\tbtfss STATUS, Z ;; they are equal
 $pred
 ...
     } elsif ($rhs !~ $literal and $lhs =~ $literal) {
@@ -1820,9 +1876,9 @@ $pred
         $rhs = uc $rhs;
         $lhs = sprintf "0x%02X", $lhs;
         return << "...";
+\tbcf STATUS, Z
 \tmovf $rhs, W
 \txorlw $lhs
-\tbtfss STATUS, Z ;; $rhs == $lhs ?
 $pred
 ...
     } elsif ($rhs =~ $literal and $lhs !~ $literal) {
@@ -1830,41 +1886,21 @@ $pred
         $lhs = uc $lhs;
         $rhs = sprintf "0x%02X", $rhs;
         return << "...";
+\tbcf STATUS, Z
 \tmovf $lhs, W
 \txorlw $rhs
-\tbtfss STATUS, Z ;; $lhs == $rhs ?
 $pred
 ...
     } else {
         # both rhs and lhs are literals
-        if ($lhs == $rhs) {
-            return << "...";
-\tgoto $extra{TRUE}
-$extra{END}:
-...
-        } else {
-            return << "...";
-\tgoto $extra{FALSE}
-$extra{END}:
-...
-        }
+        my $res = $lhs == $rhs ? 1 : 0;
+        return $self->get_predicate_literals("$lhs == $rhs => $res", $res, %extra);
     }
-}
-
-sub op_NE {
-    my ($self, $lhs, $rhs, %extra) = @_;
-    my %extra2 = (%extra);
-    $extra2{TRUE} = $extra{FALSE};
-    $extra2{FALSE} = $extra{TRUE};
-    return $self->op_EQ($lhs, $rhs, %extra2);
 }
 
 sub op_LT {
     my ($self, $lhs, $rhs, %extra) = @_;
-    my $pred = '';
-    $pred .= "\tgoto $extra{FALSE}\n" if defined $extra{FALSE};
-    $pred .= "\tgoto $extra{TRUE}\n" if defined $extra{TRUE};
-    $pred .= "$extra{END}:\n" if defined $extra{END};
+    my $pred = $self->get_predicate("$lhs < $rhs", %extra);
     my $literal = qr/^\d+$/;
     if ($lhs !~ $literal and $rhs !~ $literal) {
         # lhs and rhs are variables
@@ -1904,26 +1940,14 @@ $pred
 ...
     } else {
         # both rhs and lhs are literals
-        if ($lhs < $rhs) {
-            return << "...";
-\tgoto $extra{TRUE}
-$extra{END}:
-...
-        } else {
-            return << "...";
-\tgoto $extra{FALSE}
-$extra{END}:
-...
-        }
+        my $res = $lhs < $rhs ? 1 : 0;
+        return $self->get_predicate_literals("$lhs < $rhs => $res", $res, %extra);
     }
 }
 
 sub op_GE {
     my ($self, $lhs, $rhs, %extra) = @_;
-    my $pred = '';
-    $pred .= "\tgoto $extra{FALSE}\n" if defined $extra{FALSE};
-    $pred .= "\tgoto $extra{TRUE}\n" if defined $extra{TRUE};
-    $pred .= "$extra{END}:\n" if defined $extra{END};
+    my $pred = $self->get_predicate("$lhs >= $rhs", %extra);
     my $literal = qr/^\d+$/;
     if ($lhs !~ $literal and $rhs !~ $literal) {
         # lhs and rhs are variables
@@ -1963,28 +1987,78 @@ $pred
 ...
     } else {
         # both rhs and lhs are literals
-        if ($lhs >= $rhs) {
-            return << "...";
-\tgoto $extra{TRUE}
-$extra{END}:
-...
-        } else {
-            return << "...";
-\tgoto $extra{FALSE}
-$extra{END}:
-...
-        }
+        my $res = $lhs >= $rhs ? 1 : 0;
+        return $self->get_predicate_literals("$lhs >= $rhs => $res", $res, %extra);
     }
+}
+
+sub op_NE {
+    my ($self, $lhs, $rhs, %extra) = @_;
+    return $self->op_EQ($lhs, $rhs, %extra, SWAP => 1);
 }
 
 sub op_LE {
     my ($self, $lhs, $rhs, %extra) = @_;
+    # we swap the lhs/rhs stuff instead of using SWAP
     return $self->op_GE($rhs, $lhs, %extra);
 }
 
 sub op_GT {
     my ($self, $lhs, $rhs, %extra) = @_;
+    # we swap the lhs/rhs stuff instead of using SWAP
     return $self->op_LT($rhs, $lhs, %extra);
+}
+
+sub op_AND {
+    my ($self, $lhs, $rhs, %extra) = @_;
+    my $pred = $self->get_predicate("$lhs && $rhs", %extra);
+    my $literal = qr/^\d+$/;
+    if ($lhs !~ $literal and $rhs !~ $literal) {
+        # lhs and rhs are variables
+        $rhs = uc $rhs;
+        $lhs = uc $lhs;
+        return << "...";
+\t;; perform check for $lhs && $rhs
+\tbcf STATUS, Z
+\tmovf $lhs, W
+\tbtfss STATUS, Z  ;; $lhs is false if it is set else true
+\tmovf $rhs, W
+\tbtfss STATUS, Z ;; $rhs is false if it is set else true
+$pred
+...
+    } elsif ($rhs !~ $literal and $lhs =~ $literal) {
+        # rhs is variable and lhs is a literal
+        $rhs = uc $rhs;
+        $lhs = sprintf "0x%02X", $lhs;
+        return << "...";
+\t;; perform check for $lhs && $rhs
+\tbcf STATUS, Z
+\tmovlw $lhs
+\txorlw 0x00        ;; $lhs ^ 0 will set the Z bit
+\tbtfss STATUS, Z  ;; $lhs is false if it is set else true
+\tmovf $rhs, W
+\tbtfss STATUS, Z ;; $rhs is false if it is set else true
+$pred
+...
+    } elsif ($rhs =~ $literal and $lhs !~ $literal) {
+        # rhs is a literal and lhs is a variable
+        $lhs = uc $lhs;
+        $rhs = sprintf "0x%02X", $rhs;
+        return << "...";
+\t;; perform check for $lhs && $rhs
+\tbcf STATUS, Z
+\tmovlw $rhs
+\txorlw 0x00        ;; $rhs ^ 0 will set the Z bit
+\tbtfss STATUS, Z  ;; $rhs is false if it is set else true
+\tmovf $lhs, W
+\tbtfss STATUS, Z ;; $lhs is false if it is set else true
+$pred
+...
+    } else {
+        # both rhs and lhs are literals
+        my $res = $lhs && $rhs ? 1 : 0;
+        return $self->get_predicate_literals("$lhs && $rhs => $res", $res, %extra);
+    }
 }
 
 sub m_sqrt_var {
