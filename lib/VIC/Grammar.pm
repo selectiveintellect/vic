@@ -224,6 +224,10 @@ sub make_tree {
         },
         {
           '.ref' => 'conditional_predicate'
+        },
+        {
+          '+max' => 1,
+          '.ref' => 'line_ending'
         }
       ]
     },
@@ -287,9 +291,6 @@ sub make_tree {
             },
             {
               '.ref' => 'unary_expr'
-            },
-            {
-              '.ref' => 'conditional_statement'
             }
           ]
         },
@@ -577,6 +578,9 @@ sub make_tree {
         },
         {
           '.ref' => 'expression'
+        },
+        {
+          '.ref' => 'conditional_statement'
         },
         {
           '.ref' => 'block'

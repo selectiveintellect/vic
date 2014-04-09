@@ -21,7 +21,7 @@ _: /<BLANK>*/
 __: /<BLANK>+/
 line-ending: /- <SEMI> - <EOL>?/
 
-statement: comment | instruction | expression | block
+statement: comment | instruction | expression | conditional-statement | block
 
 block: named-block | conditional-block
 named-block: name anonymous-block
@@ -36,7 +36,7 @@ name: - identifier-without-keyword -
 values: (value % COMMA)*
 value: - (string | number-units | number | variable | named-block | validated-variable | modifier-variable) -
 
-expression: (assign-expr | unary-expr | conditional-statement) line-ending
+expression: (assign-expr | unary-expr) line-ending
 unary-lhs: - unary-operator - variable -
 unary-rhs: - variable - unary-operator -
 unary-expr: unary-lhs | unary-rhs
@@ -54,7 +54,7 @@ conditional-predicate: - (anonymous-block) - / else / - (anonymous-block | condi
 single-conditional-subject: (any-conditional % logic-operator)+
 nested-conditional-subject: start-nested-expr single-conditional-subject end-nested-expr
 conditional-subject: single-conditional-subject | nested-conditional-subject
-conditional-statement: - / if / - conditional-subject - conditional-predicate
+conditional-statement: - / if / - conditional-subject - conditional-predicate line-ending?
 
 complement-operator: /(<TILDE> | <BANG>)/
 unary-operator: /(<PLUS> <PLUS> | <DASH> <DASH>)/
