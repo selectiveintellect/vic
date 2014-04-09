@@ -907,7 +907,7 @@ sub op_SHL {
         carp "Unable to handle $var << $bits";
         return;
     }
-    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
+    $code .= $self->op_ASSIGN_w($extra{RESULT}) if $extra{RESULT};
     return $code;
 }
 
@@ -934,7 +934,7 @@ sub op_SHR {
         carp "Unable to handle $var >> $bits";
         return;
     }
-    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
+    $code .= $self->op_ASSIGN_w($extra{RESULT}) if $extra{RESULT};
     return $code;
 }
 
@@ -1090,7 +1090,7 @@ sub op_NOT {
     my $pred = '';
     if (@_) {
         my ($dummy, %extra) = @_;
-        $pred .= "\tmovwf $extra{RESULT}" if $extra{RESULT};
+        $pred .= $self->op_ASSIGN_w($extra{RESULT}) if $extra{RESULT};
     }
     $var2 = uc $var2;
     return << "...";
@@ -1108,7 +1108,7 @@ sub op_COMP {
     my $pred = '';
     if (@_) {
         my ($dummy, %extra) = @_;
-        $pred .= "\tmovwf $extra{RESULT}" if $extra{RESULT};
+        $pred .= $self->op_ASSIGN_w($extra{RESULT}) if $extra{RESULT};
     }
     $var2 = uc $var2;
     return << "...";
@@ -1150,7 +1150,7 @@ sub op_ADD_ASSIGN_literal {
             $code .= sprintf "\tmovlw 0x%02X\n\taddwf $var + $i, F\n", $valbyte if $valbyte > 0;
         }
     }
-    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT}; 
+    $code .= $self->op_ASSIGN_w($extra{RESULT}) if $extra{RESULT};
     return $code;
 }
 
@@ -1162,9 +1162,7 @@ sub op_ADD_ASSIGN {
     $var = uc $var;
     $var2 = uc $var2;
     my $code = '';
-    if ($extra{RESULT}) {
-        $code = $self->op_ASSIGN_w($extra{RESULT});
-    }
+    $code .= $self->op_ASSIGN_w($extra{RESULT}) if $extra{RESULT};
     return << "...";
 \t;;moves $var2 to W
 \tmovf $var2, W
@@ -1322,7 +1320,7 @@ sub op_ADD {
 \tmovlw $var3
 ...
     }
-    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
+    $code .= $self->op_ASSIGN_w($extra{RESULT}) if $extra{RESULT};
     return $code;
 }
 
@@ -1375,7 +1373,7 @@ sub op_SUB {
 \tmovlw $var3
 ...
     }
-    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
+    $code .= $self->op_ASSIGN_w($extra{RESULT}) if $extra{RESULT};
     return $code;
 }
 
@@ -1493,7 +1491,7 @@ sub op_MUL {
         m_multiply_var => $self->m_multiply_var,
         m_multiply_macro => $self->m_multiply_macro,
     };
-    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
+    $code .= $self->op_ASSIGN_w($extra{RESULT}) if $extra{RESULT};
     return wantarray ? ($code, {}, $macros) : $code;
 }
 
@@ -1657,7 +1655,7 @@ sub op_DIV {
         m_divide_var => $self->m_divide_var,
         m_divide_macro => $self->m_divide_macro,
     };
-    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
+    $code .= $self->op_ASSIGN_w($extra{RESULT}) if $extra{RESULT};
     return wantarray ? ($code, {}, $macros) : $code;
 }
 
@@ -1711,7 +1709,7 @@ sub op_MOD {
         m_divide_var => $self->m_divide_var,
         m_divide_macro => $self->m_divide_macro,
     };
-    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
+    $code .= $self->op_ASSIGN_w($extra{RESULT}) if $extra{RESULT};
     return wantarray ? ($code, {}, $macros) : $code;
 }
 
@@ -1719,7 +1717,7 @@ sub op_BXOR {
     my ($self, $var1, $var2, %extra) = @_;
     my $literal = qr/^\d+$/;
     my $code = '';
-    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
+    $code .= $self->op_ASSIGN_w($extra{RESULT}) if $extra{RESULT};
     if ($var1 !~ $literal and $var2 !~ $literal) {
         $var1 = uc $var1;
         $var2 = uc $var2;
@@ -1762,7 +1760,7 @@ sub op_BAND {
     my ($self, $var1, $var2, %extra) = @_;
     my $literal = qr/^\d+$/;
     my $code = '';
-    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
+    $code .= $self->op_ASSIGN_w($extra{RESULT}) if $extra{RESULT};
     if ($var1 !~ $literal and $var2 !~ $literal) {
         $var1 = uc $var1;
         $var2 = uc $var2;
@@ -1805,7 +1803,7 @@ sub op_BOR {
     my ($self, $var1, $var2, %extra) = @_;
     my $literal = qr/^\d+$/;
     my $code = '';
-    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
+    $code .= $self->op_ASSIGN_w($extra{RESULT}) if $extra{RESULT};
     if ($var1 !~ $literal and $var2 !~ $literal) {
         $var1 = uc $var1;
         $var2 = uc $var2;
@@ -1874,8 +1872,8 @@ $flabel:
 $tlabel:
 \tmovlw 0x01
 $elabel:
-\tmovwf $extra{RESULT}
 ...
+        $pred .= $self->op_ASSIGN_w($extra{RESULT});
     }
     return $pred;
 }
@@ -1891,7 +1889,8 @@ sub get_predicate_literals {
         } else {
             $code = $extra{SWAP} ? $tcode : $fcode;
         }
-        return "\t$code ;;$comment\n\tmovwf $extra{RESULT}\n";
+        my $ecode = $self->op_ASSIGN_w($extra{RESULT});
+        return "\t$code ;;$comment\n$ecode\n";
     } else {
         my $label;
         if ($res) {
@@ -2264,7 +2263,7 @@ sub op_SQRT {
         m_sqrt_var => $self->m_sqrt_var,
         m_sqrt_macro => $self->m_sqrt_macro,
     };
-    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
+    $code .= $self->op_ASSIGN_w($extra{RESULT}) if $extra{RESULT};
     return wantarray ? ($code, {}, $macros) : $code;
 }
 
