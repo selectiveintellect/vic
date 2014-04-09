@@ -1082,22 +1082,36 @@ sub op_ASSIGN_w {
 }
 
 sub op_NOT {
-    my ($self, $var2) = @_;
+    my $self = shift;
+    my $var2 = shift;
+    my $pred = '';
+    if (@_) {
+        my ($dummy, %extra) = @_;
+        $pred .= "\tmovwf $extra{RESULT}" if $extra{RESULT};
+    }
     $var2 = uc $var2;
     return << "...";
 \t;;;; generate code for !$var2
 \tcomf $var2, W
 \tbtfsc STATUS, Z
 \tmovlw 1
+$pred
 ...
 }
 
 sub op_COMP {
-    my ($self, $var2) = @_;
+    my $self = shift;
+    my $var2 = shift;
+    my $pred = '';
+    if (@_) {
+        my ($dummy, %extra) = @_;
+        $pred .= "\tmovwf $extra{RESULT}" if $extra{RESULT};
+    }
     $var2 = uc $var2;
     return << "...";
 \t;;;; generate code for ~$var2
 \tcomf $var2, W
+$pred
 ...
 }
 

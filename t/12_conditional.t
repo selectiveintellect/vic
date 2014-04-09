@@ -12,10 +12,13 @@ Main {
         if $var1 != FALSE && $var2 != FALSE {
             write PORTC, 1;
             $var1 = !$var2;
-        } else if $var1 != FALSE {
+        } else if $var1 || $var2 {
             write PORTC, 2;
+            $var2 = $var1;
+        } else if !$var1 {
+            write PORTC, 4;
             $var2 = !$var1;
-        } else if $var2 != FALSE {
+        } else if $var2 {
             write PORTC, 4;
             $var2 = !$var1;
         } else {
@@ -34,7 +37,7 @@ my $output = << '...';
 GLOBAL_VAR_UDATA udata
 VAR1 res 1
 VAR2 res 1
-VIC_STACK res 3	;; temporary stack
+VIC_STACK res 4	;; temporary stack
 
 ;;;; generated code for macros
 
@@ -102,27 +105,60 @@ _end_conditional_0_0_e_1:
 	movf VIC_STACK + 1, W
 	btfss STATUS, Z ;; VIC_STACK + 1 is false if it is set else true
 	btfss STATUS, Z ;; VIC_STACK + 0 && VIC_STACK + 1 ?
+	goto _end_conditional_0_0_f_2
+	goto _end_conditional_0_0_t_2
+_end_conditional_0_0_f_2:
+	clrw
+	goto _end_conditional_0_0_e_2
+_end_conditional_0_0_t_2:
+	movlw 0x01
+_end_conditional_0_0_e_2:
+	movwf VIC_STACK + 2
+
+
+	bcf STATUS, Z
+	movf VIC_STACK + 2, W
+	xorlw 0x01
+	btfss STATUS, Z ;; VIC_STACK + 2 == 1 ?
 	goto _end_conditional_0_0
 	goto _true_2
 _end_conditional_0_0:
 
 
+	;; perform check for VAR1 || VAR2
 	bcf STATUS, Z
 	movf VAR1, W
-	xorlw 0x00
-	btfss STATUS, Z ;; var1 != 0 ?
-	goto _true_3
+	btfsc STATUS, Z  ;; VAR1 is false if it is set else true
+	movf VAR2, W
+	btfsc STATUS, Z ;; VAR2 is false if it is set else true
+	btfss STATUS, Z ;; var1 || var2 ?
 	goto _end_conditional_0_1
+	goto _true_3
 _end_conditional_0_1:
+
+
+	;;;; generate code for !VAR1
+	comf VAR1, W
+	btfsc STATUS, Z
+	movlw 1
+	movwf VIC_STACK + 0
+
+	bcf STATUS, Z
+	movf VIC_STACK + 0, W
+	xorlw 0x01
+	btfss STATUS, Z ;; VIC_STACK + 0 == 1 ?
+	goto _end_conditional_0_2
+	goto _true_4
+_end_conditional_0_2:
 
 
 	bcf STATUS, Z
 	movf VAR2, W
-	xorlw 0x00
-	btfss STATUS, Z ;; var2 != 0 ?
-	goto _true_4
-	goto _false_5
-_end_conditional_0_2:
+	xorlw 0x01
+	btfss STATUS, Z ;; var2 == 1 ?
+	goto _false_6
+	goto _true_5
+_end_conditional_0_3:
 
 
 _end_conditional_0:
@@ -130,8 +166,8 @@ _end_conditional_0:
 	goto _loop_1
 
 ;;;; generated code for functions
-;;;; generated code for False5
-_false_5:
+;;;; generated code for False6
+_false_6:
 
 	;; moves 8 (0x08) to PORTC
 	movlw 0x08
@@ -141,6 +177,7 @@ _false_5:
 	comf VAR2, W
 	btfsc STATUS, Z
 	movlw 1
+
 
 	movwf VAR1
 
@@ -158,6 +195,7 @@ _true_2:
 	btfsc STATUS, Z
 	movlw 1
 
+
 	movwf VAR1
 
 	goto _end_conditional_0;; go back to end of conditional
@@ -169,11 +207,8 @@ _true_3:
 	movlw 0x02
 	movwf PORTC
 
-	;;;; generate code for !VAR1
-	comf VAR1, W
-	btfsc STATUS, Z
-	movlw 1
-
+	;; moving VAR1 to VAR2
+	movf VAR1, W
 	movwf VAR2
 
 	goto _end_conditional_0;; go back to end of conditional
@@ -189,6 +224,24 @@ _true_4:
 	comf VAR1, W
 	btfsc STATUS, Z
 	movlw 1
+
+
+	movwf VAR2
+
+	goto _end_conditional_0;; go back to end of conditional
+
+;;;; generated code for True5
+_true_5:
+
+	;; moves 4 (0x04) to PORTC
+	movlw 0x04
+	movwf PORTC
+
+	;;;; generate code for !VAR1
+	comf VAR1, W
+	btfsc STATUS, Z
+	movlw 1
+
 
 	movwf VAR2
 

@@ -619,8 +619,12 @@ sub generate_code_operations {
         return $self->parser->throw_error("Error in intermediate code '$line'");
     }
     if (exists $extra{STACK}) {
-        $var1 = $extra{STACK}->{$var1} || $var1;
-        $var2 = $extra{STACK}->{$var2} || $var2;
+        if (defined $var1) {
+            $var1 = $extra{STACK}->{$var1} || $var1;
+        }
+        if (defined $var2) {
+            $var2 = $extra{STACK}->{$var2} || $var2;
+        }
     }
     my $method = $self->pic->validate_operator($op) if $tag eq 'OP';
     $method = $self->pic->validate_modifier($op) if $tag eq 'MOP';
