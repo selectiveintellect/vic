@@ -2056,8 +2056,60 @@ $pred
 ...
     } else {
         # both rhs and lhs are literals
-        my $res = $lhs && $rhs ? 1 : 0;
+        my $res = ($lhs && $rhs) ? 1 : 0;
         return $self->get_predicate_literals("$lhs && $rhs => $res", $res, %extra);
+    }
+}
+
+sub op_OR {
+    my ($self, $lhs, $rhs, %extra) = @_;
+    my $pred = $self->get_predicate("$lhs || $rhs", %extra);
+    my $literal = qr/^\d+$/;
+    if ($lhs !~ $literal and $rhs !~ $literal) {
+        # lhs and rhs are variables
+        $rhs = uc $rhs;
+        $lhs = uc $lhs;
+        return << "...";
+\t;; perform check for $lhs || $rhs
+\tbcf STATUS, Z
+\tmovf $lhs, W
+\tbtfsc STATUS, Z  ;; $lhs is false if it is set else true
+\tmovf $rhs, W
+\tbtfsc STATUS, Z ;; $rhs is false if it is set else true
+$pred
+...
+    } elsif ($rhs !~ $literal and $lhs =~ $literal) {
+        # rhs is variable and lhs is a literal
+        $rhs = uc $rhs;
+        $lhs = sprintf "0x%02X", $lhs;
+        return << "...";
+\t;; perform check for $lhs || $rhs
+\tbcf STATUS, Z
+\tmovlw $lhs
+\txorlw 0x00        ;; $lhs ^ 0 will set the Z bit
+\tbtfsc STATUS, Z  ;; $lhs is false if it is set else true
+\tmovf $rhs, W
+\tbtfsc STATUS, Z ;; $rhs is false if it is set else true
+$pred
+...
+    } elsif ($rhs =~ $literal and $lhs !~ $literal) {
+        # rhs is a literal and lhs is a variable
+        $lhs = uc $lhs;
+        $rhs = sprintf "0x%02X", $rhs;
+        return << "...";
+\t;; perform check for $lhs || $rhs
+\tbcf STATUS, Z
+\tmovlw $rhs
+\txorlw 0x00        ;; $rhs ^ 0 will set the Z bit
+\tbtfsc STATUS, Z  ;; $rhs is false if it is set else true
+\tmovf $lhs, W
+\tbtfsc STATUS, Z ;; $lhs is false if it is set else true
+$pred
+...
+    } else {
+        # both rhs and lhs are literals
+        my $res = ($lhs || $rhs) ? 1 : 0;
+        return $self->get_predicate_literals("$lhs || $rhs => $res", $res, %extra);
     }
 }
 
