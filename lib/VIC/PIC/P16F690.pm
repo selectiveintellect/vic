@@ -885,7 +885,7 @@ sub delay {
 }
 
 sub op_SHL {
-    my ($self, $var, $bits) = @_;
+    my ($self, $var, $bits, %extra) = @_;
     my $literal = qr/^\d+$/;
     my $code = '';
     if ($var !~ $literal and $bits =~ $literal) {
@@ -907,11 +907,12 @@ sub op_SHL {
         carp "Unable to handle $var << $bits";
         return;
     }
+    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
     return $code;
 }
 
 sub op_SHR {
-    my ($self, $var, $bits) = @_;
+    my ($self, $var, $bits, %extra) = @_;
     my $literal = qr/^\d+$/;
     my $code = '';
     if ($var !~ $literal and $bits =~ $literal) {
@@ -933,6 +934,7 @@ sub op_SHR {
         carp "Unable to handle $var >> $bits";
         return;
     }
+    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
     return $code;
 }
 
@@ -1032,7 +1034,7 @@ sub op_ASSIGN_literal {
 }
 
 sub op_ASSIGN {
-    my ($self, $var1, $var2) = @_;
+    my ($self, $var1, $var2, %extra) = @_;
     my $literal = qr/^\d+$/;
     return $self->op_ASSIGN_literal($var1, $var2) if $var2 =~ $literal;
     my $b1 = POSIX::ceil($self->address_bits($var1) / 8);
@@ -1071,6 +1073,7 @@ sub op_ASSIGN {
     } else {
         carp "Warning: should never reach here: $var1 is $b1 bytes and $var2 is $b2 bytes";
     }
+    $code .= $self->op_ASSIGN_w($extra{RESULT}) if $extra{RESULT};
     return $code;
 }
 
@@ -1116,7 +1119,7 @@ $pred
 }
 
 sub op_ADD_ASSIGN_literal {
-    my ($self, $var, $val) = @_;
+    my ($self, $var, $val, %extra) = @_;
     my $b1 = POSIX::ceil($self->address_bits($var) / 8);
     $var = uc $var;
     my $nibbles = 2 * $b1;
@@ -1147,20 +1150,26 @@ sub op_ADD_ASSIGN_literal {
             $code .= sprintf "\tmovlw 0x%02X\n\taddwf $var + $i, F\n", $valbyte if $valbyte > 0;
         }
     }
+    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT}; 
     return $code;
 }
 
 ## TODO: handle carry bit
 sub op_ADD_ASSIGN {
-    my ($self, $var, $var2) = @_;
+    my ($self, $var, $var2, %extra) = @_;
     my $literal = qr/^\d+$/;
-    return $self->op_ADD_ASSIGN_literal($var, $var2) if $var2 =~ $literal;
+    return $self->op_ADD_ASSIGN_literal($var, $var2, %extra) if $var2 =~ $literal;
     $var = uc $var;
     $var2 = uc $var2;
+    my $code = '';
+    if ($extra{RESULT}) {
+        $code = $self->op_ASSIGN_w($extra{RESULT});
+    }
     return << "...";
 \t;;moves $var2 to W
 \tmovf $var2, W
 \taddwf $var, F
+$code
 ...
 }
 
@@ -1313,6 +1322,7 @@ sub op_ADD {
 \tmovlw $var3
 ...
     }
+    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
     return $code;
 }
 
@@ -1365,6 +1375,7 @@ sub op_SUB {
 \tmovlw $var3
 ...
     }
+    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
     return $code;
 }
 
@@ -1482,6 +1493,7 @@ sub op_MUL {
         m_multiply_var => $self->m_multiply_var,
         m_multiply_macro => $self->m_multiply_macro,
     };
+    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
     return wantarray ? ($code, {}, $macros) : $code;
 }
 
@@ -1645,6 +1657,7 @@ sub op_DIV {
         m_divide_var => $self->m_divide_var,
         m_divide_macro => $self->m_divide_macro,
     };
+    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
     return wantarray ? ($code, {}, $macros) : $code;
 }
 
@@ -1698,12 +1711,15 @@ sub op_MOD {
         m_divide_var => $self->m_divide_var,
         m_divide_macro => $self->m_divide_macro,
     };
+    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
     return wantarray ? ($code, {}, $macros) : $code;
 }
 
 sub op_BXOR {
     my ($self, $var1, $var2, %extra) = @_;
     my $literal = qr/^\d+$/;
+    my $code = '';
+    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
     if ($var1 !~ $literal and $var2 !~ $literal) {
         $var1 = uc $var1;
         $var2 = uc $var2;
@@ -1711,6 +1727,7 @@ sub op_BXOR {
 \t;; perform $var1 ^ $var2 and move into W
 \tmovf $var1, W
 \txorwf $var2, W
+$code
 ...
     } elsif ($var1 !~ $literal and $var2 =~ $literal) {
         $var1 = uc $var1;
@@ -1719,6 +1736,8 @@ sub op_BXOR {
 \t;; perform $var1 ^ $var2 and move into W
 \tmovlw $var2
 \txorwf $var1, W
+$code
+...
 ...
     } elsif ($var1 =~ $literal and $var2 !~ $literal) {
         $var2 = uc $var2;
@@ -1727,6 +1746,8 @@ sub op_BXOR {
 \t;; perform $var1 ^ $var2 and move into W
 \tmovlw $var1
 \txorwf $var2, W
+$code
+...
 ...
     } else {
         my $var3 = $var1 ^ $var2;
@@ -1734,6 +1755,8 @@ sub op_BXOR {
         return << "...";
 \t;; $var3 = $var1 ^ $var2. move into W
 \tmovlw $var3
+$code
+...
 ...
     }
 }
@@ -1741,6 +1764,8 @@ sub op_BXOR {
 sub op_BAND {
     my ($self, $var1, $var2, %extra) = @_;
     my $literal = qr/^\d+$/;
+    my $code = '';
+    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
     if ($var1 !~ $literal and $var2 !~ $literal) {
         $var1 = uc $var1;
         $var2 = uc $var2;
@@ -1748,6 +1773,7 @@ sub op_BAND {
 \t;; perform $var1 & $var2 and move into W
 \tmovf $var1, W
 \tandwf $var2, W
+$code
 ...
     } elsif ($var1 !~ $literal and $var2 =~ $literal) {
         $var1 = uc $var1;
@@ -1756,6 +1782,7 @@ sub op_BAND {
 \t;; perform $var1 & $var2 and move into W
 \tmovlw $var2
 \tandwf $var1, W
+$code
 ...
     } elsif ($var1 =~ $literal and $var2 !~ $literal) {
         $var2 = uc $var2;
@@ -1764,6 +1791,7 @@ sub op_BAND {
 \t;; perform $var1 & $var2 and move into W
 \tmovlw $var1
 \tandwf $var2, W
+$code
 ...
     } else {
         my $var3 = $var2 & $var1;
@@ -1771,6 +1799,7 @@ sub op_BAND {
         return << "...";
 \t;; $var3 = $var1 & $var2. move into W
 \tmovlw $var3
+$code
 ...
     }
 }
@@ -1778,6 +1807,8 @@ sub op_BAND {
 sub op_BOR {
     my ($self, $var1, $var2, %extra) = @_;
     my $literal = qr/^\d+$/;
+    my $code = '';
+    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
     if ($var1 !~ $literal and $var2 !~ $literal) {
         $var1 = uc $var1;
         $var2 = uc $var2;
@@ -1785,6 +1816,7 @@ sub op_BOR {
 \t;; perform $var1 | $var2 and move into W
 \tmovf $var1, W
 \tiorwf $var2, W
+$code
 ...
     } elsif ($var1 !~ $literal and $var2 =~ $literal) {
         $var1 = uc $var1;
@@ -1793,6 +1825,7 @@ sub op_BOR {
 \t;; perform $var1 | $var2 and move into W
 \tmovlw $var2
 \tiorwf $var1, W
+$code
 ...
     } elsif ($var1 =~ $literal and $var2 !~ $literal) {
         $var2 = uc $var2;
@@ -1801,6 +1834,7 @@ sub op_BOR {
 \t;; perform $var1 | $var2 and move into W
 \tmovlw $var1
 \tiorwf $var2, W
+$code
 ...
     } else {
         my $var3 = $var1 | $var2;
@@ -1808,9 +1842,11 @@ sub op_BOR {
         return << "...";
 \t;; $var3 = $var1 | $var2. move into W
 \tmovlw $var3
+$code
 ...
     }
 }
+
 sub get_predicate {
     my ($self, $comment, %extra) = @_;
     my $pred = '';
@@ -2204,7 +2240,7 @@ m_sqrt_16bit macro v1
 }
 
 sub op_SQRT {
-    my ($self, $var1) = @_;
+    my ($self, $var1, $dummy, %extra) = @_;
     my $literal = qr/^\d+$/;
     my $code = '';
     #TODO: temporary only 8-bit math
@@ -2231,6 +2267,7 @@ sub op_SQRT {
         m_sqrt_var => $self->m_sqrt_var,
         m_sqrt_macro => $self->m_sqrt_macro,
     };
+    $code .= "\tmovwf $extra{RESULT}\n" if $extra{RESULT};
     return wantarray ? ($code, {}, $macros) : $code;
 }
 

@@ -421,9 +421,6 @@ _start:
 	;; add VIC_STACK + 3 and VIC_STACK + 2 without affecting either
 	movf VIC_STACK + 3, W
 	addwf VIC_STACK + 2, W
-
-	movwf VIC_STACK + 4
-
 	movwf VAR5
 
 	;; add VAR4 and VAR7 without affecting either
@@ -452,9 +449,6 @@ _start:
 	;; add VAR1 and VIC_STACK + 3 without affecting either
 	movf VAR1, W
 	addwf VIC_STACK + 3, W
-
-	movwf VIC_STACK + 4
-
 	movwf VAR5
 
 	;; add VAR1 and VAR2 without affecting either
@@ -481,9 +475,6 @@ _start:
 	;; perform VIC_STACK + 0 - VIC_STACK + 3 without affecting either
 	movf VIC_STACK + 3, W
 	subwf VIC_STACK + 0, W
-
-	movwf VIC_STACK + 4
-
 	movwf VAR8
 
 	;; perform sqrt(VAR4)

@@ -730,27 +730,20 @@ sub generate_code_assign_expr {
                 my %tmpstack = map { $_ => 'VIC_STACK + ' . $counter++ } sort(@deps);
                 foreach (sort @deps) {
                     my $tcode = $ast->{tmp_variables}->{$_};
+                    my $result = $tmpstack{$_};
+                    $result = uc $varname if $_ eq $rhs;
                     my @newcode = $self->generate_code_operations($tcode,
-                                        STACK => \%tmpstack) if $tcode;
-                    push @code, @newcode if @newcode;
+                                        STACK => \%tmpstack, RESULT => $result) if $tcode;
                     push @code, "\t;; $_ = $tcode" if $self->intermediate_inline;
-                    my ($code) = $self->pic->op_ASSIGN_w($tmpstack{$_});
-                    return $self->parser->throw_error("Error in intermediate code '$tcode'") unless $code;
-                    push @code, $code if $code;
+                    push @code, @newcode if @newcode;
                 }
-                my ($code) = $self->pic->op_ASSIGN_w($varname);
-                return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
-                push @code, "\t;; $line" if $self->intermediate_inline;
-                push @code, $code if $code;
             } else {
                 # no tmp-var dependencies
                 my $use_stack = $self->do_i_use_stack(@vdeps) unless scalar @deps;
                 unless ($use_stack) {
-                    my @newcode = $self->generate_code_operations($tmp_code);
+                    my @newcode = $self->generate_code_operations($tmp_code,
+                                                            RESULT => uc $varname);
                     push @code, @newcode if @newcode;
-                    my ($code) = $self->pic->op_ASSIGN_w($varname);
-                    return $self->parser->throw_error("Error in intermediate code '$tmp_code'") unless $code;
-                    push @code, $code if $code;
                 } else {
                     # TODO: stack
                     XXX @vdeps;
