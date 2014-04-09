@@ -184,19 +184,24 @@ sub make_tree {
           '.ref' => '_'
         },
         {
-          '.rgx' => qr/\Gelse/
-        },
-        {
-          '.ref' => '_'
-        },
-        {
-          '+min' => 0,
-          '.any' => [
+          '+max' => 1,
+          '.all' => [
             {
-              '.ref' => 'anonymous_block'
+              '.rgx' => qr/\Gelse/
             },
             {
-              '.ref' => 'conditional_statement'
+              '.ref' => '_'
+            },
+            {
+              '+min' => 0,
+              '.any' => [
+                {
+                  '.ref' => 'anonymous_block'
+                },
+                {
+                  '.ref' => 'conditional_statement'
+                }
+              ]
             }
           ]
         },
@@ -545,10 +550,7 @@ sub make_tree {
           '.ref' => 'comparison'
         },
         {
-          '.ref' => 'complement'
-        },
-        {
-          '.ref' => 'boolean'
+          '.ref' => 'expr_value'
         }
       ]
     },

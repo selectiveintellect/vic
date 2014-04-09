@@ -275,7 +275,12 @@ sub got_conditional_subject {
     if (ref $list eq 'ARRAY') {
         $self->flatten($list);
         if (scalar @$list == 1) {
-            return shift @$list;
+            my $var1 = shift @$list;
+            return $var1 if $var1 =~ /^\d+$/;
+            my $vref = $self->ast->{tmp_variables};
+            my $tvar = sprintf "_vic_tmp_%02d", scalar(keys %$vref);
+            $vref->{$tvar} = "OP::${var1}::EQ::1";
+            return $tvar;
         } elsif (scalar @$list == 2) {
             my ($op, $var) = @$list;
             my $vref = $self->ast->{tmp_variables};
@@ -828,6 +833,8 @@ sub generate_code_conditionals {
             $code .= "\tgoto $hh{END}\n";
             push @code, $code;
         } elsif (exists $ast->{variables}->{$subj}) {
+            ## we will never get here actually since we have eliminated this
+            #possibility
             XXX \%hh;
         } elsif (exists $ast->{tmp_variables}->{$subj}) {
             my $tmp_code = $ast->{tmp_variables}->{$subj};
@@ -840,7 +847,6 @@ sub generate_code_conditionals {
                 push @code, "\t;; $subj = $tmp_code\n";
             }
             if (scalar @deps) {
-                #YYY \%hh, { CODE => $tmp_code };
                 $ast->{tmp_stack_size} = max(scalar(@deps), $ast->{tmp_stack_size});
                 ## it is assumed that the dependencies and intermediate code are
                 #arranged in expected order
@@ -855,10 +861,6 @@ sub generate_code_conditionals {
                     my @newcode = $self->generate_code_operations($tcode,
                                                 STACK => \%tmpstack, %extra) if $tcode;
                     push @code, @newcode if @newcode;
-#                    push @code, "\t;; $_ = $tcode" if $self->intermediate_inline;
-#                    my ($code) = $self->pic->op_ASSIGN_w($tmpstack{$_}) unless $_ eq $subj;
-#                    return $self->parser->throw_error("Error in intermediate code '$tcode'") unless $code;
-#                    push @code, $code if $code;
                 }
             } else {
                 # no tmp-var dependencies

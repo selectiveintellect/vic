@@ -47,10 +47,10 @@ rhs-expr: (expr-value % rhs-operator)+
 assign-expr: - variable - assign-operator - rhs-expr
 
 comparison: expr-value compare-operator expr-value
-single-conditional: comparison | complement | boolean
+single-conditional: comparison | expr-value
 nested-conditional: start-nested-expr single-conditional end-nested-expr
 any-conditional: single-conditional | nested-conditional
-conditional-predicate: - (anonymous-block) - / else / - (anonymous-block | conditional-statement)* -
+conditional-predicate: - (anonymous-block) - (/ else / - (anonymous-block | conditional-statement)*)? -
 single-conditional-subject: (any-conditional % logic-operator)+
 nested-conditional-subject: start-nested-expr single-conditional-subject end-nested-expr
 conditional-subject: single-conditional-subject | nested-conditional-subject
