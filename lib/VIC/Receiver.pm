@@ -816,7 +816,17 @@ sub generate_code_conditionals {
             $hh{END} = $el;
         }
         if ($subj =~ /^\d+?$/) { # if subject is a literal
-            XXX $subj;
+            my $code = '';
+            push @code, "\t;; $line\n" if $self->intermediate_inline;
+            if ($subj eq 0) {
+                # is false
+                $code .= "\tgoto $hh{FALSE}\n" if $hh{FALSE};
+            } else {
+                # is true
+                $code .= "\tgoto $hh{TRUE}\n" if $hh{TRUE};
+            }
+            $code .= "\tgoto $hh{END}\n";
+            push @code, $code;
         } elsif (exists $ast->{variables}->{$subj}) {
             XXX \%hh;
         } elsif (exists $ast->{tmp_variables}->{$subj}) {
