@@ -6,7 +6,7 @@ use Carp;
 use POSIX ();
 use Pegex::Base; # use this instead of Mo
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 $VERSION = eval $VERSION;
 
 has type => 'p16f690';
@@ -56,7 +56,7 @@ has register_banks => {
     STATUS => [ 0 .. 3 ],
     # 0x04
     FSR => [ 0 .. 3 ],
-    # 0x05
+    # 0.06
     PORTA => [ 0, 2 ],
     TRISA => [ 1, 3 ],
     # 0x06
