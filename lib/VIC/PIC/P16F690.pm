@@ -1738,7 +1738,6 @@ $code
 \txorwf $var1, W
 $code
 ...
-...
     } elsif ($var1 =~ $literal and $var2 !~ $literal) {
         $var2 = uc $var2;
         $var1 = sprintf "0x%02X", $var1;
@@ -1748,7 +1747,6 @@ $code
 \txorwf $var2, W
 $code
 ...
-...
     } else {
         my $var3 = $var1 ^ $var2;
         $var3 = sprintf "0x%02X", $var3;
@@ -1756,7 +1754,6 @@ $code
 \t;; $var3 = $var1 ^ $var2. move into W
 \tmovlw $var3
 $code
-...
 ...
     }
 }
