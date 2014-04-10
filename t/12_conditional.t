@@ -185,6 +185,8 @@ _end_conditional_1:
 
 	goto _start_conditional_1 ;; end of conditional loop
 
+_break_end_conditional_1: ;; required for breaking from conditional loop
+
 	goto _loop_1
 
 ;;;; generated code for functions

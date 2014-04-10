@@ -2533,6 +2533,9 @@ $action{END}:
 ...
 }
 
+sub break { return 'BREAK'; }
+sub continue { return 'CONTINUE'; }
+
 1;
 
 =encoding utf8

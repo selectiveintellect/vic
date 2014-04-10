@@ -4,7 +4,7 @@ use warnings;
 use bigint;
 use POSIX ();
 use List::Util qw(max);
-use List::MoreUtils qw(any firstidx);
+use List::MoreUtils qw(any firstidx indexes);
 
 our $VERSION = '0.06';
 $VERSION = eval $VERSION;
@@ -778,7 +778,13 @@ sub generate_code_blocks {
     push @code, "\t;; $line" if $self->intermediate_inline;
     my @newcode = $self->generate_code($ast, $child);
     if ($child =~ /^(?:Action|True|False|ISR)/) {
-        push @newcode, "\tgoto $end_label;; go back to end of conditional\n" if @newcode;
+        my $cond_end = "\tgoto $end_label;; go back to end of conditional\n";
+        push @newcode, $cond_end if @newcode;
+        my @indexes = indexes { $_ eq 'CONTINUE' } @newcode;
+        $newcode[$_] = $cond_end foreach @indexes;
+        @indexes = indexes { $_ eq 'BREAK' } @newcode;
+        my $break_end = "\tgoto _break$end_label;; break from the condiitonal\n";
+        $newcode[$_] = $break_end foreach @indexes;
         # hack into the function list
         $ast->{funcs}->{$label} = [@newcode] if @newcode;
     } else {
@@ -813,26 +819,25 @@ sub generate_code_conditionals {
         # for multiple if-else-if-else we adjust the labels
         # for single ones we do not
         $start_label = "_start_conditional_$hh{COND}" unless defined $start_label;
+        $is_loop = $hh{LOOP} unless defined $is_loop;
+        $end_label = $hh{END} unless defined $end_label;
+        # we now modify the TRUE/FALSE/END labels
         if ($blockcount > 1) {
             my $el = "$hh{END}_$index"; # new label
             $hh{FALSE} = $el if $hh{FALSE} eq $hh{END};
             $hh{TRUE} = $el if $hh{TRUE} eq $hh{END};
-            $end_label = $hh{END} unless defined $end_label;
             $hh{END} = $el;
         }
-        $is_loop = $hh{LOOP} unless defined $is_loop;
         if ($subj =~ /^\d+?$/) { # if subject is a literal
-            my $code = '';
-            push @code, "\t;; $line\n" if $self->intermediate_inline;
+            push @code, "\t;; $line" if $self->intermediate_inline;
             if ($subj eq 0) {
                 # is false
-                $code .= "\tgoto $hh{FALSE}\n" if $hh{FALSE};
+                push @code, "\tgoto $hh{FALSE}" if $hh{FALSE};
             } else {
                 # is true
-                $code .= "\tgoto $hh{TRUE}\n" if $hh{TRUE};
+                push @code, "\tgoto $hh{TRUE}" if $hh{TRUE};
             }
-            $code .= "\tgoto $hh{END}\n";
-            push @code, $code;
+            push @code, "\tgoto $hh{END}" if $hh{END};
         } elsif (exists $ast->{variables}->{$subj}) {
             ## we will never get here actually since we have eliminated this
             #possibility
@@ -845,7 +850,7 @@ sub generate_code_conditionals {
             if ($self->intermediate_inline) {
                 push @code, "\t;; TMP_VAR DEPS - $subj, ". join (',', @deps) if @deps;
                 push @code, "\t;; VAR DEPS - ". join (',', @vdeps) if @vdeps;
-                push @code, "\t;; $subj = $tmp_code\n";
+                push @code, "\t;; $subj = $tmp_code";
             }
             if (scalar @deps) {
                 $ast->{tmp_stack_size} = max(scalar(@deps), $ast->{tmp_stack_size});
@@ -882,7 +887,10 @@ sub generate_code_conditionals {
     }
     push @code, "$end_label:" if defined $end_label and $blockcount > 1;
     unshift @code, "$start_label:" if defined $start_label;
-    push @code, "\tgoto $start_label ;; end of conditional loop\n" if $is_loop;
+    if ($is_loop) {
+        push @code, "\tgoto $start_label ;; end of conditional loop\n" if defined $start_label;
+        push @code , "_break$end_label: ;; for handling breaks from loop\n" if defined $end_label;
+    }
     return @code;
 }
 
