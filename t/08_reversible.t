@@ -203,6 +203,7 @@ _debounce_state_check:
 	goto    _action_2
 _end_action_2:
 
+_start_conditional_0:
     bcf STATUS, Z
 	movf DIRXN, W
 	xorlw 0x01

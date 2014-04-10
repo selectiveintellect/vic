@@ -25,6 +25,10 @@ Main {
             write PORTC, 8;
             $var1 = !$var2;
         }
+        $var3 = 0xFF;
+        while $var3 != 0 {
+            $var3 >>= 1;
+        }
     }
 }
 ...
@@ -37,6 +41,7 @@ my $output = << '...';
 GLOBAL_VAR_UDATA udata
 VAR1 res 1
 VAR2 res 1
+VAR3 res 1
 VIC_STACK res 4	;; temporary stack
 
 ;;;; generated code for macros
@@ -68,6 +73,7 @@ _start:
 ;;;; generated code for Loop1
 _loop_1:
 
+_start_conditional_0:
 	bcf STATUS, Z
 	movf VAR1, W
 	xorlw 0x00
@@ -143,6 +149,7 @@ _end_conditional_0_1:
 	movlw 1
 	movwf VIC_STACK + 0
 
+
 	bcf STATUS, Z
 	movf VIC_STACK + 0, W
 	xorlw 0x01
@@ -162,6 +169,21 @@ _end_conditional_0_3:
 
 
 _end_conditional_0:
+	;; moves 255 (0xFF) to VAR3
+	movlw 0xFF
+	movwf VAR3
+
+_start_conditional_1:
+	bcf STATUS, Z
+	movf VAR3, W
+	xorlw 0x00
+	btfss STATUS, Z ;; var3 != 0 ?
+	goto _true_7
+	goto _end_conditional_1
+_end_conditional_1:
+
+
+	goto _start_conditional_1 ;; end of conditional loop
 
 	goto _loop_1
 
@@ -177,9 +199,8 @@ _false_6:
 	comf VAR2, W
 	btfsc STATUS, Z
 	movlw 1
-
-
 	movwf VAR1
+
 
 	goto _end_conditional_0;; go back to end of conditional
 
@@ -194,9 +215,8 @@ _true_2:
 	comf VAR2, W
 	btfsc STATUS, Z
 	movlw 1
-
-
 	movwf VAR1
+
 
 	goto _end_conditional_0;; go back to end of conditional
 
@@ -224,9 +244,8 @@ _true_4:
 	comf VAR1, W
 	btfsc STATUS, Z
 	movlw 1
-
-
 	movwf VAR2
+
 
 	goto _end_conditional_0;; go back to end of conditional
 
@@ -241,16 +260,23 @@ _true_5:
 	comf VAR1, W
 	btfsc STATUS, Z
 	movlw 1
-
-
 	movwf VAR2
 
+
 	goto _end_conditional_0;; go back to end of conditional
+
+;;;; generated code for True7
+_true_7:
+
+	;;;; perform VAR3 >> 1
+	rrf VAR3, W
+	movwf VAR3
+
+	goto _end_conditional_1;; go back to end of conditional
 
 
 
 ;;;; generated code for end-of-file
 	end
 ...
-
 compiles_ok($input, $output);

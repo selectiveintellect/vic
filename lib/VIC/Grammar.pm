@@ -14,7 +14,7 @@ sub make_tree {
   {
     '+grammar' => 'vic',
     '+toprule' => 'program',
-    '+version' => '0.0.8',
+    '+version' => '0.0.9',
     'COMMA' => {
       '.rgx' => qr/\G,/
     },
@@ -93,14 +93,7 @@ sub make_tree {
       '.rgx' => qr/\G[\ \t]*\r?\n/
     },
     'block' => {
-      '.any' => [
-        {
-          '.ref' => 'named_block'
-        },
-        {
-          '.ref' => 'conditional_block'
-        }
-      ]
+      '.ref' => 'named_block'
     },
     'boolean' => {
       '.rgx' => qr/\G(TRUE|FALSE|true|false|0|1)/
@@ -153,25 +146,6 @@ sub make_tree {
     'complement_operator' => {
       '.rgx' => qr/\G(\~|!)/
     },
-    'conditional_block' => {
-      '.all' => [
-        {
-          '.ref' => '_'
-        },
-        {
-          '.rgx' => qr/\Gwhile|until/
-        },
-        {
-          '.ref' => '_'
-        },
-        {
-          '.ref' => 'conditional_subject'
-        },
-        {
-          '.ref' => 'anonymous_block'
-        }
-      ]
-    },
     'conditional_predicate' => {
       '.all' => [
         {
@@ -216,7 +190,7 @@ sub make_tree {
           '.ref' => '_'
         },
         {
-          '.rgx' => qr/\Gif/
+          '.rgx' => qr/\G(if|while)/
         },
         {
           '.ref' => '_'

@@ -217,8 +217,9 @@ sub got_assign_expr {
 
 sub got_conditional_statement {
     my ($self, $list) = @_;
-    my ($subject, $predicate) = @$list;
+    my ($type, $subject, $predicate) = @$list;
     return unless scalar @$predicate;
+    my $is_loop = ($type eq 'while') ? 1 : 0;
     my ($current, $parent) = $self->stack;
     my $subcond = 0;
     $subcond = 1 if $parent =~ /^conditional/;
@@ -256,7 +257,8 @@ sub got_conditional_statement {
                 FALSE => $false_label,
                 TRUE => $true_label,
                 END => $end_label,
-                SUBCOND => $subcond);
+                SUBCOND => $subcond,
+                LOOP => $is_loop);
     } else {
         return $self->parser->throw_error("Multiple predicate conditionals not implemented");
     }
@@ -800,7 +802,7 @@ sub generate_code_conditionals {
     my ($self, @condblocks) = @_;
     my @code = ();
     my $ast = $self->ast;
-    my $end_label;
+    my ($start_label, $end_label, $is_loop);
     my $blockcount = scalar @condblocks;
     my $index = 0;
     foreach my $line (@condblocks) {
@@ -810,6 +812,7 @@ sub generate_code_conditionals {
         $index++ if $hh{SUBCOND};
         # for multiple if-else-if-else we adjust the labels
         # for single ones we do not
+        $start_label = "_start_conditional_$hh{COND}" unless defined $start_label;
         if ($blockcount > 1) {
             my $el = "$hh{END}_$index"; # new label
             $hh{FALSE} = $el if $hh{FALSE} eq $hh{END};
@@ -817,6 +820,7 @@ sub generate_code_conditionals {
             $end_label = $hh{END} unless defined $end_label;
             $hh{END} = $el;
         }
+        $is_loop = $hh{LOOP} unless defined $is_loop;
         if ($subj =~ /^\d+?$/) { # if subject is a literal
             my $code = '';
             push @code, "\t;; $line\n" if $self->intermediate_inline;
@@ -876,7 +880,9 @@ sub generate_code_conditionals {
             return $self->parser->throw_error("Error in intermediate code '$line'");
         }
     }
-    push @code, "$end_label:\n" if defined $end_label and $blockcount > 1;
+    push @code, "$end_label:" if defined $end_label and $blockcount > 1;
+    unshift @code, "$start_label:" if defined $start_label;
+    push @code, "\tgoto $start_label ;; end of conditional loop\n" if $is_loop;
     return @code;
 }
 
