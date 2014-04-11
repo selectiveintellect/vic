@@ -11,12 +11,12 @@ if exists("b:current_syntax")
 endif
 
 syn keyword vicHeader       pragma array table contained
-syn keyword vicStatement    delay hang analog_input digital_input digital_output
+syn keyword vicStatement    delay analog_input digital_input digital_output
 syn keyword vicStatement    adc_enable adc_disable adc_read delay_ms delay_us delay_s
 syn keyword vicStatement    debounce digital_output write read ror rol timer_enable
 syn keyword vicStatement    timer shl shr
 syn keyword vicBlock        Main Loop Action True False ISR
-syn keyword vicModifier     sqrt high low int char hex if while else break continue
+syn keyword vicModifier     sqrt high low int char hex hang if while else break continue
 " contained is needed to show that the color highlighting is only valid when
 " part of another match
 syn keyword vicPICStatement PIC contained

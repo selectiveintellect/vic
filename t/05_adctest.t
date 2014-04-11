@@ -132,6 +132,8 @@ _loop_1:
 	call _delay_100us
 
 	goto _loop_1
+_end_loop_1:
+    goto $
 
 ;;;; generated code for functions
 _delay_100us:

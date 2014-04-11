@@ -111,8 +111,20 @@ sub handle_named_block {
                 }
             }
             my $ccount = $self->ast->{conditionals};
-            $block_label .= "::_end_conditional_$ccount" if $block_label =~ /True|False/i;
-            $block_label .= "::_end$label" if $block_label !~ /True|False/i;
+            my $elabel = "_end$label";
+            if ($block_label =~ /True|False/i) {
+                $elabel = "_end_conditional_$ccount";
+                my $slabel = "_start_conditional_$ccount";
+                # save this for referencing when we need to know what the parent of
+                # this block is in case we need to jump out of the block
+                $self->ast->{block_mapping}->{$name}->{parent} = $parent;
+                $self->ast->{block_mapping}->{$name}->{end_label} = $elabel;
+                $self->ast->{block_mapping}->{$name}->{start_label} = $slabel;
+                $self->ast->{block_mapping}->{$anon_block}->{parent} = $parent;
+                $self->ast->{block_mapping}->{$anon_block}->{end_label} = $elabel;
+                $self->ast->{block_mapping}->{$anon_block}->{start_label} = $slabel;
+            }
+            $block_label .= "::$elabel";
             push @{$self->ast->{$parent}}, $block_label;
         }
         return $block_label;
@@ -242,9 +254,10 @@ sub got_conditional_statement {
     my $inter;
     if (scalar @condblocks < 3) {
         my ($false_label, $true_label, $end_label);
+        my ($false_name, $true_name);
         foreach my $p (@condblocks) {
-            $false_label = $1 if $p =~ /BLOCK::(\w+)::False\d+::/;
-            $true_label = $1 if $p =~ /BLOCK::(\w+)::True\d+::/;
+            ($false_label, $false_name) = ($1, $2) if $p =~ /BLOCK::(\w+)::(False\d+)::/;
+            ($true_label, $true_name) = ($1, $2) if $p =~ /BLOCK::(\w+)::(True\d+)::/;
             $end_label = $1 if $p =~ /BLOCK::.*::(_end_conditional\w+)$/;
         }
         $false_label = $end_label unless defined $false_label;
@@ -257,8 +270,19 @@ sub got_conditional_statement {
                 FALSE => $false_label,
                 TRUE => $true_label,
                 END => $end_label,
-                SUBCOND => $subcond,
-                LOOP => $is_loop);
+                LOOP => $is_loop,
+                SUBCOND => $subcond);
+        my $mapping = $self->ast->{block_mapping};
+        if ($true_name and exists $mapping->{$true_name}) {
+            $mapping->{$true_name}->{loop} = "$is_loop";
+            my $ab = $mapping->{$true_name}->{block};
+            $mapping->{$ab}->{loop} = "$is_loop";
+        }
+        if ($false_name and exists $mapping->{$false_name}) {
+            $mapping->{$false_name}->{loop} = "$is_loop";
+            my $ab = $mapping->{$false_name}->{block};
+            $mapping->{$ab}->{loop} = "$is_loop";
+        }
     } else {
         return $self->parser->throw_error("Multiple predicate conditionals not implemented");
     }
@@ -771,22 +795,78 @@ sub generate_code_blocks {
     my ($self, $line, $block) = @_;
     my @code = ();
     my $ast = $self->ast;
-    my $mapped_block = $ast->{block_mapping}->{$block}->{block} || $block;
+    my $mapping = $ast->{block_mapping};
+    my $mapped_block = $mapping->{$block}->{block} || $block;
     my ($tag, $label, $child, $parent, $parent_label, $end_label) = split/::/, $line;
     return if ($child eq $block or $child eq $mapped_block or $child eq $parent);
     return if exists $ast->{generated_blocks}->{$child};
     push @code, "\t;; $line" if $self->intermediate_inline;
     my @newcode = $self->generate_code($ast, $child);
-    if ($child =~ /^(?:Action|True|False|ISR)/) {
+    my @bindexes = indexes { $_ eq 'BREAK' } @newcode;
+    my @cindexes = indexes { $_ eq 'CONTINUE' } @newcode;
+    if ($child =~ /^(?:True|False)/ and @newcode) {
         my $cond_end = "\tgoto $end_label;; go back to end of conditional\n";
-        push @newcode, $cond_end if @newcode;
-        my @indexes = indexes { $_ eq 'CONTINUE' } @newcode;
-        $newcode[$_] = $cond_end foreach @indexes;
-        @indexes = indexes { $_ eq 'BREAK' } @newcode;
-        my $break_end = "\tgoto _break$end_label;; break from the condiitonal\n";
-        $newcode[$_] = $break_end foreach @indexes;
+        # handle break
+        if (@bindexes) {
+            #FIXME: find top most parent loop
+            my $el = $mapping->{$parent}->{end_label};
+            my $break_end = defined $el ? $el : $end_label;
+            $break_end = "\tgoto $break_end;; break from the conditional\n";
+            $newcode[$_] = $break_end foreach @bindexes;
+        }
+        # handle continue
+        if (@cindexes) {
+            #FIXME: find top most parent loop
+            my $start_label = $mapping->{$parent}->{start_label};
+            my $cont_start = "\tgoto $start_label ;; go back to start of conditional\n" if $start_label;
+            $cont_start = "\tnop" unless $start_label;
+            $newcode[$_] = $cont_start foreach @cindexes;
+        }
+        # add the end _label
+        # if the current block is a loop, the end label is the start label
+        if (exists $mapping->{$child}->{loop} and $mapping->{$child}->{loop} eq '1') {
+            my $slabel = $mapping->{$child}->{start_label} || $end_label;
+            my $start_code = "\tgoto $slabel ;; go back to start of conditional\n" if $slabel;
+            $start_code = $cond_end unless $start_code;
+            push @newcode, $start_code;
+        } else {
+            push @newcode, $cond_end;
+        }
+        push @newcode, ";;;; end of $label";
         # hack into the function list
-        $ast->{funcs}->{$label} = [@newcode] if @newcode;
+        $ast->{funcs}->{$label} = [@newcode];
+    } elsif ($child =~ /^(?:Action|ISR)/ and @newcode) {
+        my $cond_end = "\tgoto $end_label ;; go back to end of block\n";
+        if (@bindexes) {
+            # we just break from the current block since we are not in any
+            # sub-block
+            my $break_end = "\tgoto $end_label ;; break from the block\n";
+            $newcode[$_] = $break_end foreach @bindexes;
+        }
+        if (@cindexes) {
+            # continue gets ignored
+            my $cont_start = "\tnop ;; continue is a NOP for $child block";
+            $newcode[$_] = $cont_start foreach @cindexes;
+        }
+        push @newcode, $cond_end, ";;;; end of $label";
+        # hack into the function list
+        $ast->{funcs}->{$label} = [@newcode];
+    } elsif ($child =~ /^Loop/ and @newcode) {
+        my $cond_end = "\tgoto $end_label;; go back to end of block\n";
+        if (@bindexes) {
+            # we just break from the current block since we are not in any
+            # sub-block and are in a Loop already
+            my $break_end = "\tgoto $end_label ;; break from the block\n";
+            $newcode[$_] = $break_end foreach @bindexes;
+        }
+        if (@cindexes) {
+            # continue goes to start of the loop
+            my $cont_start = "\tgoto $label ;; go back to start of loop\n";
+            $newcode[$_] = $cont_start foreach @cindexes;
+        }
+        push @code, @newcode;
+        push @code, "\tgoto $label ;;;; end of $label\n";
+        push @code, "$end_label:\n";
     } else {
         push @code, @newcode if @newcode;
     }
@@ -800,7 +880,6 @@ sub generate_code_blocks {
         my ($ptag, $plabel) = split /::/, $ast->{$parent}->[0];
         push @code, "\tgoto $plabel;; $plabel" if $plabel;
     }
-    push @code, "\tgoto $label" if $child =~ /^Loop/;
     return @code;
 }
 
@@ -885,12 +964,8 @@ sub generate_code_conditionals {
             return $self->parser->throw_error("Error in intermediate code '$line'");
         }
     }
-    push @code, "$end_label:" if defined $end_label and $blockcount > 1;
     unshift @code, "$start_label:" if defined $start_label;
-    if ($is_loop) {
-        push @code, "\tgoto $start_label ;; end of conditional loop\n" if defined $start_label;
-        push @code , "_break$end_label: ;; for handling breaks from loop\n" if defined $end_label;
-    }
+    push @code, "$end_label:" if defined $end_label and $blockcount > 1;
     return @code;
 }
 
@@ -940,6 +1015,7 @@ sub final {
     # generate main code first so that any addition to functions, macros,
     # variables during generation can be handled after
     my @main_code = $self->generate_code($ast, 'Main');
+    push @main_code, "\tgoto \$\t;;;; end of Main";
     my $main_code = join("\n", @main_code);
     # variables are part of macros and need to go first
     my $variables = '';

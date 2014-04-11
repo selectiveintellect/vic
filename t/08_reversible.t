@@ -214,6 +214,8 @@ _end_conditional_0:
 
 
 	goto _loop_1
+_end_loop_1:
+    goto $
 
 ;;;; generated code for functions
 ;;;; generated code for Action2

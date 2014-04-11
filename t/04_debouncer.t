@@ -133,6 +133,8 @@ _debounce_state_check:
 _end_action_2:
 
 	goto _loop_1
+_end_loop_1:
+    goto $
 
 ;;;; generated code for functions
 ;;;; generated code for Action2

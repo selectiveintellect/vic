@@ -182,12 +182,9 @@ _start_conditional_1:
 	goto _end_conditional_1
 _end_conditional_1:
 
-
-	goto _start_conditional_1 ;; end of conditional loop
-
-_break_end_conditional_1: ;; required for breaking from conditional loop
-
 	goto _loop_1
+_end_loop_1:
+    goto $
 
 ;;;; generated code for functions
 ;;;; generated code for False6
@@ -274,7 +271,7 @@ _true_7:
 	rrf VAR3, W
 	movwf VAR3
 
-	goto _end_conditional_1;; go back to end of conditional
+	goto _start_conditional_1;; go back to start of conditional
 
 
 

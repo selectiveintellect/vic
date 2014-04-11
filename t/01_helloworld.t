@@ -9,7 +9,6 @@ PIC P16F690;
 Main { # set the Main function
      digital_output RC0; # mark pin RC0 as output
      write RC0, 1; # write the value 1 to RC0
-     hang;
 } # end the Main function
 ...
 
