@@ -22,6 +22,7 @@ share/examples/debouncer.vic
 share/examples/GNUmakefile
 share/examples/helloworld.vic
 share/examples/interrupt.vic
+share/examples/loopbreak.vic
 share/examples/math.vic
 share/examples/math8bit.vic
 share/examples/reversible.vic
@@ -47,4 +48,5 @@ t/09_interrupt.t
 t/10_math.t
 t/11_math8bit.t
 t/12_conditional.t
+t/13_loopbreak.t
 t/TestVIC.pm

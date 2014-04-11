@@ -127,6 +127,7 @@ sub handle_named_block {
         $self->ast->{block_mapping}->{$anon_block}->{end_label} = $elabel;
         $self->ast->{block_mapping}->{$name}->{start_label} = $slabel;
         $self->ast->{block_mapping}->{$anon_block}->{start_label} = $slabel;
+        $self->ast->{block_mapping}->{$anon_block}->{loop} = '1' if $block_label =~ /Loop/i;
         return $block_label;
     }
 }
@@ -794,7 +795,10 @@ sub generate_code_assign_expr {
 
 sub find_nearest_loop {
     my ($self, $mapping, $child) = @_;
-    return $child if $mapping->{$child}->{loop} eq '1';
+    return unless exists $mapping->{$child};
+    if (exists $mapping->{$child}->{loop}) {
+        return $child if $mapping->{$child}->{loop} eq '1';
+    }
     return unless $mapping->{$child}->{parent};
     return $self->find_nearest_loop($mapping, $mapping->{$child}->{parent});
 }
@@ -816,22 +820,20 @@ sub generate_code_blocks {
         my $cond_end = "\tgoto $end_label;; go back to end of conditional\n";
         # handle break
         if (@bindexes) {
-            #FIXME: find top most parent loop
-            my $el;
-            $el = $mapping->{$child}->{end_label} if $mapping->{$child}->{loop} eq '1';
-            $el = $mapping->{$parent}->{end_label} unless $el;
+            #find top most parent loop
+            my $el = $self->find_nearest_loop($mapping, $child);
+            $el = $mapping->{$el}->{end_label} if $el;
             my $break_end = "\tgoto $el;; break from the conditional\n" if $el;
             $break_end = "\tnop ;; $child or $parent have no end_label" unless $el;
             $newcode[$_] = $break_end foreach @bindexes;
         }
         # handle continue
         if (@cindexes) {
-            #FIXME: find top most parent loop
-            my $start_label;
-            $start_label = $mapping->{$child}->{start_label} if $mapping->{$child}->{loop} eq '1';
-            $start_label = $mapping->{$parent}->{start_label} unless $start_label;
-            my $cont_start = "\tgoto $start_label ;; go back to start of conditional\n" if $start_label;
-            $cont_start = "\tnop ;; $child,$parent has no start_label" unless $start_label;
+            #find top most parent loop
+            my $sl = $self->find_nearest_loop($mapping, $child);
+            $sl = $mapping->{$sl}->{start_label} if $sl;
+            my $cont_start = "\tgoto $sl;; go back to start of conditional\n" if $sl;
+            $cont_start = "\tnop ;; $child or $parent have no start_label" unless $sl;
             $newcode[$_] = $cont_start foreach @cindexes;
         }
         # add the end _label
