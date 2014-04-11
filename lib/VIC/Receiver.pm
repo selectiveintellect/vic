@@ -99,7 +99,8 @@ sub handle_named_block {
         # we want to use the expected label and not the anon one unless it is an
         # anon-block
         $stack->[0] = join("::", $tag, $label, @others);
-        ## do not allow the parent to be a label
+        my $elabel = "_end$label"; # end label
+        my $slabel = $label; # start label
         if (defined $parent) {
             unless ($parent =~ /BLOCK::/) {
                 $block_label .= "::$parent";
@@ -111,32 +112,21 @@ sub handle_named_block {
                 }
             }
             my $ccount = $self->ast->{conditionals};
-            my $elabel = "_end$label";
             if ($block_label =~ /True|False/i) {
                 $elabel = "_end_conditional_$ccount";
-                my $slabel = "_start_conditional_$ccount";
-                # save this for referencing when we need to know what the parent of
-                # this block is in case we need to jump out of the block
-                $self->ast->{block_mapping}->{$name}->{parent} = $parent;
-                $self->ast->{block_mapping}->{$name}->{end_label} = $elabel;
-                $self->ast->{block_mapping}->{$name}->{start_label} = $slabel;
-                $self->ast->{block_mapping}->{$anon_block}->{parent} = $parent;
-                $self->ast->{block_mapping}->{$anon_block}->{end_label} = $elabel;
-                $self->ast->{block_mapping}->{$anon_block}->{start_label} = $slabel;
-            } else {
-                $self->ast->{block_mapping}->{$name}->{end_label} = $elabel;
-                $self->ast->{block_mapping}->{$anon_block}->{end_label} = $elabel;
-                $self->ast->{block_mapping}->{$name}->{start_label} = $label;
-                $self->ast->{block_mapping}->{$anon_block}->{start_label} = $label;
+                $slabel = "_start_conditional_$ccount";
             }
             $block_label .= "::$elabel";
             push @{$self->ast->{$parent}}, $block_label;
-        } else {
-            $self->ast->{block_mapping}->{$name}->{start_label} = $label;
-            $self->ast->{block_mapping}->{$name}->{end_label} = "_end$label";
-            $self->ast->{block_mapping}->{$anon_block}->{start_label} = $label;
-            $self->ast->{block_mapping}->{$anon_block}->{end_label} = "_end$label";
         }
+        # save this for referencing when we need to know what the parent of
+        # this block is in case we need to jump out of the block
+        $self->ast->{block_mapping}->{$name}->{parent} = $parent;
+        $self->ast->{block_mapping}->{$anon_block}->{parent} = $parent;
+        $self->ast->{block_mapping}->{$name}->{end_label} = $elabel;
+        $self->ast->{block_mapping}->{$anon_block}->{end_label} = $elabel;
+        $self->ast->{block_mapping}->{$name}->{start_label} = $slabel;
+        $self->ast->{block_mapping}->{$anon_block}->{start_label} = $slabel;
         return $block_label;
     }
 }
@@ -800,6 +790,13 @@ sub generate_code_assign_expr {
         return $self->parser->throw_error("Error in intermediate code '$line'");
     }
     return @code;
+}
+
+sub find_nearest_loop {
+    my ($self, $mapping, $child) = @_;
+    return $child if $mapping->{$child}->{loop} eq '1';
+    return unless $mapping->{$child}->{parent};
+    return $self->find_nearest_loop($mapping, $mapping->{$child}->{parent});
 }
 
 sub generate_code_blocks {
