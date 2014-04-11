@@ -26,6 +26,7 @@ _start:
      banksel   PORTC
      bcf       PORTC, 0
      bsf       PORTC, 0
+_end_start:
      goto      $
      end
 ...

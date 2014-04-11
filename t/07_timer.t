@@ -61,6 +61,7 @@ _loop_1:
 _end_action_2:
     goto _loop_1
 _end_loop_1:
+_end_start:
     goto $
 
 ;;;; generated code for functions

@@ -1,0 +1,31 @@
+PIC P16F690;
+
+Main {
+    digital_output PORTC;
+    Loop {
+        $dummy = 0xFF;
+        while $dummy != 0 {
+            $dummy >>= 1;
+            write PORTC, 1;
+            if $dummy <= 0x0F {
+                break;
+            }
+        }
+        while $dummy > 0 {
+            $dummy >>= 1;
+            write PORTC, 3;
+            continue;
+        }
+        if $dummy == TRUE {
+            write PORTC, 2;
+            break;
+        } else {
+            write PORTC, 4;
+            continue;
+        }
+    }
+    # we have broken from the loop
+    while TRUE {
+        write PORTC, 0xFF;
+    }
+}

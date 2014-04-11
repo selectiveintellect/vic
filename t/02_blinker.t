@@ -58,6 +58,7 @@ _loop_1:
     call _delay_1s
     goto _loop_1
 _end_loop_1:
+_end_start:
     goto $
 
 _delay_1s:

@@ -276,6 +276,7 @@ _end_conditional_0:
 
 	goto _loop_2
 _end_loop_2:
+_end_start:
     goto $
 
 ;;;; generated code for functions

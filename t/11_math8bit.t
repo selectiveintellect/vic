@@ -481,6 +481,7 @@ _start:
 
 	movwf VAR3
 
+_end_start:
 	goto $
 
 ;;;; generated code for functions

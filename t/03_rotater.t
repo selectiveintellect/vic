@@ -68,6 +68,7 @@ _loop_1:
     bsf DISPLAY, 7
     goto _loop_1
 _end_loop_1:
+_end_start:
     goto $
 
 _delay_1s:

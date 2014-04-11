@@ -123,9 +123,19 @@ sub handle_named_block {
                 $self->ast->{block_mapping}->{$anon_block}->{parent} = $parent;
                 $self->ast->{block_mapping}->{$anon_block}->{end_label} = $elabel;
                 $self->ast->{block_mapping}->{$anon_block}->{start_label} = $slabel;
+            } else {
+                $self->ast->{block_mapping}->{$name}->{end_label} = $elabel;
+                $self->ast->{block_mapping}->{$anon_block}->{end_label} = $elabel;
+                $self->ast->{block_mapping}->{$name}->{start_label} = $label;
+                $self->ast->{block_mapping}->{$anon_block}->{start_label} = $label;
             }
             $block_label .= "::$elabel";
             push @{$self->ast->{$parent}}, $block_label;
+        } else {
+            $self->ast->{block_mapping}->{$name}->{start_label} = $label;
+            $self->ast->{block_mapping}->{$name}->{end_label} = "_end$label";
+            $self->ast->{block_mapping}->{$anon_block}->{start_label} = $label;
+            $self->ast->{block_mapping}->{$anon_block}->{end_label} = "_end$label";
         }
         return $block_label;
     }
@@ -141,9 +151,9 @@ sub got_named_block {
 sub got_anonymous_block {
     my $self = shift;
     my $list = shift;
-    $self->flatten($list);
+    my ($anon_block, $block_stack, $parent) = @$list;
     # returns anon_block and parent_block
-    return $list;
+    return [$anon_block, $parent];
 }
 
 sub got_start_block {
@@ -160,8 +170,9 @@ sub got_start_block {
 sub got_end_block {
     my ($self, $list) = @_;
     # we are not capturing anything here
-    my $block = pop @{$self->ast->{block_stack}};
-    return $self->ast->{block_stack}->[-1];
+    my $stack = $self->ast->{block_stack};
+    my $block = pop @$stack;
+    return $stack->[-1];
 }
 
 sub got_name {
@@ -809,17 +820,21 @@ sub generate_code_blocks {
         # handle break
         if (@bindexes) {
             #FIXME: find top most parent loop
-            my $el = $mapping->{$parent}->{end_label};
-            my $break_end = defined $el ? $el : $end_label;
-            $break_end = "\tgoto $break_end;; break from the conditional\n";
+            my $el;
+            $el = $mapping->{$child}->{end_label} if $mapping->{$child}->{loop} eq '1';
+            $el = $mapping->{$parent}->{end_label} unless $el;
+            my $break_end = "\tgoto $el;; break from the conditional\n" if $el;
+            $break_end = "\tnop ;; $child or $parent have no end_label" unless $el;
             $newcode[$_] = $break_end foreach @bindexes;
         }
         # handle continue
         if (@cindexes) {
             #FIXME: find top most parent loop
-            my $start_label = $mapping->{$parent}->{start_label};
+            my $start_label;
+            $start_label = $mapping->{$child}->{start_label} if $mapping->{$child}->{loop} eq '1';
+            $start_label = $mapping->{$parent}->{start_label} unless $start_label;
             my $cont_start = "\tgoto $start_label ;; go back to start of conditional\n" if $start_label;
-            $cont_start = "\tnop" unless $start_label;
+            $cont_start = "\tnop ;; $child,$parent has no start_label" unless $start_label;
             $newcode[$_] = $cont_start foreach @cindexes;
         }
         # add the end _label
@@ -845,7 +860,7 @@ sub generate_code_blocks {
         }
         if (@cindexes) {
             # continue gets ignored
-            my $cont_start = "\tnop ;; continue is a NOP for $child block";
+            my $cont_start = ";; continue is a NOP for $child block";
             $newcode[$_] = $cont_start foreach @cindexes;
         }
         push @newcode, $cond_end, ";;;; end of $label";
@@ -917,6 +932,7 @@ sub generate_code_conditionals {
                 push @code, "\tgoto $hh{TRUE}" if $hh{TRUE};
             }
             push @code, "\tgoto $hh{END}" if $hh{END};
+            push @code, "$hh{END}:\n" if $hh{END};
         } elsif (exists $ast->{variables}->{$subj}) {
             ## we will never get here actually since we have eliminated this
             #possibility
@@ -1015,7 +1031,7 @@ sub final {
     # generate main code first so that any addition to functions, macros,
     # variables during generation can be handled after
     my @main_code = $self->generate_code($ast, 'Main');
-    push @main_code, "\tgoto \$\t;;;; end of Main";
+    push @main_code, "_end_start:\n", "\tgoto \$\t;;;; end of Main";
     my $main_code = join("\n", @main_code);
     # variables are part of macros and need to go first
     my $variables = '';
@@ -1045,6 +1061,7 @@ sub final {
     my $isr_code = '';
     my $funcs = '';
 #    YYY $ast->{tmp_variables};
+#    YYY $ast->{block_mapping};
     foreach my $fn (sort(keys %{$ast->{funcs}})) {
         my $fn_val = $ast->{funcs}->{$fn};
         # the default ISR checks to be done first
