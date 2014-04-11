@@ -823,8 +823,13 @@ sub generate_code_blocks {
             #find top most parent loop
             my $el = $self->find_nearest_loop($mapping, $child);
             $el = $mapping->{$el}->{end_label} if $el;
-            my $break_end = "\tgoto $el;; break from the conditional\n" if $el;
-            $break_end = "\tnop ;; $child or $parent have no end_label" unless $el;
+            my $break_end;
+            unless ($el) {
+                $break_end = "\t;; break from existing block since $child not part of any loop\n";
+                $break_end .= "\tgoto $end_label;; break from the conditional\n";
+            } else {
+                $break_end = "\tgoto $el;; break from the conditional\n";
+            }
             $newcode[$_] = $break_end foreach @bindexes;
         }
         # handle continue
