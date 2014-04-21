@@ -50,7 +50,7 @@ my $output = <<'...';
 	.sim "node rc0led"
 	.sim "attach rc0led portc0 L0.in"
 
-	.sim "break c 1000000"
+	.sim "break c 10000000"
 
 	.sim "log lxt helloworld.lxt"
 

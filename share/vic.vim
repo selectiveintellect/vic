@@ -34,7 +34,8 @@ syn match   vicValidVars    "\<\%(\w\+CON[0-9]*\)\|\%(TMR[0-9HL]*\)\|\%(ANSEL\w*
 syn match   vicValidVars    "\<\%(ADRES\w*\)\|\%(\w\+REG\w?\)\|\%(PCL\w*\)\>"
 syn match   vicValidVars    "\<\%(UART\|USART\|FSR\|STATUS\|OPTION_REG\|IND\)\w*\>"
 syn match   vicConfig       "\<pragma\s\+\$\?\%(\w\)*\s\+\%(\w\)*" contains=vicHeader,vicVariable,vicValidVars
-syn match   vicSimulator    "\<\%(attach_\|limit\|log\)\w*\>"
+syn keyword vicSimulator    log logfile scope limit
+syn match   vicSimulator    "\<\%(attach_\)\w*\>"
 syn match   vicSimAssert    "sim_\w\+"
 
 highlight link vicStatement     Statement 

@@ -116,7 +116,7 @@ sub attach_led {
 sub limit {
     my ($self, $usecs) = @_;
     # convert $secs to cycles
-    my $cycles = $usecs;
+    my $cycles = $usecs * 10;
     my $code = << "...";
 \t.sim "break c $cycles"
 ...
@@ -153,7 +153,7 @@ sub scope {
             $simport = $self->_get_simport($port, $_);
             if ($self->scope_channels < 8) {
                 $chnl = $self->scope_channels;
-                push @code, "\t.sim \"scope.ch$chnl = \\\"$simport\\\"";
+                push @code, "\t.sim \"scope.ch$chnl = \\\"$simport\\\"\"";
                 $self->scope_channels($chnl + 1);
             }
             carp "Maximum of 8 channels can be used in the scope\n" if $chnl > 7;
