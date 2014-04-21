@@ -79,11 +79,11 @@ _start:
 	banksel TRISC
 	clrf TRISC
     banksel ANSEL
-    movlw 0x07
-    iorwf ANSEL, F
+    movlw 0x0F
+    andwf ANSEL, F
     banksel ANSELH
-    movlw 0x01
-    iorwf ANSELH, F
+    movlw 0xFC
+    andwf ANSELH, F
 	banksel PORTC
 	clrf PORTC
 
