@@ -16,6 +16,7 @@ use VIC::PIC::Any;
 
 has pic_override => undef;
 has pic => undef;
+has simulator => undef;
 has ast => {
     block_stack => [],
     block_mapping => {},
@@ -43,6 +44,8 @@ sub got_uc_select {
     $self->ast->{org} = $self->pic->org;
     $self->ast->{chip_config} = $self->pic->chip_config;
     $self->ast->{code_config} = $self->pic->code_config;
+    # create the default simulator
+    $self->simulator(VIC::PIC::Any->new_simulator(pic => $self->pic->type));
     return;
 }
 
@@ -53,6 +56,13 @@ sub got_pragmas {
     # get the updated config
     $self->ast->{chip_config} = $self->pic->chip_config;
     $self->ast->{code_config} = $self->pic->code_config;
+    my ($sim, $stype) = @$list if scalar @$list;
+    if ($sim eq 'simulator' and $stype) {
+        $self->simulator(VIC::PIC::Any->new_simulator(
+                    type => $stype, pic => $self->pic->type));
+        die "$stype is not a supported simulator" unless $self->simulator;
+        die "$stype is not a supported chip" unless $self->simulator->type eq $stype;
+    }
     return;
 }
 
@@ -187,7 +197,13 @@ sub got_instruction {
     my ($self, $list) = @_;
     my $method = shift @$list;
     $self->flatten($list) if $list;
-    return $self->parser->throw_error("Unknown instruction '$method'") unless $self->pic->can($method);
+    # check if it is a simulator method
+    if ($self->simulator and $self->simulator->can($method)) {
+        YYY $list;
+    } else {
+        return $self->parser->throw_error("Unknown instruction '$method'")
+            unless $self->pic->can($method);
+    }
     my @args = ();
     while (scalar @$list) {
         my $a = shift @$list;

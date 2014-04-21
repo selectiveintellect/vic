@@ -1,11 +1,13 @@
 package VIC::PIC::Any;
 use strict;
 use warnings;
+use Carp;
 
 our $VERSION = '0.06';
 $VERSION = eval $VERSION;
 
 use VIC::PIC::P16F690;
+use VIC::PIC::Gpsim;
 
 # use this to map various PICs to their classes
 # allows for the same class to be used for different pics
@@ -13,11 +15,29 @@ use constant PICS => {
     P16F690 => 'P16F690',
 };
 
+use constant SIMS => {
+    gpsim => 'Gpsim',
+};
+
 sub new {
     my ($class, $type) = @_;
     my $utype = PICS->{uc $type};
+    return unless defined $utype;
     $class =~ s/::Any/::$utype/g;
     return $class->new(type => lc $utype);
+}
+
+sub new_simulator {
+    my ($class, %hh) = @_;
+    my $stype = 'Gpsim';
+    if (exists $hh{type}) {
+        $stype = SIMS->{lc $hh{type}};
+        carp "No simulator of type $hh{type}\n" unless $stype;
+        return;
+    }
+    $class =~ s/::Any/::$stype/g;
+    $hh{type} = lc $stype;
+    return $class->new(%hh);
 }
 
 1;
