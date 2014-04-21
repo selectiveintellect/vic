@@ -7,6 +7,7 @@ lib/VIC/Command.pm
 lib/VIC/Grammar.pm
 lib/VIC/Parser.pm
 lib/VIC/PIC/Any.pm
+lib/VIC/PIC/Gpsim.pm
 lib/VIC/PIC/P16F690.pm
 lib/VIC/Receiver.pm
 LICENSE
@@ -49,4 +50,6 @@ t/10_math.t
 t/11_math8bit.t
 t/12_conditional.t
 t/13_loopbreak.t
+t/14_helloworldsim.t
+t/15_rotatersim.t
 t/TestVIC.pm
