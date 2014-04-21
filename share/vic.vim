@@ -15,8 +15,9 @@ syn keyword vicStatement    delay analog_input digital_input digital_output
 syn keyword vicStatement    adc_enable adc_disable adc_read delay_ms delay_us delay_s
 syn keyword vicStatement    debounce digital_output write read ror rol timer_enable
 syn keyword vicStatement    timer shl shr
-syn keyword vicBlock        Main Loop Action True False ISR
-syn keyword vicModifier     sqrt high low int char hex hang if while else break continue
+syn keyword vicBlock        Main Loop Action True False ISR Simulator
+syn keyword vicModifier     sqrt high low int char hex hang
+syn keyword vicConditional  if while else break continue
 " contained is needed to show that the color highlighting is only valid when
 " part of another match
 syn keyword vicPICStatement PIC contained
@@ -33,6 +34,8 @@ syn match   vicValidVars    "\<\%(\w\+CON[0-9]*\)\|\%(TMR[0-9HL]*\)\|\%(ANSEL\w*
 syn match   vicValidVars    "\<\%(ADRES\w*\)\|\%(\w\+REG\w?\)\|\%(PCL\w*\)\>"
 syn match   vicValidVars    "\<\%(UART\|USART\|FSR\|STATUS\|OPTION_REG\|IND\)\w*\>"
 syn match   vicConfig       "\<pragma\s\+\$\?\%(\w\)*\s\+\%(\w\)*" contains=vicHeader,vicVariable,vicValidVars
+syn match   vicSimulator    "\<\%(sim_\|attach_\|limit\)\w*\>"
+syn match   vicSimAssert    "sim_\w+"
 
 highlight link vicStatement     Statement 
 highlight link vicBlock         Function
@@ -42,13 +45,16 @@ highlight link vicNumber        Number
 highlight link vicNumberUnits   Number
 highlight link vicBoolean       Number
 highlight link vicComment       Comment
-highlight link vicPIC           Type
-highlight link vicPICStatement  Special
+highlight link vicPIC           Special
+highlight link vicPICStatement  Type
 highlight link vicConfig        PreProc
 highlight link vicVariable      Identifier
 highlight link vicHeader        PreProc
 highlight link vicValidVars     Type
 highlight link vicModifier      Type
+highlight link vicConditional   Type
+highlight link vicSimulator     Statement
+highlight link vicSimAssert     PreProc
 
 let b:current_syntax = "vic"
 
