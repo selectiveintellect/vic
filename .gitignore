@@ -20,3 +20,9 @@ TAGS
 *.log
 installer/
 *.tar.gz
+*.map
+*.o
+*.cod
+*.hex
+*.d
+*.lst
