@@ -45,7 +45,7 @@ sub got_uc_select {
     $self->ast->{chip_config} = $self->pic->chip_config;
     $self->ast->{code_config} = $self->pic->code_config;
     # create the default simulator
-    $self->simulator(VIC::PIC::Any->new_simulator(pic => $self->pic->type));
+    $self->simulator(VIC::PIC::Any->new_simulator(pic => $self->pic));
     return;
 }
 
@@ -59,7 +59,7 @@ sub got_pragmas {
     my ($sim, $stype) = @$list if scalar @$list;
     if ($sim eq 'simulator' and $stype) {
         $self->simulator(VIC::PIC::Any->new_simulator(
-                    type => $stype, pic => $self->pic->type));
+                    type => $stype, pic => $self->pic));
         die "$stype is not a supported simulator" unless $self->simulator;
         die "$stype is not a supported chip" unless $self->simulator->type eq $stype;
     }
@@ -83,6 +83,8 @@ sub handle_named_block {
         $expected_label = "_false_${id}";
     } elsif ($name =~ /^ISR/) {
         $expected_label = "_isr_${id}";
+    } elsif ($name eq 'Simulator') {
+        $expected_label = '_vic_simulator';
     } else {
         $expected_label = lc "_$name$id";
     }
@@ -197,9 +199,11 @@ sub got_instruction {
     my ($self, $list) = @_;
     my $method = shift @$list;
     $self->flatten($list) if $list;
+    my $tag = 'INS';
     # check if it is a simulator method
     if ($self->simulator and $self->simulator->can($method)) {
-        YYY $list;
+        # this is a simulator instruction
+        $tag = 'SIM';
     } else {
         return $self->parser->throw_error("Unknown instruction '$method'")
             unless $self->pic->can($method);
@@ -215,7 +219,7 @@ sub got_instruction {
             push @args, $a;
         }
     }
-    $self->update_intermediate("INS::${method}::" . join ("::", @args));
+    $self->update_intermediate("${tag}::${method}::" . join ("::", @args));
     return;
 }
 
@@ -610,6 +614,19 @@ sub _update_funcs {
         }
     }
     1;
+}
+
+sub generate_simulator_instruction {
+    my ($self, $line) = @_;
+    my @ins = split /::/, $line;
+    my $tag = shift @ins;
+    my $method = shift @ins;
+    my $code = $self->simulator->$method(@ins);
+    return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
+    my @code = ();
+    push @code, "\t;; $line" if $self->intermediate_inline;
+    push @code, $code if $code;
+    return @code;
 }
 
 sub generate_code_instruction {
@@ -1025,8 +1042,9 @@ sub generate_code {
         } elsif ($line =~ /^SET::\w+/) {
             push @code, $self->generate_code_assign_expr($line);
         } elsif ($line =~ /^LABEL::(\w+)/) {
+            my $lbl = $1;
             push @code, ";; $line" if $self->intermediate_inline;
-            push @code, "$1:\n"; # label name
+            push @code, "$lbl:\n" if $lbl ne '_vic_simulator';
         } elsif ($line =~ /^COND::(\d+)::/) {
             my $cblock = $1;
             my @condblocks = ( $line );
@@ -1036,6 +1054,8 @@ sub generate_code {
                 delete $blocks->[$i - 1];
             }
             push @code, $self->generate_code_conditionals(reverse @condblocks);
+        } elsif ($line =~ /^SIM::\w+/) {
+            push @code, $self->generate_simulator_instruction($line);
         } else {
             $self->parser->throw_error("Intermediate code '$line' cannot be handled");
         }
@@ -1116,10 +1136,19 @@ sub final {
         $isr_code = "\tgoto _start\n$isr_entry\n$isr_checks\n$isr_code\n$isr_exit\n";
         $variables .= "\n$isr_var\n";
     }
+    my ($sim_include, $sim_setup_code) = ('', '');
+    if (defined $self->simulator and defined $ast->{Simulator}) {
+        my $stype = $self->simulator->type;
+        $sim_include .= ";;;; generated code for $stype header file\n";
+        $sim_include .= '#include <' . $self->simulator->include .">\n";
+        my @setup_code = $self->generate_code($ast, 'Simulator');
+        my $init_code = $self->simulator->init_code;
+        $sim_setup_code .= join("\n", $init_code, @setup_code) if scalar @setup_code;
+    }
     my $pic = <<"...";
 ;;;; generated code for PIC header file
 #include <$ast->{include}>
-
+$sim_include
 ;;;; generated code for variables
 $variables
 ;;;; generated code for macros
@@ -1129,13 +1158,14 @@ $ast->{chip_config}
 
 \torg $ast->{org}
 
+$sim_setup_code
+
 $isr_code
 
 $main_code
 
 ;;;; generated code for functions
 $funcs
-
 ;;;; generated code for end-of-file
 \tend
 ...

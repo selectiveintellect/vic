@@ -11,4 +11,7 @@ Main {
 Simulator {
     attach_led RC0;
     limit 1s;
+    logfile "helloworld.lxt";
+    log RC0;
+    scope RC0;
 }

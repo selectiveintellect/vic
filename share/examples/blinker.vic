@@ -16,4 +16,6 @@ Main {
 Simulator {
     attach_led RC0;
     limit 30s;
+    logfile;
+    log RC0;
 }
