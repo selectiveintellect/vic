@@ -94,9 +94,7 @@ _start:
 	bsf TRISA, TRISA0
 	banksel ANSEL
 	movlw 0x01
-	movwf ANSEL
-	movlw 0x00
-	movwf ANSELH
+    iorwf ANSEL, F
 	banksel PORTA
 
 	banksel ADCON1
