@@ -562,7 +562,7 @@ $an_code
             if (defined $apinname) {
                 my ($apin, $abit) = @{$self->analog_pins->{$apinname}};
                 my $ansel = ($abit >= 8) ? 'ANSELH' : 'ANSEL';
-                $an_code = "\tbanksel $ansel\nbcf $ansel, ANS$abit";
+                $an_code = "\tbanksel $ansel\n\tbcf $ansel, ANS$abit";
             }
             $code = << "...";
 \tbanksel TRIS$port
@@ -654,7 +654,7 @@ $an_code
                 my $pinname = $self->analog_pins->{$pin};
                 my ($apin, $abit) = @{$self->analog_pins->{$pinname}};
                 my $ansel = ($abit >= 8) ? 'ANSELH' : 'ANSEL';
-                $an_code = "\tbanksel $ansel\nbsf $ansel, ANS$abit";
+                $an_code = "\tbanksel $ansel\n\tbsf $ansel, ANS$abit";
             }
             $code = << "...";
 \tbanksel TRIS$port
@@ -713,7 +713,7 @@ $an_code
             if (defined $apinname) {
                 my ($apin, $abit) = @{$self->analog_pins->{$apinname}};
                 my $ansel = ($abit >= 8) ? 'ANSELH' : 'ANSEL';
-                $an_code = "\tbanksel $ansel\nbcf $ansel, ANS$abit";
+                $an_code = "\tbanksel $ansel\n\tbcf $ansel, ANS$abit";
             }
             $code = << "...";
 \tbanksel TRIS$port
