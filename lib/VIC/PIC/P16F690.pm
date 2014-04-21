@@ -521,19 +521,44 @@ sub digital_output {
     my $code;
     if (exists $self->ports->{$outp}) {
         my $port = $self->ports->{$outp};
+        my $flags = 0;
+        my $flagsH = 0;
+        for (0 .. 7) {
+            my $pin = 'R' . $port . $_;
+            next unless exists $self->pins->{$pin};
+            my ($p1, $p2, $pin_no) = @{$self->pins->{$pin}};
+            my $apinname = $self->analog_pins->{$pin_no} if defined $pin_no;
+            if (defined $apinname) {
+                my ($apin, $abit) = @{$self->analog_pins->{$apinname}};
+                $flags |= $abit if $abit < 8;
+                $flagsH |= ($abit - 8) if $abit >= 8;
+            }
+        }
+        my $an_code = '';
+        if ($flags != 0) {
+            $flags = sprintf "0x%02X", $flags;
+            $an_code .= "\tbanksel ANSEL\n";
+            $an_code .= "\tmovlw $flags\n";
+            $an_code .= "\tiorwf ANSEL, F\n";
+        }
+        if ($flagsH != 0) {
+            $flagsH = sprintf "0x%02X", $flagsH;
+            $an_code .= "\tbanksel ANSELH\n";
+            $an_code .= "\tmovlw $flagsH\n";
+            $an_code .= "\tiorwf ANSELH, F\n";
+        }
         $code = << "...";
 \tbanksel TRIS$port
 \tclrf TRIS$port
 \tbanksel $outp
 \tclrf $outp
+$an_code
 ...
     } elsif (exists $self->pins->{$outp}) {
         my ($port, $portbit, $pin_no) = @{$self->pins->{$outp}};
         my $an_code = '';
         if (defined $port and defined $portbit) {
             my $apinname = $self->analog_pins->{$pin_no} if defined $pin_no;
-            my $flags = 0;
-            my $flagsH = 0;
             if (defined $apinname) {
                 my ($apin, $abit) = @{$self->analog_pins->{$apinname}};
                 my $ansel = ($abit >= 8) ? 'ANSELH' : 'ANSEL';

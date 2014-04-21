@@ -55,6 +55,12 @@ _start:
     clrf TRISC
     banksel PORTC
     clrf    PORTC
+    banksel ANSEL
+    movlw 0x07
+    iorwf ANSEL, F
+    banksel ANSELH
+    movlw 0x01
+    iorwf ANSELH, F
     movlw  0x08
     movwf DISPLAY
 _loop_1:
