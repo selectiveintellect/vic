@@ -24,7 +24,7 @@ _start:
      banksel   TRISC
      bcf       TRISC, TRISC0
      banksel   ANSEL
-     bsf       ANSEL, ANS4
+     bcf       ANSEL, ANS4
      banksel   PORTC
      bcf       PORTC, 0
      bsf       PORTC, 0

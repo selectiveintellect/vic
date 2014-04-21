@@ -537,7 +537,7 @@ sub digital_output {
             if (defined $apinname) {
                 my ($apin, $abit) = @{$self->analog_pins->{$apinname}};
                 my $ansel = ($abit >= 8) ? 'ANSELH' : 'ANSEL';
-                $an_code = "\tbanksel $ansel\nbsf $ansel, ANS$abit";
+                $an_code = "\tbanksel $ansel\nbcf $ansel, ANS$abit";
             }
             $code = << "...";
 \tbanksel TRIS$port
