@@ -20,4 +20,5 @@ Simulator {
     limit 60s;
     logfile "rotater.lxt";
     log PORTC;
+    scope PORTC;
 }

@@ -21,6 +21,7 @@ Simulator {
     limit 60s;
     logfile "rotater.lxt";
     log PORTC;
+    scope PORTC;
 }
 ...
 
@@ -104,9 +105,14 @@ _delay_msecs_loop_0:
 
 	.sim "log r portc"
 	.sim "log w portc"
-
-
-
+    .sim "scope.ch0 = \"portc0\"
+    .sim "scope.ch1 = \"portc1\"
+    .sim "scope.ch2 = \"portc2\"
+    .sim "scope.ch3 = \"portc3\"
+    .sim "scope.ch4 = \"portc4\"
+    .sim "scope.ch5 = \"portc5\"
+    .sim "scope.ch6 = \"portc6\"
+    .sim "scope.ch7 = \"portc7\"
 
 ;;;; generated code for Main
 _start:

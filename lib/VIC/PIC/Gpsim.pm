@@ -68,8 +68,8 @@ sub _get_simport {
         if (exists $self->pic->ports->{$port}) {
             # this is a port
             my $p1 = $self->pic->ports->{$port};
-            $pin = 0 unless defined $pin;
-            $simport = lc "PORT$p1$pin";
+            $simport = lc "PORT$p1";
+            $simport .= $pin if defined $pin;
         } elsif (exists $self->pic->pins->{$port}) {
             # this is a pin
             my ($p1, $p2, $p3) = @{$self->pic->pins->{$port}};
@@ -93,7 +93,8 @@ sub attach_led {
         $self->led_count($c + 1);
         my $x = ($c >= 4) ? 400 : 100;
         my $y = 50 + 50 * $c;
-        my $simport = $self->_get_simport($port);
+        # use the default pin 0 here
+        my $simport = $self->_get_simport($port, 0);
         $code = $self->_gen_led($c, $x, $y, $node, $simport);
     } else {
         $count--;
@@ -146,10 +147,25 @@ sub scope {
     my $chnl = $self->scope_channels;
     carp "Maximum of 8 channels can be used in the scope\n" if $chnl > 7;
     return '' if $chnl > 7;
-    $self->scope_channels($chnl + 1);
-    return << "...";
+    if (lc($simport) eq lc($port)) {
+        my @code = ();
+        for (0 .. 7) {
+            $simport = $self->_get_simport($port, $_);
+            if ($self->scope_channels < 8) {
+                $chnl = $self->scope_channels;
+                push @code, "\t.sim \"scope.ch$chnl = \\\"$simport\\\"";
+                $self->scope_channels($chnl + 1);
+            }
+            carp "Maximum of 8 channels can be used in the scope\n" if $chnl > 7;
+            last if $chnl > 7;
+        }
+        return join("\n", @code);
+    } else {
+        $self->scope_channels($chnl + 1);
+        return << "...";
 \t.sim "scope.ch$chnl = \\"$simport\\""
 ...
+    }
 }
 
 1;
