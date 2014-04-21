@@ -528,11 +528,21 @@ sub digital_output {
 \tclrf $outp
 ...
     } elsif (exists $self->pins->{$outp}) {
-        my ($port, $portbit) = @{$self->pins->{$outp}};
+        my ($port, $portbit, $pin_no) = @{$self->pins->{$outp}};
+        my $an_code = '';
         if (defined $port and defined $portbit) {
+            my $apinname = $self->analog_pins->{$pin_no} if defined $pin_no;
+            my $flags = 0;
+            my $flagsH = 0;
+            if (defined $apinname) {
+                my ($apin, $abit) = @{$self->analog_pins->{$apinname}};
+                my $ansel = ($abit >= 8) ? 'ANSELH' : 'ANSEL';
+                $an_code = "\tbanksel $ansel\nbsf $ansel, ANS$abit";
+            }
             $code = << "...";
 \tbanksel TRIS$port
 \tbcf TRIS$port, TRIS$port$portbit
+$an_code
 \tbanksel PORT$port
 \tbcf PORT$port, $portbit
 ...
