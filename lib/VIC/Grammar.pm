@@ -54,6 +54,78 @@ sub make_tree {
         }
       ]
     },
+    'assert_comparison' => {
+      '.all' => [
+        {
+          '.ref' => 'assert_value'
+        },
+        {
+          '.ref' => 'compare_operator'
+        },
+        {
+          '.ref' => 'assert_value'
+        }
+      ]
+    },
+    'assert_condition' => {
+      '.ref' => 'assert_comparison'
+    },
+    'assert_statement' => {
+      '.all' => [
+        {
+          '.ref' => 'name'
+        },
+        {
+          '.ref' => 'assert_condition'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '+max' => 1,
+          '.all' => [
+            {
+              '.ref' => 'COMMA'
+            },
+            {
+              '.ref' => '_'
+            },
+            {
+              '.ref' => 'string'
+            }
+          ]
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'line_ending'
+        }
+      ]
+    },
+    'assert_value' => {
+      '.all' => [
+        {
+          '.ref' => '_'
+        },
+        {
+          '.any' => [
+            {
+              '.ref' => 'validated_variable'
+            },
+            {
+              '.ref' => 'variable'
+            },
+            {
+              '.ref' => 'number'
+            }
+          ]
+        },
+        {
+          '.ref' => '_'
+        }
+      ]
+    },
     'assign_expr' => {
       '.all' => [
         {
@@ -557,6 +629,9 @@ sub make_tree {
         },
         {
           '.ref' => 'conditional_statement'
+        },
+        {
+          '.ref' => 'assert_statement'
         },
         {
           '.ref' => 'block'

@@ -10,6 +10,7 @@ pragma simulator gpsim;
 Main { # set the Main function
      digital_output RC0; # mark pin RC0 as output
      write RC0, 1; # write the value 1 to RC0
+     sim_assert RC0 == 0x1, "Pin RC0 should be 1";
 } # end the Main function
 
 Simulator {
@@ -73,6 +74,7 @@ _start:
 	bcf PORTC, 0
 
 	bsf PORTC, 0
+	.assert "(portc & 0x01) == 0x01, \"Pin RC0 should be 1\""
 
 _end_start:
 

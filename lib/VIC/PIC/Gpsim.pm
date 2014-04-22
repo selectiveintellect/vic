@@ -82,6 +82,28 @@ sub _get_simport {
     return $simport;
 }
 
+sub _get_portpin {
+    my ($self, $port) = @_;
+    my $simport = lc $port;
+    my $simpin;
+    if ($self->pic) {
+        if (exists $self->pic->ports->{$port}) {
+            # this is a port
+            my $p1 = $self->pic->ports->{$port};
+            $simport = lc "PORT$p1";
+        } elsif (exists $self->pic->pins->{$port}) {
+            # this is a pin
+            my ($p1, $p2, $p3) = @{$self->pic->pins->{$port}};
+            $simport = lc "PORT$p1";
+            $simpin = $p2;
+        } else {
+            my $pic = $self->pic->type;
+            carp "Cannot find $port in PIC $pic. Using $simport\n";
+        }
+    }
+    return wantarray ? ($simport, $simpin) : $simport;
+}
+
 sub attach_led {
     my ($self, $port, $count) = @_;
     $count = 1 unless $count;
@@ -166,6 +188,58 @@ sub scope {
 \t.sim "scope.ch$chnl = \\"$simport\\""
 ...
     }
+}
+
+### have to change the operator back to the form acceptable by gpsim
+sub _get_operator {
+    my $self = shift;
+    my $op = shift;
+    return '==' if $op eq 'EQ';
+    return '!=' if $op eq 'NE';
+    return undef;
+}
+
+sub sim_assert {
+    my ($self, $condition, $msg) = @_;
+    if ($condition =~ /@@/) {
+        my @args = split /@@/, $condition;
+        my $literal = qr/^\d+$/;
+        if (scalar @args == 3) {
+            my $lhs = shift @args;
+            my $op = shift @args;
+            my $rhs = shift @args;
+            my $op2 = $self->_get_operator($op);
+            if ($lhs !~ $literal) {
+                my ($port, $pin) = $self->_get_portpin($lhs);
+                if (defined $pin) {
+                    my $pval = sprintf "0x%02X", (1 << $pin);
+                    $lhs = "($port & $pval)";
+                } elsif (defined $port) {
+                    $lhs = $port;
+                }
+            } else {
+                $lhs = sprintf "0x%02X", $lhs;
+            }
+            if ($rhs !~ $literal) {
+                my ($port, $pin) = $self->_get_portpin($lhs);
+                if (defined $pin) {
+                    my $pval = sprintf "0x%02X", (1 << $pin);
+                    $rhs = "($port & $pval)";
+                } elsif (defined $port) {
+                    $rhs = $port;
+                }
+            } else {
+                $rhs = sprintf "0x%02X", $rhs;
+            }
+            $condition = lc "$lhs $op2 $rhs";
+        }
+        #TODO: handle more complex expressions
+    }
+    $msg  = "$condition is false" unless $msg;
+    return << "..."
+\t;; break if the condition evaluates to false
+\t.assert "$condition, \\\"$msg\\\""
+...
 }
 
 1;

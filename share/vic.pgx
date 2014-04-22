@@ -21,7 +21,7 @@ _: /<BLANK>*/
 __: /<BLANK>+/
 line-ending: /- <SEMI> - <EOL>?/
 
-statement: comment | instruction | expression | conditional-statement | block
+statement: comment | instruction | expression | conditional-statement | assert-statement | block
 
 block: named-block
 named-block: name anonymous-block
@@ -54,6 +54,12 @@ single-conditional-subject: (any-conditional % logic-operator)+
 nested-conditional-subject: start-nested-expr single-conditional-subject end-nested-expr
 conditional-subject: single-conditional-subject | nested-conditional-subject
 conditional-statement: - /(if | while)/ - conditional-subject - conditional-predicate line-ending?
+
+# special case
+assert-value: - (validated-variable | variable | number) -
+assert-comparison: assert-value compare-operator assert-value
+assert-condition: assert-comparison
+assert-statement: name assert-condition - (COMMA - string)? - line-ending
 
 complement-operator: /(<TILDE> | <BANG>)/
 unary-operator: /(<PLUS> <PLUS> | <DASH> <DASH>)/

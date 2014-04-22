@@ -616,6 +616,26 @@ sub _update_funcs {
     1;
 }
 
+## assert handling is special for now
+sub got_assert_comparison {
+    my ($self, $list) = @_;
+    return unless $self->simulator;
+    $self->flatten($list) if ref $list eq 'ARRAY';
+    if (scalar @$list < 3) {
+        return $self->parser->throw_error("Error in assert statement");
+    }
+    return join("@@", @$list);
+}
+
+sub got_assert_statement {
+    my ($self, $list) = @_;
+    $self->flatten($list) if ref $list eq 'ARRAY';
+    my ($method, $cond, $msg) = @$list;
+    $msg = '' unless defined $msg;
+    $self->update_intermediate("SIM::${method}::${cond}::${msg}");
+    return;
+}
+
 sub generate_simulator_instruction {
     my ($self, $line) = @_;
     my @ins = split /::/, $line;

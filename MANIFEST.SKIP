@@ -73,7 +73,7 @@
 \bVIC-[\d\.\_]+
 tags
 TAGS
-todo
+todo$
 TODO
 \.bak$
 \.o$
@@ -83,3 +83,8 @@ TODO
 \.log$
 \.swp$
 compile_into_module$
+\.d$
+\.lst$
+\.map$
+\.hex$
+\.cod$
