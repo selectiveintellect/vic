@@ -152,17 +152,20 @@ sub logfile {
 }
 
 sub log {
-    my ($self, $port) = @_;
-    my $reg = $self->_get_simreg($port);
-    return unless $reg;
-    my $log_init = '';
-    return << "...";
+    my $self = shift;
+    my $code = '';
+    foreach my $port (@_) {
+        my $reg = $self->_get_simreg($port);
+        next unless $reg;
+        $code .= << "...";
 \t.sim "log r $reg"
 \t.sim "log w $reg"
 ...
+    }
+    return $code;
 }
 
-sub scope {
+sub _set_scope {
     my ($self, $port) = @_;
     my $simport = $self->_get_simport($port);
     my $chnl = $self->scope_channels;
@@ -187,6 +190,15 @@ sub scope {
 \t.sim "scope.ch$chnl = \\"$simport\\""
 ...
     }
+}
+
+sub scope {
+    my $self = shift;
+    my $code = '';
+    foreach my $port (@_) {
+        $code .= $self->_set_scope($port);
+    }
+    return $code;
 }
 
 ### have to change the operator back to the form acceptable by gpsim
