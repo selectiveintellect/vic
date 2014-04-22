@@ -7,6 +7,7 @@ PIC P16F690;
 Main {
     digital_output PORTC;
     $display = 0x08; # create a 8-bit register by checking size
+    sim_assert $display == 0x08, "$display should be 0x08";
     Loop {
         write PORTC, $display;
         delay 100ms;
@@ -34,6 +35,7 @@ my $output = <<'...';
 ;;;; generated code for variables
 GLOBAL_VAR_UDATA udata
 DISPLAY res 1
+    global DISPLAY
 
 ;;;;;; DELAY FUNCTIONS ;;;;;;;
 
@@ -132,6 +134,8 @@ _start:
 	;; moves 8 (0x08) to DISPLAY
 	movlw 0x08
 	movwf DISPLAY
+	.assert "DISPLAY == 0x08, \"$display should be 0x08\""
+	nop ;; needed for the assert
 
 ;;;; generated code for Loop1
 _loop_1:

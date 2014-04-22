@@ -55,7 +55,7 @@ sub _get_simreg {
             $simreg = lc "PORT$p1";
         } else {
             my $pic = $self->pic->type;
-            carp "Cannot find $port in PIC $pic. Using $simreg\n";
+            carp "Cannot find '$port' in PIC $pic. Using '$simreg'";
         }
     }
     return $simreg;
@@ -76,7 +76,7 @@ sub _get_simport {
             $simport = lc "PORT$p1$p2";
         } else {
             my $pic = $self->pic->type;
-            carp "Cannot find $port in PIC $pic. Using $simport\n";
+            carp "Cannot find '$port' in PIC $pic. Using '$simport'";
         }
     }
     return $simport;
@@ -97,8 +97,7 @@ sub _get_portpin {
             $simport = lc "PORT$p1";
             $simpin = $p2;
         } else {
-            my $pic = $self->pic->type;
-            carp "Cannot find $port in PIC $pic. Using $simport\n";
+            return;
         }
     }
     return wantarray ? ($simport, $simpin) : $simport;
@@ -213,9 +212,12 @@ sub sim_assert {
                 my ($port, $pin) = $self->_get_portpin($lhs);
                 if (defined $pin) {
                     my $pval = sprintf "0x%02X", (1 << $pin);
-                    $lhs = "($port & $pval)";
+                    $lhs = lc "($port & $pval)";
                 } elsif (defined $port) {
-                    $lhs = $port;
+                    $lhs = lc $port;
+                } else {
+                    # may be a variable
+                    $lhs = uc $lhs;
                 }
             } else {
                 $lhs = sprintf "0x%02X", $lhs;
@@ -224,14 +226,17 @@ sub sim_assert {
                 my ($port, $pin) = $self->_get_portpin($lhs);
                 if (defined $pin) {
                     my $pval = sprintf "0x%02X", (1 << $pin);
-                    $rhs = "($port & $pval)";
+                    $rhs = lc "($port & $pval)";
                 } elsif (defined $port) {
-                    $rhs = $port;
+                    $rhs = lc $port;
+                } else {
+                    # may be a variable
+                    $rhs = uc $rhs;
                 }
             } else {
                 $rhs = sprintf "0x%02X", $rhs;
             }
-            $condition = lc "$lhs $op2 $rhs";
+            $condition = "$lhs $op2 $rhs";
         }
         #TODO: handle more complex expressions
     }
@@ -239,6 +244,7 @@ sub sim_assert {
     return << "..."
 \t;; break if the condition evaluates to false
 \t.assert "$condition, \\\"$msg\\\""
+\tnop ;; needed for the assert
 ...
 }
 

@@ -75,6 +75,7 @@ _start:
 
 	bsf PORTC, 0
 	.assert "(portc & 0x01) == 0x01, \"Pin RC0 should be 1\""
+    nop ;; needed for the assert
 
 _end_start:
 

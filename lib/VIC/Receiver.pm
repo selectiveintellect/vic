@@ -550,6 +550,7 @@ sub got_variable {
         scope => $self->ast->{block_stack}->[-1],
         size => POSIX::ceil($self->pic->address_bits($varname) / 8),
     } unless exists $self->ast->{variables}->{$varname};
+    $self->ast->{variables}->{$varname}->{scope} = 'global' if $parent =~ /assert_/;
     return $varname;
 }
 
@@ -641,10 +642,10 @@ sub generate_simulator_instruction {
     my @ins = split /::/, $line;
     my $tag = shift @ins;
     my $method = shift @ins;
-    my $code = $self->simulator->$method(@ins);
-    return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
     my @code = ();
     push @code, "\t;; $line" if $self->intermediate_inline;
+    my $code = $self->simulator->$method(@ins);
+    return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
     push @code, $code if $code;
     return @code;
 }
@@ -1101,13 +1102,16 @@ sub final {
     foreach my $var (sort(keys %$vhref)) {
         # should we care about scope ?
         $variables .= "$vhref->{$var}->{name} res $vhref->{$var}->{size}\n";
-        push @global_vars, $vhref->{$var}->{name};
+        if (($vhref->{$var}->{scope} eq 'global') or
+            ($ast->{code_config}->{variable}->{export})) {
+            push @global_vars, $vhref->{$var}->{name};
+        }
     }
     if ($ast->{tmp_stack_size}) {
         $variables .= "VIC_STACK res $ast->{tmp_stack_size}\t;; temporary stack\n";
     }
     #XXX $ast->{code_config}->{variable};
-    if ($ast->{code_config}->{variable}->{export} and scalar @global_vars) {
+    if (scalar @global_vars) {
         # export the variables
         $variables .= "\tglobal ". join (", ", @global_vars) . "\n";
     }
