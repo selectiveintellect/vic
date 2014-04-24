@@ -292,6 +292,16 @@ sub make_tree {
         }
       ]
     },
+    'constant' => {
+      '.any' => [
+        {
+          '.ref' => 'number_units'
+        },
+        {
+          '.ref' => 'number'
+        }
+      ]
+    },
     'double_quoted_string' => {
       '.rgx' => qr/\G(?:"((?:[^\n\\"]|\\"|\\\\|\\[0nt])*?)")/
     },
@@ -387,6 +397,19 @@ sub make_tree {
     },
     'math_operator' => {
       '.rgx' => qr/\G([\+\-\*\/%])/
+    },
+    'modifier_constant' => {
+      '.all' => [
+        {
+          '.ref' => 'identifier_without_keyword'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'constant'
+        }
+      ]
     },
     'modifier_variable' => {
       '.all' => [
@@ -731,10 +754,13 @@ sub make_tree {
               '.ref' => 'named_block'
             },
             {
-              '.ref' => 'validated_variable'
+              '.ref' => 'modifier_constant'
             },
             {
               '.ref' => 'modifier_variable'
+            },
+            {
+              '.ref' => 'validated_variable'
             }
           ]
         },

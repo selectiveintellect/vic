@@ -33,7 +33,7 @@ instruction: name values line-ending
 
 name: - identifier-without-keyword -
 values: (value % COMMA)*
-value: - (string | number-units | number | variable | named-block | validated-variable | modifier-variable) -
+value: - (string | number-units | number | variable | named-block | modifier-constant | modifier-variable | validated-variable) -
 
 expression: (assign-expr | unary-expr) line-ending
 unary-lhs: - unary-operator - variable -
@@ -86,7 +86,9 @@ boolean: /( TRUE | FALSE | true | false | 0 | 1)/
 
 validated-variable: identifier-without-keyword
 modifier-variable: identifier-without-keyword -  variable
+modifier-constant: identifier-without-keyword - constant
 variable: DOLLAR identifier
+constant: number-units | number
 identifier-without-keyword: /(!<keyword>)(<ALPHA>[<WORDS>]*)/
 identifier: /(<ALPHA>[<WORDS>]*)/
 keyword: /if | else | while | true | false | TRUE | FALSE/
