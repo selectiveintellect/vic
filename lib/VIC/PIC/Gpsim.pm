@@ -18,6 +18,13 @@ has led_count => 0;
 
 has scope_channels => 0;
 
+sub supports_modifier {
+    my $self = shift;
+    my $mod = shift;
+    return 1 if $mod =~ /^(?:every|wave)$/i;
+    0;
+}
+
 sub init_code {
     my $self = shift;
     my $pic = '';

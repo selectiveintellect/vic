@@ -510,6 +510,19 @@ sub got_unary_operator {
     return $self->parser->throw_error("Increment/Decrement operator '$op' is not supported");
 }
 
+sub got_modifier_constant {
+    my ($self, $list) = @_;
+    $self->flatten($list) if ref $list eq 'ARRAY';
+    my ($modifier, $value) = (@$list);
+    $modifier = uc $modifier;
+    my $method = $self->pic->validate_modifier($modifier);
+    return $self->got_expr_value(["MOP::${modifier}::${value}"]) if $method;
+    if ($self->simulator and $self->simulator->supports_modifier($modifier)) {
+        return { $modifier => $value }; # the simulator will use hashes
+    }
+    $self->parser->throw_error("Modifying operator '$modifier' not supported") unless $method;
+}
+
 sub got_modifier_variable {
     my ($self, $list) = @_;
     my ($modifier, $varname);
