@@ -32,11 +32,15 @@ sub init_code {
 
 sub _gen_led {
     my $self = shift;
-    my ($id, $x, $y, $name, $port) = @_;
+    my ($id, $x, $y, $name, $port, $color) = @_;
+    $color = 'red' unless defined $color;
+    $color = 'red' unless $color =~ /red|orange|green|yellow|blue/i;
+    $color = lc $color;
     return << "...";
 \t.sim "module load led L$id"
 \t.sim "L$id.xpos = $x"
 \t.sim "L$id.ypos = $y"
+\t.sim "L$id.color = $color"
 \t.sim "node $name"
 \t.sim "attach $name $port L$id.in"
 ...
@@ -104,7 +108,7 @@ sub _get_portpin {
 }
 
 sub attach_led {
-    my ($self, $port, $count) = @_;
+    my ($self, $port, $count, $color) = @_;
     $count = 1 unless $count;
     $count = 1 if int($count) < 1;
     my $code = '';
@@ -116,7 +120,7 @@ sub attach_led {
         my $y = 50 + 50 * $c;
         # use the default pin 0 here
         my $simport = $self->_get_simport($port, 0);
-        $code = $self->_gen_led($c, $x, $y, $node, $simport);
+        $code = $self->_gen_led($c, $x, $y, $node, $simport, $color);
     } else {
         $count--;
         if ($self->pic) {
@@ -126,7 +130,7 @@ sub attach_led {
                 my $y = 50 + 50 * $c;
                 my $node = lc $port . $c . 'led';
                 my $simport = $self->_get_simport($port, $_);
-                $code .= $self->_gen_led($c, $x, $y, $node, $simport);
+                $code .= $self->_gen_led($c, $x, $y, $node, $simport, $color);
             }
             $self->led_count($self->led_count + $count);
         }
