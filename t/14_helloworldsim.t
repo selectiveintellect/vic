@@ -15,7 +15,7 @@ Main { # set the Main function
 
 Simulator {
     attach_led RC0;
-    limit 1s;
+    stop_after 1s;
     logfile "helloworld.lxt";
     log RC0;
     scope RC0;
@@ -48,6 +48,7 @@ my $output = <<'...';
 	.sim "module load led L0"
 	.sim "L0.xpos = 100"
 	.sim "L0.ypos = 50"
+    .sim "L0.color = red"
 	.sim "node rc0led"
 	.sim "attach rc0led portc0 L0.in"
 

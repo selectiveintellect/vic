@@ -138,7 +138,7 @@ sub attach_led {
     return $code;
 }
 
-sub limit {
+sub stop_after {
     my ($self, $usecs) = @_;
     # convert $secs to cycles
     my $cycles = $usecs * 10;

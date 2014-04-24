@@ -19,7 +19,7 @@ Main {
 
 Simulator {
     attach_led PORTC, 4; # attach 4 LEDs to PORTC on RC0-RC3;
-    limit 60s;
+    stop_after 60s;
     logfile "rotater.lxt";
     log PORTC;
     scope PORTC;
@@ -83,21 +83,25 @@ _delay_msecs_loop_0:
 	.sim "module load led L0"
 	.sim "L0.xpos = 100"
 	.sim "L0.ypos = 50"
+    .sim "L0.color = red"
 	.sim "node portc0led"
 	.sim "attach portc0led portc0 L0.in"
 	.sim "module load led L1"
 	.sim "L1.xpos = 100"
 	.sim "L1.ypos = 100"
+    .sim "L1.color = red"
 	.sim "node portc1led"
 	.sim "attach portc1led portc1 L1.in"
 	.sim "module load led L2"
 	.sim "L2.xpos = 100"
 	.sim "L2.ypos = 150"
+    .sim "L2.color = red"
 	.sim "node portc2led"
 	.sim "attach portc2led portc2 L2.in"
 	.sim "module load led L3"
 	.sim "L3.xpos = 100"
 	.sim "L3.ypos = 200"
+    .sim "L3.color = red"
 	.sim "node portc3led"
 	.sim "attach portc3led portc3 L3.in"
 

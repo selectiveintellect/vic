@@ -18,7 +18,7 @@ Main {
 
 Simulator {
     attach_led PORTC, 4; # attach 4 LEDs to PORTC on RC0-RC3;
-    limit 60s;
+    stop_after 60s;
     logfile "rotater.lxt";
     log PORTC;
     scope PORTC;
