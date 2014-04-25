@@ -674,7 +674,7 @@ sub generate_simulator_instruction {
         $_ = $self->global_collections->{$_};
     }
     my $code = $self->simulator->$method(@ins);
-    return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
+    return $self->parser->throw_error("Error in simulator intermediate code '$line'") unless $code;
     push @code, $code if $code;
     return @code;
 }
@@ -1202,6 +1202,9 @@ sub final {
         my @setup_code = $self->generate_code($ast, 'Simulator');
         my $init_code = $self->simulator->init_code;
         $sim_setup_code .= join("\n", $init_code, @setup_code) if scalar @setup_code;
+        if ($self->simulator->should_autorun) {
+            $sim_setup_code .= $self->simulator->get_autorun_code;
+        }
     }
     my $pic = <<"...";
 ;;;; generated code for PIC header file

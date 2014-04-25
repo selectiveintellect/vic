@@ -28,4 +28,5 @@ Simulator {
         850, 1, 950, 0
     ];
     stop_after 10s;
+    autorun;
 }

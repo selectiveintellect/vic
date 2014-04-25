@@ -22,6 +22,7 @@ Main {
 }
 
 Simulator {
+    autorun;
     attach_led PORTC, 4, 'red';
     logfile "debouncer.lxt";
     log RA3;
@@ -143,9 +144,7 @@ _delay_msecs_loop_0:
 	.sim "attach stim0RA3 stim0 porta3"
 
 	.sim "break c 100000000"
-
-
-
+    .sim "run"
 
 ;;;; generated code for Main
 _start:

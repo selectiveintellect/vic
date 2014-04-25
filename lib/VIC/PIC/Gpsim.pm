@@ -20,6 +20,8 @@ has scope_channels => 0;
 
 has stimulus_count => 0;
 
+has should_autorun => 0;
+
 sub supports_modifier {
     my $self = shift;
     my $mod = shift;
@@ -318,9 +320,16 @@ $wave
 ...
 }
 
-sub autorun {
+sub get_autorun_code {
     return qq{\t.sim "run"\n};
 }
+
+sub autorun {
+    my $self = shift;
+    $self->should_autorun(1);
+    return "\t;;;; will autorun on start\n";
+}
+
 1;
 
 =encoding utf8
