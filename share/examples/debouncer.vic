@@ -1,6 +1,6 @@
 PIC P16F690;
 
-pragma debounce count = 5;
+pragma debounce count = 3;
 pragma debounce delay = 1ms;
 
 Main {
@@ -8,7 +8,8 @@ Main {
     digital_input RA3;
     $display = 0;
     Loop {
-        debounce RA3, Action {
+        debounce RA3,
+        Action {
             ++$display;
             write PORTC, $display;
         };
@@ -20,6 +21,11 @@ Simulator {
     logfile "debouncer.lxt";
     log RA3;
     scope RA3;
-    stimulate RA3, every 1s, wave [ 100, 0, 300, 1, 400, 0, 420, 1, 500, 0, 520, 1, 600, 0 ];
+    stimulate RA3, every 1ms, wave [
+        300, 1, 420, 0,
+        450, 1, 600, 0,
+        650, 1, 800, 0,
+        850, 1, 950, 0
+    ];
     stop_after 10s;
 }
