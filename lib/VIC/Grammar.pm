@@ -25,10 +25,10 @@ sub make_tree {
       '.rgx' => qr/\G\z/
     },
     '_' => {
-      '.rgx' => qr/\G[\ \t]*/
+      '.rgx' => qr/\G[\ \t]*\r?\n?/
     },
     '__' => {
-      '.rgx' => qr/\G[\ \t]+/
+      '.rgx' => qr/\G[\ \t]+\r?\n?/
     },
     'anonymous_block' => {
       '.all' => [
@@ -66,7 +66,7 @@ sub make_tree {
           '+min' => 0,
           '.ref' => 'array_element',
           '.sep' => {
-            '.ref' => 'COMMA'
+            '.ref' => 'list_separator'
           }
         },
         {
@@ -116,6 +116,16 @@ sub make_tree {
     'assert_condition' => {
       '.ref' => 'assert_comparison'
     },
+    'assert_message' => {
+      '.all' => [
+        {
+          '.ref' => 'list_separator'
+        },
+        {
+          '.ref' => 'string'
+        }
+      ]
+    },
     'assert_statement' => {
       '.all' => [
         {
@@ -129,17 +139,7 @@ sub make_tree {
         },
         {
           '+max' => 1,
-          '.all' => [
-            {
-              '.ref' => 'COMMA'
-            },
-            {
-              '.ref' => '_'
-            },
-            {
-              '.ref' => 'string'
-            }
-          ]
+          '.ref' => 'assert_message'
         },
         {
           '.ref' => '_'
@@ -208,7 +208,7 @@ sub make_tree {
       '.rgx' => qr/\G([\|\^&])/
     },
     'blank_line' => {
-      '.rgx' => qr/\G[\ \t]*\r?\n/
+      '.rgx' => qr/\G[\ \t]*\r?\n?\r?\n/
     },
     'block' => {
       '.ref' => 'named_block'
@@ -219,7 +219,7 @@ sub make_tree {
     'comment' => {
       '.any' => [
         {
-          '.rgx' => qr/\G[\ \t]*\#.*\r?\n/
+          '.rgx' => qr/\G[\ \t]*\r?\n?\#.*\r?\n/
         },
         {
           '.ref' => 'blank_line'
@@ -358,13 +358,13 @@ sub make_tree {
       '.rgx' => qr/\G(?:"((?:[^\n\\"]|\\"|\\\\|\\[0nt])*?)")/
     },
     'end_array' => {
-      '.rgx' => qr/\G[\ \t]*\][\ \t]*/
+      '.rgx' => qr/\G[\ \t]*\r?\n?\][\ \t]*\r?\n?/
     },
     'end_block' => {
-      '.rgx' => qr/\G[\ \t]*\}[\ \t]*\r?\n?/
+      '.rgx' => qr/\G[\ \t]*\r?\n?\}[\ \t]*\r?\n?\r?\n?/
     },
     'end_nested_expr' => {
-      '.rgx' => qr/\G[\ \t]*\)[\ \t]*/
+      '.rgx' => qr/\G[\ \t]*\r?\n?\)[\ \t]*\r?\n?/
     },
     'expr_value' => {
       '.all' => [
@@ -445,7 +445,20 @@ sub make_tree {
       ]
     },
     'line_ending' => {
-      '.rgx' => qr/\G[\ \t]*;[\ \t]*\r?\n?/
+      '.rgx' => qr/\G[\ \t]*\r?\n?;[\ \t]*\r?\n?\r?\n?/
+    },
+    'list_separator' => {
+      '.all' => [
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'COMMA'
+        },
+        {
+          '.ref' => '_'
+        }
+      ]
     },
     'logic_operator' => {
       '.rgx' => qr/\G([&\|]{2})/
@@ -570,7 +583,7 @@ sub make_tree {
           '.ref' => 'name'
         },
         {
-          '.rgx' => qr/\G=[\ \t]*/
+          '.rgx' => qr/\G=[\ \t]*\r?\n?/
         },
         {
           '.any' => [
@@ -689,13 +702,13 @@ sub make_tree {
       '.rgx' => qr/\G(?:'((?:[^\n\\']|\\'|\\\\)*?)')/
     },
     'start_array' => {
-      '.rgx' => qr/\G[\ \t]*\[[\ \t]*/
+      '.rgx' => qr/\G[\ \t]*\r?\n?\[[\ \t]*\r?\n?/
     },
     'start_block' => {
-      '.rgx' => qr/\G[\ \t]*\{[\ \t]*\r?\n?/
+      '.rgx' => qr/\G[\ \t]*\r?\n?\{[\ \t]*\r?\n?\r?\n?/
     },
     'start_nested_expr' => {
-      '.rgx' => qr/\G[\ \t]*\([\ \t]*/
+      '.rgx' => qr/\G[\ \t]*\r?\n?\([\ \t]*\r?\n?/
     },
     'statement' => {
       '.any' => [
@@ -730,7 +743,7 @@ sub make_tree {
       ]
     },
     'uc_select' => {
-      '.rgx' => qr/\GPIC[\ \t]+((?i:P16F690|P16F690X))[\ \t]*;[\ \t]*\r?\n?/
+      '.rgx' => qr/\GPIC[\ \t]+((?i:P16F690|P16F690X))[\ \t]*\r?\n?;[\ \t]*\r?\n?\r?\n?/
     },
     'unary_expr' => {
       '.any' => [
@@ -831,7 +844,7 @@ sub make_tree {
       '+min' => 0,
       '.ref' => 'value',
       '.sep' => {
-        '.ref' => 'COMMA'
+        '.ref' => 'list_separator'
       }
     },
     'variable' => {

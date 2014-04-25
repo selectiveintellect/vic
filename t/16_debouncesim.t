@@ -12,7 +12,9 @@ Main {
     digital_input RA3;
     $display = 0;
     Loop {
-        debounce RA3, Action {
+        # test breaking of arguments over multiple lines
+        debounce RA3,
+        Action {
             ++$display;
             write PORTC, $display;
         };
@@ -24,7 +26,10 @@ Simulator {
     logfile "debouncer.lxt";
     log RA3;
     scope RA3;
-    stimulate RA3, every 1s, wave [ 100, 0, 300, 1, 400, 0, 420, 1, 500, 0, 520, 1, 600, 0 ];
+    stimulate RA3, every 1ms, wave [
+        300, 1, 400, 0, 420, 1,
+        500, 0, 520, 1, 600, 0
+    ];
     stop_after 10s;
 }
 ...
@@ -129,8 +134,8 @@ _delay_msecs_loop_0:
 	.sim "initial_state 0"
 	.sim "start_cycle 0"
 	.sim "digital"
-	.sim "period 1000000"
-	.sim "{ 100,0,300,1,400,0,420,1,500,0,520,1,600,0 }"
+	.sim "period 1000"
+	.sim "{ 300,1,400,0,420,1,500,0,520,1,600,0 }"
 	.sim "name stim0"
 	.sim "end"
 	.sim "echo done creating stimulus number 0"

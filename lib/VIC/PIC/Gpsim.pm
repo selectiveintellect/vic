@@ -318,6 +318,9 @@ $wave
 ...
 }
 
+sub autorun {
+    return qq{\t.sim "run"\n};
+}
 1;
 
 =encoding utf8

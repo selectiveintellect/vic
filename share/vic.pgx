@@ -16,9 +16,9 @@ pragma-expression: name /<EQUAL> -/ (number-units | number | string) -
 comment: /- <HASH> <ANY>* <EOL>/ | blank-line
 blank-line: /- <EOL>/
 
-##FIXME: this needs to be removed really but Pegex has a bug
-_: /<BLANK>*/
-__: /<BLANK>+/
+## overriding what pegex is doing here
+_: /<BLANK>*<EOL>?/
+__: /<BLANK>+<EOL>?/
 line-ending: /- <SEMI> - <EOL>?/
 
 statement: comment | instruction | expression | conditional-statement | assert-statement | block
@@ -32,7 +32,7 @@ end-block: /- <RCURLY> - <EOL>?/
 instruction: name values line-ending
 
 name: - identifier-without-keyword -
-values: (value % COMMA)*
+values: (value % list-separator)*
 value: - (string | number-units | number | variable | named-block | modifier-constant | modifier-variable | validated-variable) -
 
 expression: (assign-expr | unary-expr) line-ending
@@ -59,7 +59,8 @@ conditional-statement: - /(if | while)/ - conditional-subject - conditional-pred
 assert-value: - (validated-variable | variable | number) -
 assert-comparison: assert-value compare-operator assert-value
 assert-condition: assert-comparison
-assert-statement: name assert-condition - (COMMA - string)? - line-ending
+assert-message: list-separator string
+assert-statement: name assert-condition - assert-message? - line-ending
 
 complement-operator: /(<TILDE> | <BANG>)/
 unary-operator: /(<PLUS> <PLUS> | <DASH> <DASH>)/
@@ -91,11 +92,12 @@ modifier-variable: identifier-without-keyword - variable
 modifier-constant: identifier-without-keyword - constant
 variable: DOLLAR identifier
 constant: number-units | number | string | array
-array: start-array - (array-element % COMMA)* - end-array
+array: start-array - (array-element % list-separator)* - end-array
 array-element: - (number-units | number | string) -
 identifier-without-keyword: /(!<keyword>)(<ALPHA>[<WORDS>]*)/
 identifier: /(<ALPHA>[<WORDS>]*)/
 keyword: /if | else | while | true | false | TRUE | FALSE/
+list-separator: - COMMA -
 
 single_quoted_string:
     /(:
