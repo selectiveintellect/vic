@@ -3,7 +3,7 @@ VIC
 
 VIC is a nice syntax that compiles to PIC assembly.
 
-![MeMe](https://raw.githubusercontent.com/vikasnkumar/vic/master/doc/Cr8GVrV.jpg)
+![MeMe](https://raw.githubusercontent.com/vikasnkumar/vic/master/doc/vicmeme.jpg)
 
 #Building as a user
 

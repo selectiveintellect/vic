@@ -1,7 +1,7 @@
 bin/vic
 Build.PL
-doc/Cr8GVrV.jpg
 doc/philosophy.md
+doc/vicmeme.jpg
 lib/VIC.pm
 lib/VIC/Command.pm
 lib/VIC/Grammar.pm
