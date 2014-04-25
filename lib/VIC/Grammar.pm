@@ -54,6 +54,52 @@ sub make_tree {
         }
       ]
     },
+    'array' => {
+      '.all' => [
+        {
+          '.ref' => 'start_array'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '+min' => 0,
+          '.ref' => 'array_element',
+          '.sep' => {
+            '.ref' => 'COMMA'
+          }
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'end_array'
+        }
+      ]
+    },
+    'array_element' => {
+      '.all' => [
+        {
+          '.ref' => '_'
+        },
+        {
+          '.any' => [
+            {
+              '.ref' => 'number_units'
+            },
+            {
+              '.ref' => 'number'
+            },
+            {
+              '.ref' => 'string'
+            }
+          ]
+        },
+        {
+          '.ref' => '_'
+        }
+      ]
+    },
     'assert_comparison' => {
       '.all' => [
         {
@@ -299,11 +345,20 @@ sub make_tree {
         },
         {
           '.ref' => 'number'
+        },
+        {
+          '.ref' => 'string'
+        },
+        {
+          '.ref' => 'array'
         }
       ]
     },
     'double_quoted_string' => {
       '.rgx' => qr/\G(?:"((?:[^\n\\"]|\\"|\\\\|\\[0nt])*?)")/
+    },
+    'end_array' => {
+      '.rgx' => qr/\G[\ \t]*\][\ \t]*/
     },
     'end_block' => {
       '.rgx' => qr/\G[\ \t]*\}[\ \t]*\r?\n?/
@@ -632,6 +687,9 @@ sub make_tree {
     },
     'single_quoted_string' => {
       '.rgx' => qr/\G(?:'((?:[^\n\\']|\\'|\\\\)*?)')/
+    },
+    'start_array' => {
+      '.rgx' => qr/\G[\ \t]*\[[\ \t]*/
     },
     'start_block' => {
       '.rgx' => qr/\G[\ \t]*\{[\ \t]*\r?\n?/

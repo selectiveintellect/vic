@@ -18,6 +18,8 @@ has led_count => 0;
 
 has scope_channels => 0;
 
+has stimulus_count => 0;
+
 sub supports_modifier {
     my $self = shift;
     my $mod = shift;
@@ -268,6 +270,51 @@ sub sim_assert {
 \t;; break if the condition evaluates to false
 \t.assert "$condition, \\\"$msg\\\""
 \tnop ;; needed for the assert
+...
+}
+
+sub stimulate {
+    my $self = shift;
+    my $pin = shift;
+    my %hh = ();
+    foreach my $href (@_) {
+        %hh = (%hh, %$href);
+    }
+    my $period = '';
+    $period = $hh{EVERY} if defined $hh{EVERY};
+    $period = qq{\t.sim "period $period"} if defined $period;
+    my $wave = '';
+    my $wave_type = 'digital';
+    if (exists $hh{WAVE} and ref $hh{WAVE} eq 'ARRAY') {
+        my $arr = $hh{WAVE};
+        $wave = "\t.sim \"{ " . join(',', @$arr) . " }\"" if scalar @$arr;
+        my $ad = 0;
+        foreach (@$arr) {
+            $ad |= 1 unless /^\d+$/;
+        }
+        $wave_type = 'analog' if $ad;
+    }
+    my $start = $hh{START} || 0;
+    $start = qq{\t.sim "start_cycle $start"};
+    my $init = $hh{INITIAL} || 0;
+    $init = qq{\t.sim "initial_state $init"};
+    my $num = $self->stimulus_count;
+    $self->stimulus_count($num + 1);
+    my $node = "stim$num$pin";
+    my $simpin = $self->_get_simport($pin);
+    return << "..."
+\t.sim \"echo creating stimulus number $num\"
+\t.sim \"stimulus asynchronous_stimulus\"
+$init
+$start
+\t.sim \"$wave_type\"
+$period
+$wave
+\t.sim \"name stim$num\"
+\t.sim \"end\"
+\t.sim \"echo done creating stimulus number $num\"
+\t.sim \"node $node\"
+\t.sim \"attach $node stim$num $simpin\"
 ...
 }
 

@@ -74,6 +74,8 @@ rhs-operator: math-operator | bit-operator | shift-operator
 # parentheses
 start-nested-expr: /- <LPAREN> -/
 end-nested-expr: /- <RPAREN> -/
+start-array: /- <LSQUARE> -/
+end-array: /- <RSQUARE> -/
 
 string: single-quoted-string | double-quoted-string
 
@@ -85,10 +87,12 @@ units: /(s | ms | us | kHz | Hz | MHz)/
 boolean: /( TRUE | FALSE | true | false | 0 | 1)/
 
 validated-variable: identifier-without-keyword
-modifier-variable: identifier-without-keyword -  variable
+modifier-variable: identifier-without-keyword - variable
 modifier-constant: identifier-without-keyword - constant
 variable: DOLLAR identifier
-constant: number-units | number
+constant: number-units | number | string | array
+array: start-array - (array-element % COMMA)* - end-array
+array-element: - (number-units | number | string) -
 identifier-without-keyword: /(!<keyword>)(<ALPHA>[<WORDS>]*)/
 identifier: /(<ALPHA>[<WORDS>]*)/
 keyword: /if | else | while | true | false | TRUE | FALSE/

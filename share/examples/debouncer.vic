@@ -19,6 +19,7 @@ Simulator {
     attach_led PORTC, 4, 'red';
     logfile "debouncer.lxt";
     log RA3;
+    scope RA3;
     stimulate RA3, every 1s, wave [ 100, 0, 300, 1, 400, 0, 420, 1, 500, 0, 520, 1, 600, 0 ];
     stop_after 10s;
 }

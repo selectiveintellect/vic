@@ -28,6 +28,7 @@ has ast => {
     tmp_stack_size => 0,
 };
 has intermediate_inline => undef;
+has global_collections => {};
 
 sub stack { reverse @{shift->parser->stack}; }
 
@@ -510,15 +511,25 @@ sub got_unary_operator {
     return $self->parser->throw_error("Increment/Decrement operator '$op' is not supported");
 }
 
+sub got_array {
+    my ($self, $arr) = @_;
+    $self->flatten($arr) if ref $arr eq 'ARRAY';
+    $self->global_collections->{"$arr"} = $arr;
+    return $arr;
+}
+
 sub got_modifier_constant {
     my ($self, $list) = @_;
-    $self->flatten($list) if ref $list eq 'ARRAY';
-    my ($modifier, $value) = (@$list);
+    # we don't flatten since $value can be an array as well
+    my ($modifier, $value) = @$list;
     $modifier = uc $modifier;
     my $method = $self->pic->validate_modifier($modifier);
+    $self->flatten($value) if ($method and ref $value eq 'ARRAY');
     return $self->got_expr_value(["MOP::${modifier}::${value}"]) if $method;
     if ($self->simulator and $self->simulator->supports_modifier($modifier)) {
-        return { $modifier => $value }; # the simulator will use hashes
+        my $hh = { $modifier => $value };
+        $self->global_collections->{"$hh"} = $hh;
+        return $hh;
     }
     $self->parser->throw_error("Modifying operator '$modifier' not supported") unless $method;
 }
@@ -657,6 +668,11 @@ sub generate_simulator_instruction {
     my $method = shift @ins;
     my @code = ();
     push @code, "\t;; $line" if $self->intermediate_inline;
+    foreach (@ins) {
+        next unless /HASH|ARRAY/;
+        next unless exists $self->global_collections->{$_};
+        $_ = $self->global_collections->{$_};
+    }
     my $code = $self->simulator->$method(@ins);
     return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
     push @code, $code if $code;
@@ -668,6 +684,11 @@ sub generate_code_instruction {
     my @ins = split /::/, $line;
     my $tag = shift @ins;
     my $method = shift @ins;
+    foreach (@ins) {
+        next unless /HASH|ARRAY/;
+        next unless exists $self->global_collections->{$_};
+        $_ = $self->global_collections->{$_};
+    }
     my ($code, $funcs, $macros) = $self->pic->$method(@ins);
     return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
     my @code = ();
