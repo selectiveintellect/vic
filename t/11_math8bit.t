@@ -386,13 +386,28 @@ _start:
 	andwf VAR4, W
 	movwf VAR4
 
+    bcf STATUS, C
     rlf VAR4, W
+    btfsc STATUS, C
+    bcf VAR4, 0
     movwf VAR4
+
+    bcf STATUS, C
     rrf VAR4, W
+    btfsc STATUS, C
+    bcf VAR4, 7
     movwf VAR4
+
+    bcf STATUS, C
     rlf VAR4, W
+    btfsc STATUS, C
+    bcf VAR4, 0
     movwf VAR4
+
+    bcf STATUS, C
     rrf VAR4, W
+    btfsc STATUS, C
+    bcf VAR4, 7
     movwf VAR4
 
 	;; add 0x08 and VAR4 without affecting VAR4

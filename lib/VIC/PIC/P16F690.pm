@@ -959,7 +959,12 @@ sub op_SHL {
         $var = uc $var;
         $code .= "\t;;;; perform $var << $bits\n";
         if ($bits == 1) {
-            $code .= "\trlf $var, W\n";
+            $code .= << "...";
+\tbcf STATUS, C
+\trlf $var, W
+\tbtfsc STATUS, C
+\tbcf $var, 0
+...
         } elsif ($bits == 0) {
             $code .= "\tmovf $var, W\n";
         } else {
@@ -986,7 +991,12 @@ sub op_SHR {
         $var = uc $var;
         $code .= "\t;;;; perform $var >> $bits\n";
         if ($bits == 1) {
-            $code .= "\trrf $var, W\n";
+            $code .= << "...";
+\tbcf STATUS, C
+\trrf $var, W
+\tbtfsc STATUS, C
+\tbcf $var, 7
+...
         } elsif ($bits == 0) {
             $code .= "\tmovf $var, W\n";
         } else {

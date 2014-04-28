@@ -136,7 +136,10 @@ _false_6:
 _true_2:
 
 	;;;; perform DUMMY >> 1
+    bcf STATUS, C
 	rrf DUMMY, W
+    btfsc STATUS, C
+    bcf DUMMY, 7
 	movwf DUMMY
 
 	;; moves 1 (0x01) to PORTC
@@ -170,7 +173,10 @@ _true_3:
 _true_4:
 
 	;;;; perform DUMMY >> 1
+    bcf STATUS, C
 	rrf DUMMY, W
+    btfsc STATUS, C
+    bcf DUMMY, 7
 	movwf DUMMY
 
 	;; moves 3 (0x03) to PORTC

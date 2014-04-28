@@ -275,7 +275,10 @@ _true_5:
 _true_7:
 
 	;;;; perform VAR3 >> 1
+    bcf STATUS, C
 	rrf VAR3, W
+    btfsc STATUS, C
+    bcf VAR3, 7
 	movwf VAR3
 
 	goto _start_conditional_1;; go back to start of conditional
