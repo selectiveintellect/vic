@@ -51,4 +51,5 @@ t/13_loopbreak.t
 t/14_helloworldsim.t
 t/15_rotatersim.t
 t/16_debouncesim.t
+t/17_math8bitsim.t
 t/TestVIC.pm
