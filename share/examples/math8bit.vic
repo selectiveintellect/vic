@@ -40,7 +40,7 @@ Main {
     $var4 &= 0xAA;
     sim_assert $var4 == 0xAA, "0xBF & 0xAA = 0xAA";
     $var4 = $var4 << 1;
-    sim_assert $var4 == 84, "0xBF << 1 = 340 which is 84 in 8-bit mode";
+    sim_assert $var4 == 84, "0xAA << 1 = 340 which is 84 in 8-bit mode";
     $var4 = $var4 >> 1;
     sim_assert $var4 == 42, "84 >> 1 = 42";
     $var4 <<= 1;
@@ -48,7 +48,7 @@ Main {
     $var4 >>= 1;
     sim_assert $var4 == 42, "84 >> 1 = 42";
     $var5 = $var1 - $var2 + $var3 * ($var4 + 8) / $var1;
-    sim_assert $var5 == 186, "57 - 10 + 159 * (42 + 8) / 57";
+    sim_assert $var5 == 47, "57 - 10 + ((159 * (42 + 8)) & 0xFF) / 57";
     #$var5 = ($var1 + (($var3 * ($var4 + $var7) + 5) + $var2));
     #$var8 = ($var1 + $var2) - ($var3 * $var4) / ($var5 % $var6);
     # sqrt is a modifier
