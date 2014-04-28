@@ -26,6 +26,7 @@ has ast => {
     tmp_variables => {},
     conditionals => 0,
     tmp_stack_size => 0,
+    asserts => 0,
 };
 has intermediate_inline => undef;
 has global_collections => {};
@@ -657,6 +658,7 @@ sub got_assert_statement {
     $self->flatten($list) if ref $list eq 'ARRAY';
     my ($method, $cond, $msg) = @$list;
     $msg = '' unless defined $msg;
+    $self->ast->{asserts}++;
     $self->update_intermediate("SIM::${method}::${cond}::${msg}");
     return;
 }
@@ -1195,13 +1197,16 @@ sub final {
         $variables .= "\n$isr_var\n";
     }
     my ($sim_include, $sim_setup_code) = ('', '');
-    if (defined $self->simulator and defined $ast->{Simulator}) {
+    # we need to generate simulator code if either the Simulator block is
+    # present or if any asserts are present
+    if (defined $self->simulator and ($ast->{Simulator} or $ast->{asserts})) {
         my $stype = $self->simulator->type;
         $sim_include .= ";;;; generated code for $stype header file\n";
         $sim_include .= '#include <' . $self->simulator->include .">\n";
         my @setup_code = $self->generate_code($ast, 'Simulator');
         my $init_code = $self->simulator->init_code;
-        $sim_setup_code .= join("\n", $init_code, @setup_code) if scalar @setup_code;
+        $sim_setup_code .= $init_code . "\n" if defined $init_code;
+        $sim_setup_code .= join("\n", @setup_code) if scalar @setup_code;
         if ($self->simulator->should_autorun) {
             $sim_setup_code .= $self->simulator->get_autorun_code;
         }

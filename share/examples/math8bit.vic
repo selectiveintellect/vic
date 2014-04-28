@@ -6,7 +6,9 @@ pragma variable export;
 Main {
     $var1 = 12345;
     $var2 = 113;
+    sim_assert $var1 == 57, "12345 was placed as 57 due to 8-bit mode";
     $var3 = $var2 + $var1;
+    sim_assert $var3 == 170, "57 + 113 = 170";
     $var3 = $var2 - $var1;
     $var3 = $var2 * $var1;
     $var2 = $var2 * 5;
@@ -33,4 +35,3 @@ Main {
     # sqrt is a modifier
     $var3 = sqrt $var4;
 }
-
