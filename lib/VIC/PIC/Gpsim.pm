@@ -227,6 +227,7 @@ sub _get_operator {
 
 sub sim_assert {
     my ($self, $condition, $msg) = @_;
+    my $assert_msg;
     if ($condition =~ /@@/) {
         my @args = split /@@/, $condition;
         my $literal = qr/^\d+$/;
@@ -266,11 +267,23 @@ sub sim_assert {
             $condition = "$lhs $op2 $rhs";
         }
         #TODO: handle more complex expressions
+        $msg  = "$condition is false" unless $msg;
+        $assert_msg = qq{$condition, \\\"$msg\\\"};
+    } else {
+        if (defined $condition and defined $msg) {
+            $assert_msg = qq{$condition, \\\"$msg\\\"};
+        } elsif (defined $condition and not defined $msg) {
+            $assert_msg = qq{\\\"$condition\\\"};
+        } elsif (defined $msg and not defined $condition) {
+            $assert_msg = qq{\\\"$msg\\\"};
+        } else {
+            $assert_msg = qq{\\\"user requested an assert\\\"};
+        }
     }
-    $msg  = "$condition is false" unless $msg;
+
     return << "..."
 \t;; break if the condition evaluates to false
-\t.assert "$condition, \\\"$msg\\\""
+\t.assert "$assert_msg"
 \tnop ;; needed for the assert
 ...
 }

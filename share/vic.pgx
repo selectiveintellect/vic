@@ -59,7 +59,7 @@ conditional-statement: - /(if | while)/ - conditional-subject - conditional-pred
 assert-value: - (validated-variable | variable | number) -
 assert-comparison: assert-value compare-operator assert-value
 assert-condition: assert-comparison
-assert-message: list-separator string
+assert-message: list-separator - string
 assert-statement: name assert-condition - assert-message? - line-ending
 
 complement-operator: /(<TILDE> | <BANG>)/

@@ -122,6 +122,9 @@ sub make_tree {
           '.ref' => 'list_separator'
         },
         {
+          '.ref' => '_'
+        },
+        {
           '.ref' => 'string'
         }
       ]
