@@ -507,7 +507,7 @@ sub validate_operator {
     return $vop;
 }
 
-sub validate_modifier {
+sub validate_modifier_operator {
     my ($self, $mod, $suffix) = @_;
     my $vmod = "op_$mod" if $mod =~ /^
             SQRT | HIGH | LOW
@@ -2612,6 +2612,46 @@ $action{END}:
 
 sub break { return 'BREAK'; }
 sub continue { return 'CONTINUE'; }
+
+sub store_string {
+    my ($self, $str, $strvar, $len, $lenvar) = @_;
+    $len = sprintf "0x%02X", $len;
+    return << "...";
+$strvar data "$str" ; $strvar is a string
+$lenvar db $len ; $lenvar is length of $strvar
+...
+}
+
+sub store_array {
+    my ($self, $arr, $arrvar, $sz, $szvar) = @_;
+    # use db in 16-bit MCUs for 8-bit values
+    # arrays are read-write objects
+    my $arrstr = join (",", @$arr) if scalar @$arr;
+    $arrstr = '0' unless $arrstr;
+    $sz = sprintf "0x%02X", $sz;
+    return << "..."
+$szvar db $sz   ; length of array $arrvar
+$arrvar db $arr ; array stored as accessible bytes
+...
+}
+
+sub store_table {
+    my ($self, $table, $label, $tblsz, $tblszvar) = @_;
+    my $code = "$label:\n";
+    $code .= "\taddwf PCL, F\n";
+    if (scalar @$table) {
+        foreach (@$table) {
+            my $d = sprintf "0x%02X", $_;
+            $code .= "\tdt $d\n";
+        }
+    } else {
+        # table is empty
+        $code .= "\tdt 0\n";
+    }
+    $tblsz = sprintf "0x%02X", $tblsz;
+    my $vardecl = "$tblszvar db $tblsz ; size of table at $label\n";
+    return wantarray ? ($code, $vardecl) : $code;
+}
 
 1;
 

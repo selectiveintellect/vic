@@ -14,7 +14,7 @@ sub make_tree {
   {
     '+grammar' => 'vic',
     '+toprule' => 'program',
-    '+version' => '0.1.0',
+    '+version' => '0.1.1',
     'COMMA' => {
       '.rgx' => qr/\G,/
     },
@@ -357,6 +357,35 @@ sub make_tree {
         }
       ]
     },
+    'declaration' => {
+      '.all' => [
+        {
+          '.ref' => '_'
+        },
+        {
+          '.ref' => 'variable'
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.rgx' => qr/\G=/
+        },
+        {
+          '.ref' => '_'
+        },
+        {
+          '.any' => [
+            {
+              '.ref' => 'constant'
+            },
+            {
+              '.ref' => 'modifier_constant'
+            }
+          ]
+        }
+      ]
+    },
     'double_quoted_string' => {
       '.rgx' => qr/\G(?:"((?:[^\n\\"]|\\"|\\\\|\\[0nt])*?)")/
     },
@@ -410,6 +439,9 @@ sub make_tree {
             },
             {
               '.ref' => 'unary_expr'
+            },
+            {
+              '.ref' => 'declaration'
             }
           ]
         },
@@ -460,6 +492,10 @@ sub make_tree {
         },
         {
           '.ref' => '_'
+        },
+        {
+          '+max' => 1,
+          '.ref' => 'comment'
         }
       ]
     },

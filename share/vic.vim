@@ -10,13 +10,12 @@ if exists("b:current_syntax")
   finish
 endif
 
-syn keyword vicHeader       pragma array table contained
 syn keyword vicStatement    delay analog_input digital_input digital_output
 syn keyword vicStatement    adc_enable adc_disable adc_read delay_ms delay_us delay_s
 syn keyword vicStatement    debounce digital_output write read ror rol timer_enable
 syn keyword vicStatement    timer shl shr
 syn keyword vicBlock        Main Loop Action True False ISR Simulator
-syn keyword vicModifier     sqrt high low int char hex hang every wave
+syn keyword vicModifier     sqrt high low int char hex hang every wave table array
 syn keyword vicConditional  if while else break continue
 " contained is needed to show that the color highlighting is only valid when
 " part of another match
@@ -33,7 +32,7 @@ syn match   vicValidVars    "\<\%(\%(PORT\|TRIS\)\w\w*\)\|\%([RA][A-Z][0-9]\)\>"
 syn match   vicValidVars    "\<\%(\w\+CON[0-9]*\)\|\%(TMR[0-9HL]*\)\|\%(ANSEL\w*\)\>"
 syn match   vicValidVars    "\<\%(ADRES\w*\)\|\%(\w\+REG\w?\)\|\%(PCL\w*\)\>"
 syn match   vicValidVars    "\<\%(UART\|USART\|FSR\|STATUS\|OPTION_REG\|IND\)\w*\>"
-syn match   vicConfig       "\<pragma\s\+\$\?\%(\w\)*\s\+\%(\w\)*" contains=vicHeader,vicVariable,vicValidVars
+syn match   vicConfig       "\<pragma\s\+\$\?\%(\w\)*\s\+\%(\w\)*" contains=vicVariable,vicValidVars
 syn keyword vicSimulator    log logfile scope stop_after stimulate autorun
 syn match   vicSimulator    "\<\%(attach_\)\w*\>"
 syn match   vicSimAssert    "sim_\w\+"
@@ -50,7 +49,6 @@ highlight link vicPIC           Special
 highlight link vicPICStatement  Type
 highlight link vicConfig        PreProc
 highlight link vicVariable      Identifier
-highlight link vicHeader        PreProc
 highlight link vicValidVars     Type
 highlight link vicModifier      Type
 highlight link vicConditional   Type

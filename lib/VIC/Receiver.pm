@@ -251,6 +251,38 @@ sub got_assign_expr {
     return;
 }
 
+sub got_declaration {
+    my ($self, $list) = @_;
+    my $lhs = shift @$list;
+    my $rhs;
+    if (scalar @$list == 1) {
+        $rhs = shift @$list;
+    } else {
+        $rhs = $list;
+    }
+    # TODO: generate intermediate code here
+    if (ref $rhs eq 'HASH' or ref $rhs eq 'ARRAY') {
+        if (exists $self->ast->{variables}->{$lhs}) {
+            $self->ast->{variables}->{$lhs}->{type} = ref $rhs;
+            $self->ast->{variables}->{$lhs}->{data} = $rhs;
+        } else {
+            return $self->parser->throw_error("Variable '$lhs' doesn't exist");
+        }
+    } else {
+        # var = number | string etc.
+        if ($rhs =~ /^-?\d+$/) {
+            # we just use the got_assign_expr. this should never be called in
+            # reality but is here in case the grammar rules change
+            $self->update_intermetdiate("SET::ASSIGN::${lhs}::${rhs}");
+        } else {
+            # handle strings here
+            $self->ast->{variables}->{$lhs}->{type} = 'string';
+            $self->ast->{variables}->{$lhs}->{data} = $rhs;
+        }
+    }
+    return;
+}
+
 sub got_conditional_statement {
     my ($self, $list) = @_;
     my ($type, $subject, $predicate) = @$list;
@@ -524,13 +556,24 @@ sub got_modifier_constant {
     # we don't flatten since $value can be an array as well
     my ($modifier, $value) = @$list;
     $modifier = uc $modifier;
-    my $method = $self->pic->validate_modifier($modifier);
+    ## first check if the modifier is an operator
+    my $method = $self->pic->validate_modifier_operator($modifier);
     $self->flatten($value) if ($method and ref $value eq 'ARRAY');
     return $self->got_expr_value(["MOP::${modifier}::${value}"]) if $method;
+    ## if not then check if it is a type modifier for use by the simulator
     if ($self->simulator and $self->simulator->supports_modifier($modifier)) {
         my $hh = { $modifier => $value };
         $self->global_collections->{"$hh"} = $hh;
         return $hh;
+    }
+    ## ok check if the modifier is a type modifier for code generation
+    ## this is reallly a bad hack
+    if ($modifier eq 'TABLE') {
+        return { TABLE => $value } if ref $value eq 'ARRAY';
+        return { TABLE => [$value] };
+    } elsif ($modifier eq 'ARRAY') {
+        return $value if ref $value eq 'ARRAY';
+        return [$value];
     }
     $self->parser->throw_error("Modifying operator '$modifier' not supported") unless $method;
 }
@@ -542,7 +585,7 @@ sub got_modifier_variable {
     $modifier = shift @$list;
     $varname = shift @$list;
     $modifier = uc $modifier;
-    my $method = $self->pic->validate_modifier($modifier);
+    my $method = $self->pic->validate_modifier_operator($modifier);
     $self->parser->throw_error("Modifying operator '$modifier' not supported") unless $method;
     return $self->got_expr_value(["MOP::${modifier}::${varname}"]);
 }
@@ -562,7 +605,7 @@ sub got_validated_variable {
 
 sub got_variable {
     my ($self, $list) = @_;
-    $self->flatten($list);
+    $self->flatten($list) if ref $list eq 'ARRAY';
     my $varname = shift @$list;
     my ($current, $parent) = $self->stack;
     # if the variable is used from the uc-config grammar rule
@@ -574,6 +617,8 @@ sub got_variable {
         name => uc $varname,
         scope => $self->ast->{block_stack}->[-1],
         size => POSIX::ceil($self->pic->address_bits($varname) / 8),
+        type => 'byte',
+        data => undef,
     } unless exists $self->ast->{variables}->{$varname};
     $self->ast->{variables}->{$varname}->{scope} = 'global' if $parent =~ /assert_/;
     return $varname;
@@ -745,7 +790,7 @@ sub generate_code_operations {
         }
     }
     my $method = $self->pic->validate_operator($op) if $tag eq 'OP';
-    $method = $self->pic->validate_modifier($op) if $tag eq 'MOP';
+    $method = $self->pic->validate_modifier_operator($op) if $tag eq 'MOP';
     $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
     push @code, "\t;; $line" if $self->intermediate_inline;
     my ($code, $funcs, $macros) = $self->pic->$method($var1, $var2, %extra);
@@ -1135,21 +1180,49 @@ sub final {
     my $vhref = $ast->{variables};
     $variables .= "GLOBAL_VAR_UDATA udata\n" if keys %$vhref;
     my @global_vars = ();
+    my @tables = ();
+    my @init_vars = ();
     foreach my $var (sort(keys %$vhref)) {
-        # should we care about scope ?
-        $variables .= "$vhref->{$var}->{name} res $vhref->{$var}->{size}\n";
-        if (($vhref->{$var}->{scope} eq 'global') or
-            ($ast->{code_config}->{variable}->{export})) {
-            push @global_vars, $vhref->{$var}->{name};
+        my $name = $vhref->{$var}->{name};
+        my $typ = $vhref->{$var}->{type} || 'byte';
+        my $data = $vhref->{$var}->{data};
+        if ($typ eq 'string') {
+            ##TODO: this may need to be stored in a different location
+            $data = '' unless defined $data;
+            ## different PICs may have different string handling
+            push @init_vars, $self->pic->store_string($data, $name,
+                            length($data), "VIC_LEN_$name");
+        } elsif ($typ eq 'ARRAY') {
+            $data = [] unless defined $data;
+            push @init_vars, $self->pic->store_array($data, $name,
+                                scalar(@$data), "VIC_ARRSZ_$name");
+        } elsif ($typ eq 'HASH') {
+            $data = {} unless defined $data;
+            next unless defined $data->{TABLE};
+            my $table = $data->{TABLE};
+            my ($code, $vardecl) = $self->pic->store_table($table,
+                        "_table_$name", scalar(@$table), "VIC_TBLSZ_$name");
+            push @tables, $code;
+            push @init_vars, $vardecl;
+        } else {# $typ == 'byte' or any other
+            # should we care about scope ?
+            $variables .= "$name res $vhref->{$var}->{size}\n";
+            if (($vhref->{$var}->{scope} eq 'global') or
+                ($ast->{code_config}->{variable}->{export})) {
+                push @global_vars, $name;
+            }
         }
     }
     if ($ast->{tmp_stack_size}) {
         $variables .= "VIC_STACK res $ast->{tmp_stack_size}\t;; temporary stack\n";
     }
-    #XXX $ast->{code_config}->{variable};
     if (scalar @global_vars) {
         # export the variables
         $variables .= "\tglobal ". join (", ", @global_vars) . "\n";
+    }
+    if (scalar @init_vars) {
+        $variables .= "\nGLOBAL_VAR_IDATA idata\n"; # initialized variables
+        $variables .= join("\n", @init_vars);
     }
     my $macros = '';
     foreach my $mac (sort(keys %{$ast->{macros}})) {
@@ -1160,8 +1233,6 @@ sub final {
     my $isr_checks = '';
     my $isr_code = '';
     my $funcs = '';
-#    YYY $ast->{tmp_variables};
-#    YYY $ast->{block_mapping};
     foreach my $fn (sort(keys %{$ast->{funcs}})) {
         my $fn_val = $ast->{funcs}->{$fn};
         # the default ISR checks to be done first
@@ -1188,6 +1259,7 @@ sub final {
             $funcs .= "\n";
         }
     }
+    $funcs .= join ("\n", @tables) if scalar @tables;
     if (length $isr_code) {
         my $isr_entry = $self->pic->isr_entry;
         my $isr_exit = $self->pic->isr_exit;
