@@ -33,7 +33,9 @@ instruction: name values line-ending
 
 name: - identifier-without-keyword -
 values: (value % list-separator)*
-value: - (string | number-units | number | variable | named-block | modifier-constant | modifier-variable | validated-variable) -
+value: - (string | number-units | number | array-reference | variable |
+        named-block | modifier-constant | modifier-variable |
+        validated-variable) -
 
 expression: (assign-expr | unary-expr | declaration) line-ending
 unary-lhs: - unary-operator - variable -
@@ -41,10 +43,12 @@ unary-rhs: - variable - unary-operator -
 unary-expr: unary-lhs | unary-rhs
 complement: - complement-operator - rhs-expr -
 nested-expr-value: start-nested-expr rhs-expr end-nested-expr
-expr-value: - (number | variable | number-units | complement | modifier-variable | nested-expr-value) -
+expr-value: - (number | array-reference | variable | number-units | complement |
+                modifier-variable | nested-expr-value) -
 rhs-expr: (expr-value % rhs-operator)+
 assign-expr: - variable - assign-operator - rhs-expr
 declaration: - variable - /<EQUAL>/ - (constant | modifier-constant)
+array-reference: variable start-array rhs-expr end-array
 
 comparison: expr-value compare-operator expr-value
 single-conditional: comparison | expr-value

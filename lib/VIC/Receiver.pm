@@ -251,6 +251,11 @@ sub got_assign_expr {
     return;
 }
 
+sub got_array_reference {
+    my ($self, $list) = @_;
+    XXX $list;
+}
+
 sub got_declaration {
     my ($self, $list) = @_;
     my $lhs = shift @$list;

@@ -100,6 +100,22 @@ sub make_tree {
         }
       ]
     },
+    'array_reference' => {
+      '.all' => [
+        {
+          '.ref' => 'variable'
+        },
+        {
+          '.ref' => 'start_array'
+        },
+        {
+          '.ref' => 'rhs_expr'
+        },
+        {
+          '.ref' => 'end_array'
+        }
+      ]
+    },
     'assert_comparison' => {
       '.all' => [
         {
@@ -407,6 +423,9 @@ sub make_tree {
           '.any' => [
             {
               '.ref' => 'number'
+            },
+            {
+              '.ref' => 'array_reference'
             },
             {
               '.ref' => 'variable'
@@ -856,6 +875,9 @@ sub make_tree {
             },
             {
               '.ref' => 'number'
+            },
+            {
+              '.ref' => 'array_reference'
             },
             {
               '.ref' => 'variable'
