@@ -64,7 +64,7 @@ sub make_tree {
         },
         {
           '+min' => 0,
-          '.ref' => 'array_element',
+          '.ref' => 'array_element_type',
           '.sep' => {
             '.ref' => 'list_separator'
           }
@@ -78,6 +78,22 @@ sub make_tree {
       ]
     },
     'array_element' => {
+      '.all' => [
+        {
+          '.ref' => 'variable'
+        },
+        {
+          '.ref' => 'start_array'
+        },
+        {
+          '.ref' => 'rhs_expr'
+        },
+        {
+          '.ref' => 'end_array'
+        }
+      ]
+    },
+    'array_element_type' => {
       '.all' => [
         {
           '.ref' => '_'
@@ -97,22 +113,6 @@ sub make_tree {
         },
         {
           '.ref' => '_'
-        }
-      ]
-    },
-    'array_reference' => {
-      '.all' => [
-        {
-          '.ref' => 'variable'
-        },
-        {
-          '.ref' => 'start_array'
-        },
-        {
-          '.ref' => 'rhs_expr'
-        },
-        {
-          '.ref' => 'end_array'
         }
       ]
     },
@@ -425,7 +425,7 @@ sub make_tree {
               '.ref' => 'number'
             },
             {
-              '.ref' => 'array_reference'
+              '.ref' => 'array_element'
             },
             {
               '.ref' => 'variable'
@@ -877,7 +877,7 @@ sub make_tree {
               '.ref' => 'number'
             },
             {
-              '.ref' => 'array_reference'
+              '.ref' => 'array_element'
             },
             {
               '.ref' => 'variable'

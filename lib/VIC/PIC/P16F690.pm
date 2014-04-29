@@ -502,7 +502,8 @@ sub validate_operator {
             LE | GE | GT | LT | EQ | NE |
             ADD | SUB | MUL | DIV | MOD |
             BXOR | BOR | BAND | AND | OR | SHL | SHR |
-            ASSIGN | INC | DEC | NOT | COMP
+            ASSIGN | INC | DEC | NOT | COMP |
+            TBLIDX | ARRIDX | STRIDX
         /x;
     return $vop;
 }
@@ -2651,6 +2652,21 @@ sub store_table {
     $tblsz = sprintf "0x%02X", $tblsz;
     my $vardecl = "$tblszvar db $tblsz ; size of table at $label\n";
     return wantarray ? ($code, $vardecl) : $code;
+}
+
+sub op_TBLIDX {
+    my ($self, $table, $idx, %extra) = @_;
+    XXX { table => $table, index => $idx, %extra};
+}
+
+sub op_ARRIDX {
+    my ($self, $array, $idx, %extra) = @_;
+    XXX { array => $array, index => $idx, %extra };
+}
+
+sub op_STRIDX {
+    my ($self, $string, $idx, %extra) = @_;
+    XXX { string => $string, index => $idx, %extra };
 }
 
 1;

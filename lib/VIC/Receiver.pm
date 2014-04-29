@@ -251,9 +251,38 @@ sub got_assign_expr {
     return;
 }
 
-sub got_array_reference {
+sub got_array_element {
     my ($self, $list) = @_;
-    XXX $list;
+    my $var1 = shift @$list;
+    my $rhsx = $self->got_expr_value($list);
+    if (ref $rhsx eq 'ARRAY') {
+        XXX $rhsx; # why would this even happen
+    }
+    my $tvref = $self->ast->{tmp_variables};
+    my $tvar = sprintf "_vic_tmp_%02d", scalar(keys %$tvref);
+    my $vref = $self->ast->{variables}->{$var1};
+    my @ops = ('OP');
+    if (exists $vref->{type} and $vref->{type} eq 'HASH') {
+        push @ops, $vref->{label}, 'TBLIDX', $rhsx, $vref->{size_var};
+    } elsif (exists $vref->{type} and $vref->{type} eq 'ARRAY') {
+        push @ops, $vref->{label}, 'ARRIDX', $rhsx, $vref->{size_var};
+    } elsif (exists $vref->{type} and $vref->{type} eq 'string') {
+        push @ops, $vref->{label}, 'STRIDX', $rhsx, $vref->{size_var};
+    } else {
+        # this must be a byte
+        return $self->parser->throw_error(
+                    "Variable '$var1' is not an array, table or string");
+    }
+    $tvref->{$tvar} = join("::", @ops);
+    # create a new variable here
+    my $varname = sprintf "vic_el_%02d", scalar(keys %$tvref);
+    $varname = $self->got_variable([$varname]);
+    if ($varname) {
+        $self->update_intermediate("SET::ASSIGN::${varname}::${tvar}");
+        return $varname;
+    }
+    return $self->parser->throw_error(
+        "Unable to create intermediary variable '$varname'") unless $varname;
 }
 
 sub got_declaration {
@@ -268,8 +297,16 @@ sub got_declaration {
     # TODO: generate intermediate code here
     if (ref $rhs eq 'HASH' or ref $rhs eq 'ARRAY') {
         if (exists $self->ast->{variables}->{$lhs}) {
+            my $label = lc "_table_$lhs" if ref $rhs eq 'HASH' and exists $rhs->{TABLE};
+            my $szvar = "VIC_TBLSZ_" if ref $rhs eq 'HASH' and exists $rhs->{TABLE};
+            $szvar = "VIC_ARRSZ_" if ref $rhs eq 'ARRAY';
             $self->ast->{variables}->{$lhs}->{type} = ref $rhs;
             $self->ast->{variables}->{$lhs}->{data} = $rhs;
+            $self->ast->{variables}->{$lhs}->{label} = $label || $lhs;
+            if ($szvar) {
+                $self->ast->{variables}->{$lhs}->{size_var} = $szvar .
+                    $self->ast->{variables}->{$lhs}->{name};
+            }
         } else {
             return $self->parser->throw_error("Variable '$lhs' doesn't exist");
         }
@@ -283,6 +320,9 @@ sub got_declaration {
             # handle strings here
             $self->ast->{variables}->{$lhs}->{type} = 'string';
             $self->ast->{variables}->{$lhs}->{data} = $rhs;
+            $self->ast->{variables}->{$lhs}->{label} = $lhs;
+            $self->ast->{variables}->{$lhs}->{size_var} = "VIC_STRSZ_" .
+                    $self->ast->{variables}->{$lhs}->{name};
         }
     }
     return;
@@ -433,7 +473,7 @@ sub got_expr_value {
             my $tvar = sprintf "_vic_tmp_%02d", scalar(keys %$vref);
             $vref->{$tvar} = "OP::${var1}::${op}::${var2}";
             return $tvar;
-        } else {
+        } elsif (scalar @$list > 3) {
             # handle precedence with left-to-right association
             my @arr = @$list;
             my $idx = firstidx { $_ =~ /^MUL|DIV|MOD$/ } @arr;
@@ -466,6 +506,8 @@ sub got_expr_value {
             }
 #            YYY $self->ast->{tmp_variables};
             return $self->got_expr_value([@arr]);
+        } else {
+            return $list;
         }
     } else {
         return $list;
@@ -736,6 +778,7 @@ sub generate_code_instruction {
     my @ins = split /::/, $line;
     my $tag = shift @ins;
     my $method = shift @ins;
+    my @code = ();
     foreach (@ins) {
         next unless /HASH|ARRAY/;
         next unless exists $self->global_collections->{$_};
@@ -743,7 +786,6 @@ sub generate_code_instruction {
     }
     my ($code, $funcs, $macros) = $self->pic->$method(@ins);
     return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
-    my @code = ();
     push @code, "\t;; $line" if $self->intermediate_inline;
     push @code, $code if $code;
     $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
@@ -783,6 +825,12 @@ sub generate_code_operations {
         $var1 = shift @args;
         $op = shift @args;
         $var2 = shift @args;
+    } elsif (scalar @args == 4) {
+        $var1 = shift @args;
+        $op = shift @args;
+        $var2 = shift @args;
+        my $var3 = shift @args;
+        $extra{SIZE_VAR} = $var3;
     } else {
         return $self->parser->throw_error("Error in intermediate code '$line'");
     }
@@ -796,7 +844,8 @@ sub generate_code_operations {
     }
     my $method = $self->pic->validate_operator($op) if $tag eq 'OP';
     $method = $self->pic->validate_modifier_operator($op) if $tag eq 'MOP';
-    $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
+    $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless
+        ($method and $self->pic->can($method));
     push @code, "\t;; $line" if $self->intermediate_inline;
     my ($code, $funcs, $macros) = $self->pic->$method($var1, $var2, %extra);
     return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
@@ -811,14 +860,15 @@ sub find_tmpvar_dependencies {
     my ($tag, @args) = split /::/, $tcode;
     return unless $tag eq 'OP';
     my @deps = ();
-    if (scalar @args == 2) {
+    my $sz = scalar @args;
+    if ($sz == 2) {
         my ($op, $var) = @args;
         if (exists $self->ast->{tmp_variables}->{$var}) {
             push @deps, $var;
             my @rdeps = $self->find_tmpvar_dependencies($var);
             push @deps, @rdeps if @rdeps;
         }
-    } elsif (scalar @args == 3) {
+    } elsif ($sz == 3 or $sz == 4) {
         my ($var1, $op, $var2) = @args;
         if (exists $self->ast->{tmp_variables}->{$var1}) {
             push @deps, $var1;
@@ -842,12 +892,13 @@ sub find_var_dependencies {
     my ($tag, @args) = split /::/, $tcode;
     return unless $tag eq 'OP';
     my @deps = ();
-    if (scalar @args == 2) {
+    my $sz = scalar @args;
+    if ($sz == 2) {
         my ($op, $var) = @args;
         if (exists $self->ast->{variables}->{$var}) {
             push @deps, $var;
         }
-    } elsif (scalar @args == 3) {
+    } elsif ($sz == 3 or $sz == 4) {
         my ($var1, $op, $var2) = @args;
         if (exists $self->ast->{variables}->{$var1}) {
             push @deps, $var1;
@@ -874,6 +925,7 @@ sub generate_code_assign_expr {
     my @code = ();
     my $ast = $self->ast;
     my ($tag, $op, $varname, $rhs) = split /::/, $line;
+    push @code, ";;; VIKAS $line\n";
     if (exists $ast->{variables}->{$varname}) {
         if (exists $ast->{tmp_variables}->{$rhs}) {
             my $tmp_code = $ast->{tmp_variables}->{$rhs};
@@ -928,7 +980,8 @@ sub generate_code_assign_expr {
             $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
         }
     } else {
-        return $self->parser->throw_error("Error in intermediate code '$line'");
+        return $self->parser->throw_error(
+            "Error in intermediate code '$line': $varname doesn't exist");
     }
     return @code;
 }
@@ -1191,22 +1244,24 @@ sub final {
         my $name = $vhref->{$var}->{name};
         my $typ = $vhref->{$var}->{type} || 'byte';
         my $data = $vhref->{$var}->{data};
+        my $label = $vhref->{$var}->{label} || $name;
+        my $szvar = $vhref->{$var}->{size_var};
         if ($typ eq 'string') {
             ##TODO: this may need to be stored in a different location
             $data = '' unless defined $data;
             ## different PICs may have different string handling
-            push @init_vars, $self->pic->store_string($data, $name,
-                            length($data), "VIC_LEN_$name");
+            push @init_vars, $self->pic->store_string($data, $label,
+                            length($data), $szvar);
         } elsif ($typ eq 'ARRAY') {
             $data = [] unless defined $data;
-            push @init_vars, $self->pic->store_array($data, $name,
-                                scalar(@$data), "VIC_ARRSZ_$name");
+            push @init_vars, $self->pic->store_array($data, $label,
+                                scalar(@$data), $szvar);
         } elsif ($typ eq 'HASH') {
             $data = {} unless defined $data;
             next unless defined $data->{TABLE};
             my $table = $data->{TABLE};
-            my ($code, $vardecl) = $self->pic->store_table($table,
-                        "_table_$name", scalar(@$table), "VIC_TBLSZ_$name");
+            my ($code, $vardecl) = $self->pic->store_table($table, $label,
+                        scalar(@$table), $szvar);
             push @tables, $code;
             push @init_vars, $vardecl;
         } else {# $typ == 'byte' or any other
