@@ -149,6 +149,49 @@ sub attach_led {
     return $code;
 }
 
+sub attach_led7seg {
+    my ($self, @pins) = @_;
+    my $code = '';
+    my @simpins = ();
+    my $color = 'red';
+    foreach my $p (@pins) {
+        if (exists $self->pic->pins->{$p}) {
+            push @simpins, $p;
+        } elsif (exists $self->pic->ports->{$p}) {
+            my $port = $self->pic->ports->{$p};
+            foreach (sort(keys %{$self->pic->pins})) {
+                next unless defined $self->pic->pins->{$_}->[0];
+                push @simpins, $_ if $self->pic->pins->{$_}->[0] eq $port;
+            }
+        } elsif ($p =~ /red|orange|green|yellow|blue/i) {
+            $color = $p;
+            next;
+        } else {
+            carp "Ignoring port $p as it doesn't exist\n";
+        }
+    }
+    return unless scalar @simpins;
+    my $id = $self->led_count;
+    $self->led_count($id + 1);
+    my $x = 500;
+    my $y = 50 + 50 * $id;
+    $code .= << "...";
+\t.sim "module load led_7segments L$id"
+\t.sim "L$id.xpos = $x"
+\t.sim "L$id.ypos = $y"
+...
+    my @nodes = qw(cc seg0 seg1 seg2 seg3 seg4 seg5 seg6);
+    foreach my $n (@nodes) {
+        my $p = shift @simpins;
+        my $sp = $self->_get_simport($p);
+        $code .= << "...";
+\t.sim "node $n"
+\t.sim "attach $n $sp L$id.$n"
+...
+    }
+    return $code;
+}
+
 sub stop_after {
     my ($self, $usecs) = @_;
     # convert $secs to cycles

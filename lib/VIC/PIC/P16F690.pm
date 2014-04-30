@@ -2662,7 +2662,7 @@ sub op_TBLIDX {
     $sz = uc $sz if $sz;
     my $szcode = '';
     # check bounds
-    $szcode = "\tandlw $sz" if $sz;
+    $szcode = "\tandlw $sz - 1" if $sz;
     return << "..."
 \tmovwf $idx
 $szcode

@@ -925,7 +925,7 @@ sub generate_code_assign_expr {
     my @code = ();
     my $ast = $self->ast;
     my ($tag, $op, $varname, $rhs) = split /::/, $line;
-    push @code, ";;; VIKAS $line\n";
+    push @code, ";;; $line\n";
     if (exists $ast->{variables}->{$varname}) {
         if (exists $ast->{tmp_variables}->{$rhs}) {
             my $tmp_code = $ast->{tmp_variables}->{$rhs};
