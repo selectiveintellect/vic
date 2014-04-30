@@ -9,7 +9,7 @@ Main {
     digital_output PORTB;
     write PORTA, 0;
     Loop {
-    #    write PORTB, $led7[$digit];
+        write PORTB, $led7[$digit];
         $digit++;
         $digit &= 0x0F;
     }

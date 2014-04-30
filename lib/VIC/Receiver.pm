@@ -263,11 +263,11 @@ sub got_array_element {
     my $vref = $self->ast->{variables}->{$var1};
     my @ops = ('OP');
     if (exists $vref->{type} and $vref->{type} eq 'HASH') {
-        push @ops, $vref->{label}, 'TBLIDX', $rhsx, $vref->{size_var};
+        push @ops, $vref->{label}, 'TBLIDX', $rhsx, $vref->{size};
     } elsif (exists $vref->{type} and $vref->{type} eq 'ARRAY') {
-        push @ops, $vref->{label}, 'ARRIDX', $rhsx, $vref->{size_var};
+        push @ops, $vref->{label}, 'ARRIDX', $rhsx, $vref->{size};
     } elsif (exists $vref->{type} and $vref->{type} eq 'string') {
-        push @ops, $vref->{label}, 'STRIDX', $rhsx, $vref->{size_var};
+        push @ops, $vref->{label}, 'STRIDX', $rhsx, $vref->{size};
     } else {
         # this must be a byte
         return $self->parser->throw_error(
@@ -298,13 +298,13 @@ sub got_declaration {
     if (ref $rhs eq 'HASH' or ref $rhs eq 'ARRAY') {
         if (exists $self->ast->{variables}->{$lhs}) {
             my $label = lc "_table_$lhs" if ref $rhs eq 'HASH' and exists $rhs->{TABLE};
-            my $szvar = "VIC_TBLSZ_" if ref $rhs eq 'HASH' and exists $rhs->{TABLE};
-            $szvar = "VIC_ARRSZ_" if ref $rhs eq 'ARRAY';
+            my $szpref = "VIC_TBLSZ_" if ref $rhs eq 'HASH' and exists $rhs->{TABLE};
+            $szpref = "VIC_ARRSZ_" if ref $rhs eq 'ARRAY';
             $self->ast->{variables}->{$lhs}->{type} = ref $rhs;
             $self->ast->{variables}->{$lhs}->{data} = $rhs;
             $self->ast->{variables}->{$lhs}->{label} = $label || $lhs;
-            if ($szvar) {
-                $self->ast->{variables}->{$lhs}->{size_var} = $szvar .
+            if ($szpref) {
+                $self->ast->{variables}->{$lhs}->{size} = $szpref .
                     $self->ast->{variables}->{$lhs}->{name};
             }
         } else {
@@ -321,7 +321,7 @@ sub got_declaration {
             $self->ast->{variables}->{$lhs}->{type} = 'string';
             $self->ast->{variables}->{$lhs}->{data} = $rhs;
             $self->ast->{variables}->{$lhs}->{label} = $lhs;
-            $self->ast->{variables}->{$lhs}->{size_var} = "VIC_STRSZ_" .
+            $self->ast->{variables}->{$lhs}->{size} = "VIC_STRSZ_" .
                     $self->ast->{variables}->{$lhs}->{name};
         }
     }
@@ -830,7 +830,7 @@ sub generate_code_operations {
         $op = shift @args;
         $var2 = shift @args;
         my $var3 = shift @args;
-        $extra{SIZE_VAR} = $var3;
+        $extra{SIZE} = $var3;
     } else {
         return $self->parser->throw_error("Error in intermediate code '$line'");
     }
@@ -1245,7 +1245,7 @@ sub final {
         my $typ = $vhref->{$var}->{type} || 'byte';
         my $data = $vhref->{$var}->{data};
         my $label = $vhref->{$var}->{label} || $name;
-        my $szvar = $vhref->{$var}->{size_var};
+        my $szvar = $vhref->{$var}->{size};
         if ($typ eq 'string') {
             ##TODO: this may need to be stored in a different location
             $data = '' unless defined $data;
@@ -1260,10 +1260,10 @@ sub final {
             $data = {} unless defined $data;
             next unless defined $data->{TABLE};
             my $table = $data->{TABLE};
-            my ($code, $vardecl) = $self->pic->store_table($table, $label,
+            my ($code, $szdecl) = $self->pic->store_table($table, $label,
                         scalar(@$table), $szvar);
             push @tables, $code;
-            push @init_vars, $vardecl;
+            push @init_vars, $szdecl if $szdecl;
         } else {# $typ == 'byte' or any other
             # should we care about scope ?
             $variables .= "$name res $vhref->{$var}->{size}\n";

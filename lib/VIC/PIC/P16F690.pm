@@ -2619,7 +2619,7 @@ sub store_string {
     $len = sprintf "0x%02X", $len;
     return << "...";
 $strvar data "$str" ; $strvar is a string
-$lenvar db $len ; $lenvar is length of $strvar
+$lenvar equ $len ; $lenvar is length of $strvar
 ...
 }
 
@@ -2631,8 +2631,8 @@ sub store_array {
     $arrstr = '0' unless $arrstr;
     $sz = sprintf "0x%02X", $sz;
     return << "..."
-$szvar db $sz   ; length of array $arrvar
 $arrvar db $arr ; array stored as accessible bytes
+$szvar equ $sz   ; length of array $arrvar is a constant
 ...
 }
 
@@ -2650,13 +2650,25 @@ sub store_table {
         $code .= "\tdt 0\n";
     }
     $tblsz = sprintf "0x%02X", $tblsz;
-    my $vardecl = "$tblszvar db $tblsz ; size of table at $label\n";
-    return wantarray ? ($code, $vardecl) : $code;
+    my $szdecl = "$tblszvar equ $tblsz ; size of table at $label\n";
+    return wantarray ? ($code, $szdecl) : $code;
 }
 
 sub op_TBLIDX {
     my ($self, $table, $idx, %extra) = @_;
-    XXX { table => $table, index => $idx, %extra};
+    return unless defined $extra{RESULT};
+    my $sz = $extra{SIZE};
+    $idx = uc $idx;
+    $sz = uc $sz if $sz;
+    my $szcode = '';
+    # check bounds
+    $szcode = "\tandlw $sz" if $sz;
+    return << "..."
+\tmovwf $idx
+$szcode
+\tcall $table
+\tmovwf $extra{RESULT}
+...
 }
 
 sub op_ARRIDX {
