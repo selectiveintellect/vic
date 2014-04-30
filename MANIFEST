@@ -23,6 +23,7 @@ share/examples/debouncer.vic
 share/examples/GNUmakefile
 share/examples/helloworld.vic
 share/examples/interrupt.vic
+share/examples/led7seg.vic
 share/examples/loopbreak.vic
 share/examples/math8bit.vic
 share/examples/reversible.vic
@@ -31,7 +32,6 @@ share/examples/timer.vic
 share/examples/varrotate.vic
 share/rebuild-grammar
 share/rebuild-grammar.PL
-share/vic.new-pegex-syntax.pgx
 share/vic.pgx
 share/vic.vim
 t/00_use.t
@@ -52,4 +52,5 @@ t/14_helloworldsim.t
 t/15_rotatersim.t
 t/16_debouncesim.t
 t/17_math8bitsim.t
+t/18_led7segsim.t
 t/TestVIC.pm
