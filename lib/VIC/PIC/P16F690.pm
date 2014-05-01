@@ -703,7 +703,8 @@ sub digital_input {
         }
         $code = << "...";
 \tbanksel TRIS$port
-\tclrf TRIS$port
+\tmovlw 0xFF
+\tmovwf TRIS$port
 $an_code
 \tbanksel PORT$port
 ...
@@ -718,7 +719,7 @@ $an_code
             }
             $code = << "...";
 \tbanksel TRIS$port
-\tbcf TRIS$port, TRIS$port$portbit
+\tbsf TRIS$port, TRIS$port$portbit
 $an_code
 \tbanksel PORT$port
 ...

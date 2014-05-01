@@ -89,12 +89,7 @@ _start:
 
 
 	banksel TRISA
-	bcf TRISA, TRISA3
-;	banksel ANSEL
-;	movlw 0xFF
-;	movwf ANSEL
-;    movlw 0xFF
-;    movwf ANSELH
+	bsf TRISA, TRISA3
 	banksel PORTA
 
 	clrf DISPLAY

@@ -181,7 +181,7 @@ _start:
 	banksel PORTA
 
 	banksel TRISA
-	bcf TRISA, TRISA3
+	bsf TRISA, TRISA3
 	banksel PORTA
 
 	banksel ADCON1

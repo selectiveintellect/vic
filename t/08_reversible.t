@@ -116,7 +116,7 @@ _start:
 	clrf PORTC
 
 	banksel TRISA
-	bcf TRISA, TRISA3
+	bsf TRISA, TRISA3
 	banksel PORTA
 
 	banksel TRISA
