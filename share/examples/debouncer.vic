@@ -1,6 +1,6 @@
 PIC P16F690;
 
-pragma debounce count = 3;
+pragma debounce count = 5;
 pragma debounce delay = 1ms;
 
 Main {
@@ -21,12 +21,16 @@ Simulator {
     logfile "debouncer.lxt";
     log RA3;
     scope RA3;
-    stimulate RA3, every 1ms, wave [
-        300, 1, 420, 0,
-        450, 1, 600, 0,
-        650, 1, 800, 0,
-        850, 1, 950, 0
+    # stimulus should reflect the debounce delay to be viable
+    stimulate RA3, every 5s, wave [
+        300, 1, 1300, 0,
+        1400, 1, 2400, 0,
+        2500, 1, 3500, 0,
+        3600, 1, 4600, 0,
+        4700, 1, 5700, 0,
+        5800, 1, 6800, 0,
+        6900, 1, 8000, 0
     ];
-    stop_after 10s;
+    stop_after 30s;
     autorun;
 }

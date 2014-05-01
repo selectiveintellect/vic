@@ -22,16 +22,22 @@ Main {
 }
 
 Simulator {
-    autorun;
     attach_led PORTC, 4, 'red';
     logfile "debouncer.lxt";
     log RA3;
     scope RA3;
-    stimulate RA3, every 1ms, wave [
-        300, 1, 400, 0, 420, 1,
-        500, 0, 520, 1, 600, 0
+    # stimulus should reflect the debounce delay to be viable
+    stimulate RA3, every 5s, wave [
+        300, 1, 1300, 0,
+        1400, 1, 2400, 0,
+        2500, 1, 3500, 0,
+        3600, 1, 4600, 0,
+        4700, 1, 5700, 0,
+        5800, 1, 6800, 0,
+        6900, 1, 8000, 0
     ];
-    stop_after 10s;
+    stop_after 30s;
+    autorun;
 }
 ...
 
@@ -135,16 +141,21 @@ _delay_msecs_loop_0:
 	.sim "initial_state 0"
 	.sim "start_cycle 0"
 	.sim "digital"
-	.sim "period 1000"
-	.sim "{ 300,1,400,0,420,1,500,0,520,1,600,0 }"
+	.sim "period 5000000"
+	.sim "{ 300,1,1300,0,1400,1,2400,0,2500,1,3500,0,3600,1,4600,0,4700,1,5700,0,5800,1,6800,0,6900,1,8000,0 }"
 	.sim "name stim0"
 	.sim "end"
 	.sim "echo done creating stimulus number 0"
 	.sim "node stim0RA3"
 	.sim "attach stim0RA3 stim0 porta3"
 
-	.sim "break c 100000000"
-    .sim "run"
+	.sim "break c 300000000"
+
+	;;;; will autorun on start
+	.sim "run"
+
+
+
 
 ;;;; generated code for Main
 _start:
@@ -165,6 +176,8 @@ _start:
 	bsf TRISA, TRISA3
 
 	banksel PORTA
+
+;;; SET::ASSIGN::display::0
 
 	;; moves 0 (0x00) to DISPLAY
 	clrf DISPLAY
