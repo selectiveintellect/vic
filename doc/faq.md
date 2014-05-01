@@ -77,7 +77,8 @@ send us pull requests or submit patches on the [Github issue tracker](TODO).
 10. What editor or IDE is needed for VIC&trade; ?
 
 We use [Vim](TODO) as our editor of choice on all the systems we support,
-but you could use any text editor of your choice.
+but you could use any text editor of your choice. We provide a syntax
+highlighting file for Vim as part of the distribution of VIC&trade;.
 
 11. How does one compile VIC&trade; programs ?
 
