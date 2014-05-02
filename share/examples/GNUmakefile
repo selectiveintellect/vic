@@ -31,7 +31,7 @@ SIMFILES:=$(patsubst %.vic,%.stc,$(wildcard *.vic))
 default: all
 .PHONY: default
 
-all: $(HEXFILES)
+all: $(HEXFILES) $(ASMFILES) $(SIMFILES)
 .PHONY: all
 
 rebuild: clean all
@@ -69,9 +69,13 @@ $(TARGETS): %: %.hex
 %.hex: %.o
 	$(GPLINK) $(QUIET) -m -o $@ $<
 
-%.o: %.vic
-	$(VIC) $(VICOPT) -o $*.asm $<
-	$(GPASM) -p$(PIC) -M -c $*.asm
-	@echo "load s $*.cod" > $*.stc
+%.stc: %.cod
+	@echo "load s $*.cod" | tee $*.stc
+
+%.o %.cod: %.asm
+	$(GPASM) -p$(PIC) -M -c $<
+
+%.asm: %.vic
+	$(VIC) $(VICOPT) -o $@ $<
 
 -include $(HEXFILES:.hex=.d)
