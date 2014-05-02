@@ -1,9 +1,9 @@
-###############################################
-### COPYRIGHT: Vikas N Kumar <vikas@cpan.org>
+#######################################
+### COPYRIGHT: Selective Intellect LLC
 ### AUTHOR: Vikas Kumar
 ### DATE: 29th May 2013
 ### SOFTWARE: PIC uC Software
-###############################################
+#######################################
 GPASM?=$(shell which gpasm)
 GPLINK?=$(shell which gplink)
 PK2CMD?=$(shell which pk2cmd)
@@ -26,6 +26,7 @@ endif
 ASMFILES:=$(patsubst %.vic,%.asm,$(wildcard *.vic))
 HEXFILES:=$(patsubst %.vic,%.hex,$(wildcard *.vic))
 TARGETS:=$(patsubst %.vic,%,$(wildcard *.vic))
+SIMFILES:=$(patsubst %.vic,%.stc,$(wildcard *.vic))
 
 default: all
 .PHONY: default
@@ -37,7 +38,10 @@ rebuild: clean all
 .PHONY: rebuild
 
 clean:
-	rm -f *.hex *.d *.lst *.cod *.o *.asm *.map
+	rm -f $(HEXFILES)
+	rm -f $(ASMFILES)
+	rm -f $(SIMFILES)
+	rm -f *.map *.lst *.cod *.o *.d
 .PHONY: clean
 
 test:
@@ -63,12 +67,11 @@ $(TARGETS): %: %.hex
 .PHONY: $(TARGETS)
 
 %.hex: %.o
-	$(GPLINK) $(QUIET) -m -o $@ $*.o
+	$(GPLINK) $(QUIET) -m -o $@ $<
 
-%.o: %.asm
-	$(GPASM) -p$(PIC) -M -c $<
-
-%.asm: %.vic
-	$(VIC) $(VICOPT) $< -o $@
+%.o: %.vic
+	$(VIC) $(VICOPT) -o $*.asm $<
+	$(GPASM) -p$(PIC) -M -c $*.asm
+	@echo "load s $*.cod" > $*.stc
 
 -include $(HEXFILES:.hex=.d)
