@@ -59,11 +59,19 @@ sub got_pragmas {
     $self->ast->{chip_config} = $self->pic->chip_config;
     $self->ast->{code_config} = $self->pic->code_config;
     my ($sim, $stype) = @$list if scalar @$list;
-    if ($sim eq 'simulator' and $stype) {
+    if ($sim eq 'simulator' and $stype !~ /disable/i) {
         $self->simulator(VIC::PIC::Any->new_simulator(
                     type => $stype, pic => $self->pic));
-        die "$stype is not a supported simulator" unless $self->simulator;
-        die "$stype is not a supported chip" unless $self->simulator->type eq $stype;
+        if ($self->simulator) {
+            unless ($self->simulator->type eq $stype) {
+                warn "$stype is not a supported chip. Disabling simulator.";
+                $self->simulator->disable(1);
+            }
+        } else {
+            die "$stype is not a supported simulator.";
+        }
+    } elsif ($sim eq 'simulator' and $stype =~ /disable/i) {
+        $self->simulator->disable(1) if $self->simulator;
     }
     return;
 }
@@ -767,6 +775,7 @@ sub generate_simulator_instruction {
         next unless exists $self->global_collections->{$_};
         $_ = $self->global_collections->{$_};
     }
+    return @code if $self->simulator->disable;
     my $code = $self->simulator->$method(@ins);
     return $self->parser->throw_error("Error in simulator intermediate code '$line'") unless $code;
     push @code, $code if $code;
@@ -1331,7 +1340,8 @@ sub final {
     my ($sim_include, $sim_setup_code) = ('', '');
     # we need to generate simulator code if either the Simulator block is
     # present or if any asserts are present
-    if (defined $self->simulator and ($ast->{Simulator} or $ast->{asserts})) {
+    if ($self->simulator and not $self->simulator->disable and
+        ($ast->{Simulator} or $ast->{asserts})) {
         my $stype = $self->simulator->type;
         $sim_include .= ";;;; generated code for $stype header file\n";
         $sim_include .= '#include <' . $self->simulator->include .">\n";

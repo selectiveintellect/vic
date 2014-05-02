@@ -1,5 +1,6 @@
 bin/vic
 Build.PL
+doc/faq.md
 doc/philosophy.md
 doc/vicmeme.jpg
 lib/VIC.pm
@@ -53,4 +54,5 @@ t/15_rotatersim.t
 t/16_debouncesim.t
 t/17_math8bitsim.t
 t/18_led7segsim.t
+t/19_disablesim.t
 t/TestVIC.pm

@@ -22,6 +22,8 @@ has stimulus_count => 0;
 
 has should_autorun => 0;
 
+has disable => 0;
+
 sub supports_modifier {
     my $self = shift;
     my $mod = shift;

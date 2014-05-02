@@ -88,3 +88,5 @@ compile_into_module$
 \.map$
 \.hex$
 \.cod$
+\.stc$
+\.asm$
