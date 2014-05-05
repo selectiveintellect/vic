@@ -590,13 +590,37 @@ sub write {
 \tcomf PORT$port, 1
 ...
         }
+        if ($self->validate($val)) {
+            # ok we want to write the value of a pin to a port
+            # that doesn't seem right so let's provide a warning
+            if ($self->pins->{$val}) {
+                carp "$val is a pin and you're trying to write a pin to a port" .
+                    " $outp. You can write a pin to a pin or a port to a port only.\n";
+                return;
+            }
+        }
         return $self->op_ASSIGN("PORT$port", $val);
     } elsif (exists $self->pins->{$outp}) {
         my ($port, $portbit) = @{$self->pins->{$outp}};
         if ($val =~ /^\d+$/) {
             return "\tbcf PORT$port, $portbit\n" if "$val" eq '0';
             return "\tbsf PORT$port, $portbit\n" if "$val" eq '1';
-            carp "$val cannot be applied to a pin $outp";
+            carp "$val cannot be applied to a pin $outp\n";
+        } elsif ($self->validate($val)) {
+            # ok we want to short two pins, and this is not bit-banging
+            if ($self->pins->{$val}) {
+                my ($vport, $vportbit) = @{$self->pins->{$val}};
+                return << "...";
+\tbtfsc PORT$port, $outp
+\tbcf PORT$vport, $val
+\tbtfss PORT$port, $outp
+\tbsf PORT$vport, $val
+...
+            } else {
+                carp "$val is a port and cannot be written to a pin $outp. ".
+                    "Only a pin can be written to a pin.\n";
+                return;
+            }
         }
         return $self->op_ASSIGN("PORT$port", $val);
     } elsif ($self->validate($outp)) {
@@ -605,6 +629,7 @@ sub write {
         return $code;
     } else {
         carp "Cannot find $outp in the list of ports or pins";
+        return;
     }
 }
 
