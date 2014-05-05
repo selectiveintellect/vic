@@ -15,6 +15,8 @@ has include => 'p16f690.inc';
 
 has org => 0;
 
+has frequency => 4e6; # 4MHz
+
 has address_range => [ 0x0000, 0x0FFF ]; # 4K
 
 has reset_address => 0x0000;

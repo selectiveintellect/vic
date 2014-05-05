@@ -35,11 +35,18 @@ sub init_code {
     my $self = shift;
     my $pic = '';
     $pic = $self->pic->type if $self->pic;
+    my $freq = $self->pic->frequency if $self->pic;
+    if ($freq) {
+        $freq = qq{\t.sim "$pic.frequency = $freq"};
+    } else {
+        $freq = '';
+    }
     return << "...";
 ;;;; generated common code for the Simulator
 \t.sim "module library libgpsim_modules"
-\t.sim "$pic.xpos = 200";
-\t.sim "$pic.ypos = 200";
+\t.sim "$pic.xpos = 200"
+\t.sim "$pic.ypos = 200"
+$freq
 ...
 }
 
@@ -386,6 +393,14 @@ sub autorun {
     my $self = shift;
     $self->should_autorun(1);
     return "\t;;;; will autorun on start\n";
+}
+
+sub stopwatch {
+    my ($self, $rollover) = @_;
+    my $code = qq{\t.sim "stopwatch.enable = true"\n};
+    $code .= qq{\t.sim "stopwatch.rollover = $rollover"\n} if defined $rollover;
+    $code .= qq{\t.sim "break stopwatch"\n} if defined $rollover;
+    return $code;
 }
 
 1;

@@ -21,6 +21,7 @@ share/examples/adctest.vic
 share/examples/blinker.vic
 share/examples/conditional.vic
 share/examples/debouncer.vic
+share/examples/delay.vic
 share/examples/GNUmakefile
 share/examples/helloworld.vic
 share/examples/interrupt.vic
