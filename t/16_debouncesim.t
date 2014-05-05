@@ -78,7 +78,9 @@ VIC_VAR_DELAY   res 3
 m_delay_ms macro msecs
     local _delay_msecs_loop_0, _delay_msecs_loop_1
     variable msecs_1 = 0
-msecs_1 = (msecs * D'13') / D'10'
+    variable msecs_2 = 0
+msecs_1 = (msecs * D'1000') / D'771'
+msecs_2 = ((msecs * D'1000') % D'771') / 3 - 2;; for 3 us per instruction
     movlw   msecs_1
     movwf   VIC_VAR_DELAY + 1
 _delay_msecs_loop_1:
@@ -88,8 +90,16 @@ _delay_msecs_loop_0:
     goto    _delay_msecs_loop_0
     decfsz  VIC_VAR_DELAY + 1, F
     goto    _delay_msecs_loop_1
+if msecs_2 > 0
+    ;; handle the balance
+    movlw msecs_2
+    movwf VIC_VAR_DELAY
+_delay_msecs_loop_2:
+    decfsz VIC_VAR_DELAY, F
+    goto _delay_msecs_loop_2
+    nop
+endif
     endm
-
 
 
 	__config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _BOR_OFF & _IESO_OFF & _FCMEN_OFF)
@@ -100,8 +110,9 @@ _delay_msecs_loop_0:
 
 ;;;; generated common code for the Simulator
 	.sim "module library libgpsim_modules"
-	.sim "p16f690.xpos = 200";
-	.sim "p16f690.ypos = 200";
+	.sim "p16f690.xpos = 200"
+	.sim "p16f690.ypos = 200"
+	.sim "p16f690.frequency = 4000000"
 
 ;;;; generated code for Simulator
 	.sim "module load led L0"

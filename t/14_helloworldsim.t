@@ -41,8 +41,9 @@ my $output = <<'...';
 
 ;;;; generated common code for the Simulator
 	.sim "module library libgpsim_modules"
-	.sim "p16f690.xpos = 200";
-	.sim "p16f690.ypos = 200";
+	.sim "p16f690.xpos = 200"
+	.sim "p16f690.ypos = 200"
+	.sim "p16f690.frequency = 4000000"
 
 ;;;; generated code for Simulator
 	.sim "module load led L0"

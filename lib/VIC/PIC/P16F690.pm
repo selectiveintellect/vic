@@ -822,7 +822,9 @@ sub m_delay_ms {
 m_delay_ms macro msecs
     local _delay_msecs_loop_0, _delay_msecs_loop_1
     variable msecs_1 = 0
-msecs_1 = (msecs * D'13') / D'10'
+    variable msecs_2 = 0
+msecs_1 = (msecs * D'1000') / D'771'
+msecs_2 = ((msecs * D'1000') % D'771') / 3 - 2;; for 3 us per instruction
     movlw   msecs_1
     movwf   VIC_VAR_DELAY + 1
 _delay_msecs_loop_1:
@@ -832,6 +834,15 @@ _delay_msecs_loop_0:
     goto    _delay_msecs_loop_0
     decfsz  VIC_VAR_DELAY + 1, F
     goto    _delay_msecs_loop_1
+if msecs_2 > 0
+    ;; handle the balance
+    movlw msecs_2
+    movwf VIC_VAR_DELAY
+_delay_msecs_loop_2:
+    decfsz VIC_VAR_DELAY, F
+    goto _delay_msecs_loop_2
+    nop
+endif
     endm
 ...
 }
