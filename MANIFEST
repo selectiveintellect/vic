@@ -55,4 +55,5 @@ t/16_debouncesim.t
 t/17_math8bitsim.t
 t/18_led7segsim.t
 t/19_disablesim.t
+t/20_fail_write.t
 t/TestVIC.pm
