@@ -820,7 +820,7 @@ sub m_delay_ms {
 ;; we add 3 instructions for the outer loop
 ;; number of outermost loops = msecs * 1000 / 771 = msecs * 13 / 10
 m_delay_ms macro msecs
-    local _delay_msecs_loop_0, _delay_msecs_loop_1
+    local _delay_msecs_loop_0, _delay_msecs_loop_1, _delay_msecs_loop_2
     variable msecs_1 = 0
     variable msecs_2 = 0
 msecs_1 = (msecs * D'1000') / D'771'
@@ -874,8 +874,15 @@ sub m_delay_s {
 ;; number of outermost loops = seconds * 1000000 / 200000 = seconds * 5
 m_delay_s macro secs
     local _delay_secs_loop_0, _delay_secs_loop_1, _delay_secs_loop_2
+    local _delay_secs_loop_3
     variable secs_1 = 0
-secs_1 = secs * D'1000000' / D'197379'
+    variable secs_2 = 0
+    variable secs_3 = 0
+    variable secs_4 = 0
+secs_1 = (secs * D'1000000') / D'197379'
+secs_2 = ((secs * D'1000000') % D'197379') / 3
+secs_4 = (secs_2 >> 8) & 0xFF - 1
+secs_3 = 0xFE
     movlw   secs_1
     movwf   VIC_VAR_DELAY + 2
 _delay_secs_loop_2:
@@ -889,6 +896,22 @@ _delay_secs_loop_0:
     goto    _delay_secs_loop_1
     decfsz  VIC_VAR_DELAY + 2, F
     goto    _delay_secs_loop_2
+if secs_4 > 0
+    movlw secs_4
+    movwf VIC_VAR_DELAY + 1
+_delay_secs_loop_3:
+    clrf VIC_VAR_DELAY
+    decfsz VIC_VAR_DELAY, F
+    goto $ - 1
+    decfsz VIC_VAR_DELAY + 1, F
+    goto _delay_secs_loop_3
+endif
+if secs_3 > 0
+    movlw secs_3
+    movwf VIC_VAR_DELAY
+    decfsz VIC_VAR_DELAY, F
+    goto $ - 1
+endif
     endm
 ...
 }
@@ -959,7 +982,13 @@ sub delay {
     my $us = $t - $sec * 1e6 - $ms * 1000;
     my $code = '';
     my $funcs = {};
-    my $macros = { m_delay_var => $self->m_delay_var };
+    # return all as part of the code always
+    my $macros = {
+        m_delay_var => $self->m_delay_var,
+        m_delay_s => $self->m_delay_s,
+        m_delay_ms => $self->m_delay_ms,
+        m_delay_us => $self->m_delay_us,
+    };
     ## more than one function could be called so have them separate
     if ($sec > 0) {
         my $fn = "_delay_${sec}s";
@@ -968,7 +997,6 @@ sub delay {
 \tm_delay_s D'$sec'
 \treturn
 ....
-        $macros->{m_delay_s} = $self->m_delay_s;
     }
     if ($ms > 0) {
         my $fn = "_delay_${ms}ms";
@@ -977,7 +1005,6 @@ sub delay {
 \tm_delay_ms D'$ms'
 \treturn
 ....
-        $macros->{m_delay_ms} = $self->m_delay_ms;
     }
     if ($us > 0) {
         my $fn = "_delay_${us}us";
@@ -986,7 +1013,6 @@ sub delay {
 \tm_delay_us D'$us'
 \treturn
 ....
-        $macros->{m_delay_us} = $self->m_delay_us;
     }
     return wantarray ? ($code, $funcs, $macros) : $code;
 }
