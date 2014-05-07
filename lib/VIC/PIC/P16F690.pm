@@ -782,17 +782,23 @@ sub m_delay_us {
 m_delay_us macro usecs
     local _delay_usecs_loop_0
     variable usecs_1 = 0
+    variable usecs_2 = 0
 if (usecs > D'6')
-usecs_1 = usecs / D'3'
+usecs_1 = usecs / D'3' - 2
+usecs_2 = usecs % D'3'
     movlw   usecs_1
     movwf   VIC_VAR_DELAY
-_delay_usecs_loop_0:
     decfsz  VIC_VAR_DELAY, F
-    goto    _delay_usecs_loop_0
+    goto    $ - 1
+    while usecs_2 > 0
+        goto $ + 1
+usecs_2--
+    endw
 else
-    while usecs_1 < usecs
+usecs_1 = usecs
+    while usecs_1 > 0
         nop
-usecs_1++
+usecs_1--
     endw
 endif
     endm
@@ -1007,12 +1013,17 @@ sub delay {
 ....
     }
     if ($us > 0) {
-        my $fn = "_delay_${us}us";
-        $code .= "\tcall $fn\n";
-        $funcs->{$fn} = <<"....";
+        # for less than 6 us we just inline the code
+        if ($us <= 6) {
+            $code .= "\tm_delay_us D'$us'\n";
+        } else {
+            my $fn = "_delay_${us}us";
+            $code .= "\tcall $fn\n";
+            $funcs->{$fn} = <<"....";
 \tm_delay_us D'$us'
 \treturn
 ....
+        }
     }
     return wantarray ? ($code, $funcs, $macros) : $code;
 }
