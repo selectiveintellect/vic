@@ -1,4 +1,3 @@
-use lib 'ext/pegex-pm/lib';
 use t::TestVIC tests => 1, debug => 0;
 
 my $input = <<'...';

@@ -1,7 +1,5 @@
 use Test::More;
 
-use lib 'ext/pegex-pm/lib';
-
 use_ok('VIC');
 
 can_ok('VIC', 'compile');
