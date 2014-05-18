@@ -64,13 +64,13 @@ sub make_tree {
         },
         {
           '+max' => 1,
-          '-flat' => 1,
           '.all' => [
             {
               '.ref' => 'array_element_type'
             },
             {
               '+min' => 0,
+              '-flat' => 1,
               '.all' => [
                 {
                   '.ref' => 'list_separator'
@@ -727,13 +727,13 @@ sub make_tree {
       ]
     },
     'rhs_expr' => {
-      '-flat' => 1,
       '.all' => [
         {
           '.ref' => 'expr_value'
         },
         {
           '+min' => 0,
+          '-flat' => 1,
           '.all' => [
             {
               '.ref' => 'rhs_operator'
@@ -775,13 +775,13 @@ sub make_tree {
       ]
     },
     'single_conditional_subject' => {
-      '-flat' => 1,
       '.all' => [
         {
           '.ref' => 'any_conditional'
         },
         {
           '+min' => 0,
+          '-flat' => 1,
           '.all' => [
             {
               '.ref' => 'logic_operator'
@@ -940,13 +940,13 @@ sub make_tree {
     },
     'values' => {
       '+max' => 1,
-      '-flat' => 1,
       '.all' => [
         {
           '.ref' => 'value'
         },
         {
           '+min' => 0,
+          '-flat' => 1,
           '.all' => [
             {
               '.ref' => 'list_separator'
