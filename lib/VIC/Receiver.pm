@@ -33,7 +33,7 @@ has global_collections => {};
 
 sub stack { reverse @{shift->parser->stack}; }
 
-sub got_uc_select {
+sub got_mcu_select {
     my ($self, $type) = @_;
     # override the PIC in code if defined
     $type = $self->pic_override if defined $self->pic_override;
@@ -663,7 +663,7 @@ sub got_variable {
     $self->flatten($list) if ref $list eq 'ARRAY';
     my $varname = shift @$list;
     my ($current, $parent) = $self->stack;
-    # if the variable is used from the uc-config grammar rule
+    # if the variable is used from the pragma grammar rule
     # we do not want to store it yet and definitely not store the size yet
     # we could remove this if we set the size after the code generation or so
     # but that may lead to more complexity. this is much easier

@@ -537,6 +537,9 @@ sub make_tree {
     'math_operator' => {
       '.rgx' => qr/\G([\+\-\*\/%])/
     },
+    'mcu_select' => {
+      '.rgx' => qr/\GPIC[\ \t]+([a-zA-Z][0-9]+[a-zA-Z][0-9]+)[\ \t]*\r?\n?;[\ \t]*\r?\n?\r?\n?/
+    },
     'modifier_constant' => {
       '.all' => [
         {
@@ -711,7 +714,7 @@ sub make_tree {
     'program' => {
       '.all' => [
         {
-          '.ref' => 'uc_select'
+          '.ref' => 'mcu_select'
         },
         {
           '+min' => 0,
@@ -836,9 +839,6 @@ sub make_tree {
           '.ref' => 'double_quoted_string'
         }
       ]
-    },
-    'uc_select' => {
-      '.rgx' => qr/\GPIC[\ \t]+((?i:P16F690|P16F690X))[\ \t]*\r?\n?;[\ \t]*\r?\n?\r?\n?/
     },
     'unary_expr' => {
       '.any' => [
