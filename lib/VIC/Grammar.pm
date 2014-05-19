@@ -63,11 +63,24 @@ sub make_tree {
           '.ref' => '_'
         },
         {
-          '+min' => 0,
-          '.ref' => 'array_element_type',
-          '.sep' => {
-            '.ref' => 'list_separator'
-          }
+          '+max' => 1,
+          '.all' => [
+            {
+              '.ref' => 'array_element_type'
+            },
+            {
+              '+min' => 0,
+              '-flat' => 1,
+              '.all' => [
+                {
+                  '.ref' => 'list_separator'
+                },
+                {
+                  '.ref' => 'array_element_type'
+                }
+              ]
+            }
+          ]
         },
         {
           '.ref' => '_'
@@ -246,7 +259,7 @@ sub make_tree {
       ]
     },
     'compare_operator' => {
-      '.rgx' => qr/\G([!=<>]=|(?:<|>))/
+      '.rgx' => qr/\G([!=<\>]=|(?:<|\>))/
     },
     'comparison' => {
       '.all' => [
@@ -615,7 +628,7 @@ sub make_tree {
     'number' => {
       '.any' => [
         {
-          '.rgx' => qr/\G(0[xX][0-9a-fA-F]+|-?[0-9]+)/
+          '.rgx' => qr/\G(0[xX][0-9a-fA-F]+|\-?[0-9]+)/
         },
         {
           '.ref' => 'boolean'
@@ -714,11 +727,23 @@ sub make_tree {
       ]
     },
     'rhs_expr' => {
-      '+min' => 1,
-      '.ref' => 'expr_value',
-      '.sep' => {
-        '.ref' => 'rhs_operator'
-      }
+      '.all' => [
+        {
+          '.ref' => 'expr_value'
+        },
+        {
+          '+min' => 0,
+          '-flat' => 1,
+          '.all' => [
+            {
+              '.ref' => 'rhs_operator'
+            },
+            {
+              '.ref' => 'expr_value'
+            }
+          ]
+        }
+      ]
     },
     'rhs_operator' => {
       '.any' => [
@@ -734,10 +759,10 @@ sub make_tree {
       ]
     },
     'shift_assign_operator' => {
-      '.rgx' => qr/\G(<<=|>>=)/
+      '.rgx' => qr/\G(<<=|\>\>=)/
     },
     'shift_operator' => {
-      '.rgx' => qr/\G(<<|>>)/
+      '.rgx' => qr/\G(<<|\>\>)/
     },
     'single_conditional' => {
       '.any' => [
@@ -750,11 +775,23 @@ sub make_tree {
       ]
     },
     'single_conditional_subject' => {
-      '+min' => 1,
-      '.ref' => 'any_conditional',
-      '.sep' => {
-        '.ref' => 'logic_operator'
-      }
+      '.all' => [
+        {
+          '.ref' => 'any_conditional'
+        },
+        {
+          '+min' => 0,
+          '-flat' => 1,
+          '.all' => [
+            {
+              '.ref' => 'logic_operator'
+            },
+            {
+              '.ref' => 'any_conditional'
+            }
+          ]
+        }
+      ]
     },
     'single_quoted_string' => {
       '.rgx' => qr/\G(?:'((?:[^\n\\']|\\'|\\\\)*?)')/
@@ -902,11 +939,24 @@ sub make_tree {
       ]
     },
     'values' => {
-      '+min' => 0,
-      '.ref' => 'value',
-      '.sep' => {
-        '.ref' => 'list_separator'
-      }
+      '+max' => 1,
+      '.all' => [
+        {
+          '.ref' => 'value'
+        },
+        {
+          '+min' => 0,
+          '-flat' => 1,
+          '.all' => [
+            {
+              '.ref' => 'list_separator'
+            },
+            {
+              '.ref' => 'value'
+            }
+          ]
+        }
+      ]
     },
     'variable' => {
       '.all' => [
