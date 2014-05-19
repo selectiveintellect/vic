@@ -1,6 +1,7 @@
 bin/vic
 Build.PL
 doc/faq.md
+doc/gettingstarted.md
 doc/philosophy.md
 doc/vicmeme.jpg
 lib/VIC.pm

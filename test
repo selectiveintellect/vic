@@ -1,1 +1,0 @@
-PERL5LIB=../pegex-pm/lib/ prove -lv t/
