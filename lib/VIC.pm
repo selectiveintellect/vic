@@ -9,7 +9,7 @@ use VIC::Receiver;
 our $Debug = 0;
 our $Intermediate = 0;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 $VERSION = eval $VERSION;
 
 sub compile {
