@@ -95,7 +95,7 @@ string: single-quoted-string | double-quoted-string
 number-units: number - units
 # number handles both hex and non-hex values for ease of use
 number: /('0'[xX] HEX+ | '-'? DIGIT+)/ | boolean
-units: /('s'|'ms'|'us'|'kHz'|'Hz'|'MHz')/
+units: /([mu]?'s'|[kM]?'Hz')/
 boolean: /('TRUE'|'FALSE'|'true'|'false'|'0'|'1')/
 
 validated-variable: identifier-without-keyword
