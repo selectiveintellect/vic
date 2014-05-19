@@ -1,5 +1,5 @@
 %grammar vic
-%version 0.1.1
+%version 0.2.0
 #COPYRIGHT: 2014 Vikas N Kumar <vikas@cpan.org>. All Rights Reserved
 
 # uc-select is necessary.

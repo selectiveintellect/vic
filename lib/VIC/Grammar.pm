@@ -14,7 +14,7 @@ sub make_tree {
   {
     '+grammar' => 'vic',
     '+toprule' => 'program',
-    '+version' => '0.1.1',
+    '+version' => '0.2.0',
     'COMMA' => {
       '.rgx' => qr/\G,/
     },
