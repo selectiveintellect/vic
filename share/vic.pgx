@@ -6,11 +6,11 @@
 program: uc-select header* statement* EOS
 
 header: pragmas | comment
-uc-select: /PIC BLANK+ ( uc-types ) line-ending/
+uc-select: /'PIC' BLANK+ ( uc-types ) line-ending/
 
 # P16F690X is fake just to show how to enumerate.
-uc-types: /(?i:P16F690 |P16F690X)/
-pragmas: /pragma/ + (variable | name) (pragma-expression | name)? line-ending
+uc-types: /(?i:'P16F690' |'P16F690X')/
+pragmas: 'pragma' + (variable | name) (pragma-expression | name)? line-ending
 pragma-expression: name / EQUAL -/ (number-units | number | string) -
 
 comment: /- HASH ANY* EOL/ | blank-line
@@ -64,7 +64,7 @@ conditional-predicate: - (anonymous-block) - ('else' - (anonymous-block | condit
 single-conditional-subject: any-conditional+ % logic-operator
 nested-conditional-subject: start-nested-expr single-conditional-subject end-nested-expr
 conditional-subject: single-conditional-subject | nested-conditional-subject
-conditional-statement: - /(if |while)/ - conditional-subject - conditional-predicate line-ending?
+conditional-statement: - /('if' | 'while')/ - conditional-subject - conditional-predicate line-ending?
 
 # special case
 assert-value: - (validated-variable | variable | number) -
@@ -94,9 +94,9 @@ string: single-quoted-string | double-quoted-string
 # most microcontrollers cannot do floating point math so ignore real numbers
 number-units: number - units
 # number handles both hex and non-hex values for ease of use
-number: /(0[xX] HEX+ | '-'? DIGIT+)/ | boolean
-units: /(s|ms|us|kHz|Hz|MHz)/
-boolean: /(TRUE|FALSE|true|false|0|1)/
+number: /('0'[xX] HEX+ | '-'? DIGIT+)/ | boolean
+units: /('s'|'ms'|'us'|'kHz'|'Hz'|'MHz')/
+boolean: /('TRUE'|'FALSE'|'true'|'false'|'0'|'1')/
 
 validated-variable: identifier-without-keyword
 modifier-variable: identifier-without-keyword - variable
@@ -107,7 +107,7 @@ array: start-array - array-element-type* % list-separator - end-array
 array-element-type: - (number-units | number | string) -
 identifier-without-keyword: /(! keyword)( ALPHA[ WORDS]*)/
 identifier: /( ALPHA [ WORDS ]*)/
-keyword: /if|else|while|true|false|TRUE|FALSE/
+keyword: /'if'|'else'|'while'|'true'|'false'|'TRUE'|'FALSE'/
 list-separator: - COMMA - comment?
 
 single_quoted_string:
