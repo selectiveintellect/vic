@@ -179,8 +179,8 @@ simulator yet as part of VIC. We may choose to do it in the future.
 
 ## Some pictures
 
-![Code](https://raw.githubusercontent.com/vikasnkumar/vic/master/doc/images/HellloworldCode.png)
+![Code](https://raw.githubusercontent.com/vikasnkumar/vic/master/doc/images/HelloworldCode.png)
 
-![Simulator Before Run](https://raw.githubusercontent.com/vikasnkumar/vic/master/doc/images/HellloworldSimBefore.png)
+![Simulator Before Run](https://raw.githubusercontent.com/vikasnkumar/vic/master/doc/images/HelloworldSimBefore.png)
 
-![Simulator After Run](https://raw.githubusercontent.com/vikasnkumar/vic/master/doc/images/HellloworldSimAfter.png)
+![Simulator After Run](https://raw.githubusercontent.com/vikasnkumar/vic/master/doc/images/HelloworldSimAfter.png)
