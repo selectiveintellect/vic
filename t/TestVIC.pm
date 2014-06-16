@@ -1,7 +1,6 @@
 package t::TestVIC;
 use strict;
 use warnings;
-#use lib '../pegex-pm/lib';
 
 use Carp;
 use Test::Builder;
