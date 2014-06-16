@@ -610,13 +610,14 @@ sub write {
             carp "$val cannot be applied to a pin $outp\n";
         } elsif ($self->validate($val)) {
             # ok we want to short two pins, and this is not bit-banging
+            # although seems like it
             if ($self->pins->{$val}) {
                 my ($vport, $vportbit) = @{$self->pins->{$val}};
                 return << "...";
-\tbtfsc PORT$port, $outp
-\tbcf PORT$vport, $val
-\tbtfss PORT$port, $outp
-\tbsf PORT$vport, $val
+\tbtfss PORT$port, $val
+\tbcf PORT$vport, $outp
+\tbtfsc PORT$port, $val
+\tbsf PORT$vport, $outp
 ...
             } else {
                 carp "$val is a port and cannot be written to a pin $outp. ".
