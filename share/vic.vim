@@ -13,7 +13,7 @@ endif
 syn keyword vicStatement    delay analog_input digital_input digital_output
 syn keyword vicStatement    adc_enable adc_disable adc_read delay_ms delay_us delay_s
 syn keyword vicStatement    debounce digital_output write read ror rol timer_enable
-syn keyword vicStatement    timer shl shr
+syn keyword vicStatement    timer shl shr pwm_single pwm_halfbridge pwm_fullbridge
 syn keyword vicBlock        Main Loop Action True False ISR Simulator
 syn keyword vicModifier     sqrt high low int char hex hang every wave table array
 syn keyword vicConditional  if while else break continue
@@ -32,6 +32,7 @@ syn match   vicValidVars    "\<\%(\%(PORT\|TRIS\)\w\w*\)\|\%([RA][A-Z][0-9]\)\>"
 syn match   vicValidVars    "\<\%(\w\+CON[0-9]*\)\|\%(TMR[0-9HL]*\)\|\%(ANSEL\w*\)\>"
 syn match   vicValidVars    "\<\%(ADRES\w*\)\|\%(\w\+REG\w?\)\|\%(PCL\w*\)\>"
 syn match   vicValidVars    "\<\%(UART\|USART\|FSR\|STATUS\|OPTION_REG\|IND\)\w*\>"
+syn match   vicValidVars    "\<\%(CCP[0-9]\|P[0-9][A-Z]\)\>"
 syn match   vicConfig       "\<pragma\s\+\$\?\%(\w\)*\s\+\%(\w\)*" contains=vicVariable,vicValidVars
 syn keyword vicSimulator    log logfile scope stop_after stimulate autorun stopwatch
 syn match   vicSimulator    "\<\%(attach_\)\w*\>"
