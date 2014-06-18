@@ -70,6 +70,8 @@ sub _get_simreg {
     my ($self, $port) = @_;
     my $simreg = lc $port;
     if ($self->pic) {
+        my $vport = $self->pic->convert_to_valid_pin($port);
+        $port = $vport if defined $vport;
         if (exists $self->pic->ports->{$port}) {
             # this is a port
             $simreg = lc $port;
@@ -89,6 +91,8 @@ sub _get_simport {
     my ($self, $port, $pin) = @_;
     my $simport = lc $port;
     if ($self->pic) {
+        my $vport = $self->pic->convert_to_valid_pin($port);
+        $port = $vport if defined $vport;
         if (exists $self->pic->ports->{$port}) {
             # this is a port
             my $p1 = $self->pic->ports->{$port};
@@ -111,6 +115,8 @@ sub _get_portpin {
     my $simport = lc $port;
     my $simpin;
     if ($self->pic) {
+        my $vport = $self->pic->convert_to_valid_pin($port);
+        $port = $vport if defined $vport;
         if (exists $self->pic->ports->{$port}) {
             # this is a port
             my $p1 = $self->pic->ports->{$port};

@@ -417,6 +417,7 @@ has pwm_pins => {
     P1C => 7,
     P1B => 6,
     P1A => 5,
+    CCP1 => 5,
     14 => 'P1D',
     7 => 'P1C',
     6 => 'P1B',
@@ -474,6 +475,31 @@ sub address_bits {
     $bits = $self->code_config->{lc $varname}->{bits} || $bits;
     return $bits;
 }
+
+sub convert_to_valid_pin {
+    my ($self, $var) = @_;
+    return undef unless defined $var;
+    return undef if $var =~ /^\d+$/;
+    return $var if exists $self->ports->{$var};
+    return $var if exists $self->pins->{$var};
+    my $pin_no = undef;
+    $pin_no = $self->analog_pins->{$var}->[0] if exists $self->analog_pins->{$var};
+    $pin_no = $self->power_pins->{$var} if exists $self->power_pins->{$var};
+    $pin_no = $self->comparator_pins->{$var} if exists $self->comparator_pins->{$var};
+    $pin_no = $self->interrupt_pins->{$var} if exists $self->interrupt_pins->{$var};
+    $pin_no = $self->timer_pins->{$var} if exists $self->timer_pins->{$var};
+    $pin_no = $self->spi_pins->{$var} if exists $self->spi_pins->{$var};
+    $pin_no = $self->usart_pins->{$var} if exists $self->usart_pins->{$var};
+    $pin_no = $self->clock_pins->{$var} if exists $self->clock_pins->{$var};
+    $pin_no = $self->selector_pins->{$var} if exists $self->selector_pins->{$var};
+    $pin_no = $self->oscillator_pins->{$var} if exists $self->oscillator_pins->{$var};
+    $pin_no = $self->icsp_pins->{$var} if exists $self->icsp_pins->{$var};
+    $pin_no = $self->i2c_pins->{$var} if exists $self->i2c_pins->{$var};
+    $pin_no = $self->pwm_pins->{$var} if exists $self->pwm_pins->{$var};
+    return $self->visible_pins->{$pin_no} if defined $pin_no;
+    return undef;
+}
+
 
 sub validate {
     my ($self, $var) = @_;
@@ -2756,6 +2782,12 @@ sub op_ARRIDX {
 sub op_STRIDX {
     my ($self, $string, $idx, %extra) = @_;
     XXX { string => $string, index => $idx, %extra };
+}
+
+sub pwm_single {
+    return << "...";
+\tbanksel TRISC
+...
 }
 
 1;
