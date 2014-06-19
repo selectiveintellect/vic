@@ -720,6 +720,7 @@ sub got_number_units {
     $num *= 1 if $units eq 'Hz';
     $num *= 1000 if $units eq 'kHz';
     $num *= 1e6 if $units eq 'MHz';
+    # ignore the '%' sign for now
     return $num;
 }
 

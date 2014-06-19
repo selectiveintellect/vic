@@ -2786,49 +2786,96 @@ sub op_STRIDX {
 }
 
 sub pwm_single {
-    my ($self, $pin, $period, $duty) = @_;
-    my $vpin = $self->convert_to_valid_pin($pin);
-    unless ($vpin and exists $self->pins->{$vpin}) {
-        carp "$pin is not a valid pin on the microcontroller\n";
-        return;
+    my ($self, $frequency, $duty, @pins) = @_;
+    #pulse_width = $duty / $frequency;
+    # timer2 prescaler
+    my $prescaler = 1; # can be 1, 4 or 16
+    # Tosc = 1 / Fosc
+    my $f_osc = $self->frequency;
+    my $pr2 = ($f_osc / 4) / $frequency;
+    if (($pr2 - 1) <= 0xFF) {
+        $prescaler = 1;
+    } else {
+        $pr2 = $pr2 / 4;
+        $prescaler = (($pr2 - 1) <= 0xFF) ? 4 : 16;
     }
-    my ($port, $portpin, $pinno) = @{$self->pins->{$vpin}};
-    my $pwm_period = '0x65';
-    my $ccp1con = q{b'00001100'};
-    my $ccpr1l = '0x20';
-    my $pwm_timer = q{b'00000101'};
-    my $steering = q{b'00010001'};
+    my $t2con = q{b'00000100'}; # prescaler is 1 or anything else
+    $t2con = q{b'00000101'} if $prescaler == 4;
+    $t2con = q{b'00000111'} if $prescaler == 16;
+    # readjusting PR2 as per supported pre-scalers
+    $pr2 = POSIX::ceil((($f_osc / 4) / $frequency) / $prescaler);
+    $pr2--;
+    $pr2 &= 0xFF;
+    my $ccpr1l_ccp1con54 = $duty * 4 * ($pr2 + 1);
+    my $ccp1con5 = ($ccpr1l_ccp1con54 & 0x02); #bit 5
+    my $ccp1con4 = ($ccpr1l_ccp1con54 & 0x01); #bit 4
+    my $ccpr1l = ($ccpr1l_ccp1con54 >> 2) & 0xFF;
+    my $ccpr1l_x = sprintf "0x%02X", $ccpr1l;
+    my $pr2_x = sprintf "0x%02X", $pr2;
+    my $ccp1con = sprintf "b'00%d%d1100'", $ccp1con5, $ccp1con4;
+
+    my %str = (P1D => 0, P1C => 0, P1B => 0, P1A => 0); # default all are port pins
+    my %trisc = ();
+    foreach my $pin (@pins) {
+        my $vpin = $self->convert_to_valid_pin($pin);
+        unless ($vpin and exists $self->pins->{$vpin}) {
+            carp "$pin is not a valid pin on the microcontroller. Ignoring\n";
+            next;
+        }
+        my ($port, $portpin, $pinno) = @{$self->pins->{$vpin}};
+        # the user may use say RC5 instead of CCP1 and we still want the
+        # CCP1 name which should really be returned as P1A here
+        my $pwm_pin = $self->pwm_pins->{$pinno};
+        next unless defined $pwm_pin;
+        $str{$pwm_pin} = 1;
+        $trisc{$portpin} = 1;
+    }
+    return unless scalar(keys %str);
+    my $pstrcon = sprintf "b'0001%d%d%d%d'", $str{P1D}, $str{P1C}, $str{P1B}, $str{P1A};
+    my $trisc_bsf = '';
+    my $trisc_bcf = '';
+    foreach (keys %trisc) {
+        $trisc_bsf .= "\tbsf TRISC, TRISC$_\n";
+        $trisc_bcf .= "\tbcf TRISC, TRISC$_\n";
+    }
     return << "...";
-;;; disable the PWM output driver for $pin by setting the associated TRIS bit
+;;; Frequency = $frequency Hz
+;;; Duty Cycle = $duty
+;;; CCPR1L:CCP1CON<5:4> = $ccpr1l_ccp1con54
+;;; T2CON = $t2con
+;;; PR2 = $pr2
+;;; Prescaler = $prescaler
+;;; Fosc = $f_osc
+;;; disable the PWM output driver for @pins by setting the associated TRIS bit
 \tbanksel TRISC
-\tbsf TRISC, TRISC$portpin
+$trisc_bsf
 ;;; set PWM period by loading PR2
 \tbanksel PR2
-\tmovlw $pwm_period
+\tmovlw $pr2_x
 \tmovwf PR2
 ;;; configure the CCP module for the PWM mode by setting CCP1CON
 \tbanksel CCP1CON
 \tmovlw $ccp1con
 \tmovwf CCP1CON
 ;;; set PWM duty cycle
-\tmovlw $ccpr1l
+\tmovlw $ccpr1l_x
 \tmovwf CCPR1L
 ;;; configure and start TMR2
 ;;; - clear TMR2IF flag of PIR1 register
 \tbanksel PIR1
 \tbcf PIR1, TMR2IF
-\tmovlw $pwm_timer
+\tmovlw $t2con
 \tmovwf T2CON
 ;;; enable PWM output after a new cycle has started
 \tbtfss PIR1, TMR2IF
 \tgoto \$ - 1
 \tbcf PIR1, TMR2IF
-;;; enable $pin pin output driver by clearing the associated TRIS bit
+;;; enable @pins pin output driver by clearing the associated TRIS bit
 \tbanksel PSTRCON
-\tmovlw $steering
+\tmovlw $pstrcon
 \tmovwf PSTRCON
 \tbanksel TRISC
-\tbcf TRISC, TRISC$portpin
+$trisc_bcf
 ...
 }
 
