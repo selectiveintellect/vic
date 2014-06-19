@@ -892,7 +892,7 @@ sub make_tree {
       ]
     },
     'units' => {
-      '.rgx' => qr/\G([mu]?s|[kM]?Hz)/
+      '.rgx' => qr/\G([mu]?s|[kM]?Hz|%)/
     },
     'validated_variable' => {
       '.ref' => 'identifier_without_keyword'
