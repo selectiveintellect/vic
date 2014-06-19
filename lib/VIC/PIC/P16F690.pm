@@ -2786,27 +2786,28 @@ sub op_STRIDX {
 }
 
 sub pwm_single {
-    my ($self, $frequency, $duty, @pins) = @_;
-    #pulse_width = $duty / $frequency;
+    my ($self, $pwm_frequency, $duty, @pins) = @_;
+    no bigint;
+    #pulse_width = $duty / $pwm_frequency;
     # timer2 prescaler
     my $prescaler = 1; # can be 1, 4 or 16
     # Tosc = 1 / Fosc
     my $f_osc = $self->frequency;
-    my $pr2 = ($f_osc / 4) / $frequency;
+    my $pr2 = POSIX::ceil(($f_osc / 4) / $pwm_frequency); # assume prescaler = 1 here
     if (($pr2 - 1) <= 0xFF) {
-        $prescaler = 1;
+        $prescaler = 1; # prescaler stays 1
     } else {
-        $pr2 = $pr2 / 4;
+        $pr2 = POSIX::ceil($pr2 / 4); # prescaler is 4 or 16
         $prescaler = (($pr2 - 1) <= 0xFF) ? 4 : 16;
     }
     my $t2con = q{b'00000100'}; # prescaler is 1 or anything else
     $t2con = q{b'00000101'} if $prescaler == 4;
     $t2con = q{b'00000111'} if $prescaler == 16;
     # readjusting PR2 as per supported pre-scalers
-    $pr2 = POSIX::ceil((($f_osc / 4) / $frequency) / $prescaler);
+    $pr2 = POSIX::ceil((($f_osc / 4) / $pwm_frequency) / $prescaler);
     $pr2--;
     $pr2 &= 0xFF;
-    my $ccpr1l_ccp1con54 = $duty * 4 * ($pr2 + 1);
+    my $ccpr1l_ccp1con54 = POSIX::ceil(($duty * 4 * ($pr2 + 1)) / 100.0);
     my $ccp1con5 = ($ccpr1l_ccp1con54 & 0x02); #bit 5
     my $ccp1con4 = ($ccpr1l_ccp1con54 & 0x01); #bit 4
     my $ccpr1l = ($ccpr1l_ccp1con54 >> 2) & 0xFF;
@@ -2839,8 +2840,8 @@ sub pwm_single {
         $trisc_bcf .= "\tbcf TRISC, TRISC$_\n";
     }
     return << "...";
-;;; Frequency = $frequency Hz
-;;; Duty Cycle = $duty
+;;; PWM Frequency = $pwm_frequency Hz
+;;; Duty Cycle = $duty / 100
 ;;; CCPR1L:CCP1CON<5:4> = $ccpr1l_ccp1con54
 ;;; T2CON = $t2con
 ;;; PR2 = $pr2
