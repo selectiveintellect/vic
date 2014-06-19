@@ -637,16 +637,17 @@ sub write {
         } elsif ($self->validate($val)) {
             # ok we want to short two pins, and this is not bit-banging
             # although seems like it
-            if ($self->pins->{$val}) {
-                my ($vport, $vportbit) = @{$self->pins->{$val}};
+            my $vpin = $self->convert_to_valid_pin($val);
+            if ($vpin and $self->pins->{$vpin}) {
+                my ($vport, $vportbit) = @{$self->pins->{$vpin}};
                 return << "...";
-\tbtfss PORT$port, $val
+\tbtfss PORT$port, $vpin
 \tbcf PORT$vport, $outp
-\tbtfsc PORT$port, $val
+\tbtfsc PORT$port, $vpin
 \tbsf PORT$vport, $outp
 ...
             } else {
-                carp "$val is a port and cannot be written to a pin $outp. ".
+                carp "$val is a port or unknown pin and cannot be written to a pin $outp. ".
                     "Only a pin can be written to a pin.\n";
                 return;
             }
@@ -2785,8 +2786,49 @@ sub op_STRIDX {
 }
 
 sub pwm_single {
+    my ($self, $pin, $period, $duty) = @_;
+    my $vpin = $self->convert_to_valid_pin($pin);
+    unless ($vpin and exists $self->pins->{$vpin}) {
+        carp "$pin is not a valid pin on the microcontroller\n";
+        return;
+    }
+    my ($port, $portpin, $pinno) = @{$self->pins->{$vpin}};
+    my $pwm_period = '0x65';
+    my $ccp1con = q{b'00001100'};
+    my $ccpr1l = '0x20';
+    my $pwm_timer = q{b'00000101'};
+    my $steering = q{b'00010001'};
     return << "...";
+;;; disable the PWM output driver for $pin by setting the associated TRIS bit
 \tbanksel TRISC
+\tbsf TRISC, TRISC$portpin
+;;; set PWM period by loading PR2
+\tbanksel PR2
+\tmovlw $pwm_period
+\tmovwf PR2
+;;; configure the CCP module for the PWM mode by setting CCP1CON
+\tbanksel CCP1CON
+\tmovlw $ccp1con
+\tmovwf CCP1CON
+;;; set PWM duty cycle
+\tmovlw $ccpr1l
+\tmovwf CCPR1L
+;;; configure and start TMR2
+;;; - clear TMR2IF flag of PIR1 register
+\tbanksel PIR1
+\tbcf PIR1, TMR2IF
+\tmovlw $pwm_timer
+\tmovwf T2CON
+;;; enable PWM output after a new cycle has started
+\tbtfss PIR1, TMR2IF
+\tgoto \$ - 1
+\tbcf PIR1, TMR2IF
+;;; enable $pin pin output driver by clearing the associated TRIS bit
+\tbanksel PSTRCON
+\tmovlw $steering
+\tmovwf PSTRCON
+\tbanksel TRISC
+\tbcf TRISC, TRISC$portpin
 ...
 }
 
