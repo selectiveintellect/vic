@@ -63,4 +63,5 @@ t/18_led7segsim.t
 t/19_disablesim.t
 t/20_fail_write.t
 t/21_delaysim.t
+t/22_pwm.t
 t/TestVIC.pm
