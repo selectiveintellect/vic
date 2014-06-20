@@ -2785,8 +2785,8 @@ sub op_STRIDX {
     XXX { string => $string, index => $idx, %extra };
 }
 
-sub pwm_single {
-    my ($self, $pwm_frequency, $duty, @pins) = @_;
+sub pwm_details {
+    my ($self, $pwm_frequency, $duty, $type, @pins) = @_;
     no bigint;
     #pulse_width = $duty / $pwm_frequency;
     # timer2 prescaler
@@ -2813,8 +2813,12 @@ sub pwm_single {
     my $ccpr1l = ($ccpr1l_ccp1con54 >> 2) & 0xFF;
     my $ccpr1l_x = sprintf "0x%02X", $ccpr1l;
     my $pr2_x = sprintf "0x%02X", $pr2;
-    my $ccp1con = sprintf "b'00%d%d1100'", $ccp1con5, $ccp1con4;
-
+    my $p1m = '00' if $type eq 'single';
+    $p1m = '01' if $type eq 'full_forward';
+    $p1m = '10' if $type eq 'half';
+    $p1m = '11' if $type eq 'full_reverse';
+    $p1m = '00' unless defined $p1m;
+    my $ccp1con = sprintf "b'%s%d%d1100'", $p1m, $ccp1con5, $ccp1con4;
     my %str = (P1D => 0, P1C => 0, P1B => 0, P1A => 0); # default all are port pins
     my %trisc = ();
     foreach my $pin (@pins) {
@@ -2828,10 +2832,10 @@ sub pwm_single {
         # CCP1 name which should really be returned as P1A here
         my $pwm_pin = $self->pwm_pins->{$pinno};
         next unless defined $pwm_pin;
-        $str{$pwm_pin} = 1;
+        # pulse steering only needed in Single mode
+        $str{$pwm_pin} = 1 if $type eq 'single';
         $trisc{$portpin} = 1;
     }
-    return unless scalar(keys %str);
     my $pstrcon = sprintf "b'0001%d%d%d%d'", $str{P1D}, $str{P1C}, $str{P1B}, $str{P1A};
     my $trisc_bsf = '';
     my $trisc_bcf = '';
@@ -2839,45 +2843,124 @@ sub pwm_single {
         $trisc_bsf .= "\tbsf TRISC, TRISC$_\n";
         $trisc_bcf .= "\tbcf TRISC, TRISC$_\n";
     }
+    my $pstrcon_code = '';
+    if ($type eq 'single') {
+        $pstrcon_code = << "...";
+\tbanksel PSTRCON
+\tmovlw $pstrcon
+\tmovwf PSTRCON
+...
+    }
+    return (
+        # actual register values
+        CCP1CON => $ccp1con,
+        PR2 => $pr2_x,
+        T2CON => $t2con,
+        CCPR1L => $ccpr1l_x,
+        PSTRCON => $pstrcon,
+        PSTRCON_CODE => $pstrcon_code,
+        # no ECCPAS
+        PWM1CON => '0x80', # default
+        # code to be added
+        TRISC_BSF => $trisc_bsf,
+        TRISC_BCF => $trisc_bcf,
+        # general comments
+        CCPR1L_CCP1CON54 => $ccpr1l_ccp1con54,
+        FOSC => $f_osc,
+        PRESCALER => $prescaler,
+        PWM_FREQUENCY => $pwm_frequency,
+        DUTYCYCLE => $duty,
+        PINS => \@pins,
+        TYPE => $type,
+    );
+}
+
+sub pwm_code {
+    my $self = shift;
+    my %details = @_;
+    my @pins = @{$details{PINS}};
     return << "...";
-;;; PWM Frequency = $pwm_frequency Hz
-;;; Duty Cycle = $duty / 100
-;;; CCPR1L:CCP1CON<5:4> = $ccpr1l_ccp1con54
-;;; T2CON = $t2con
-;;; PR2 = $pr2
-;;; Prescaler = $prescaler
-;;; Fosc = $f_osc
+;;; PWM Type: $details{TYPE}
+;;; PWM Frequency = $details{PWM_FREQUENCY} Hz
+;;; Duty Cycle = $details{DUTYCYCLE} / 100
+;;; CCPR1L:CCP1CON<5:4> = $details{CCPR1L_CCP1CON54}
+;;; CCPR1L = $details{CCPR1L}
+;;; CCP1CON = $details{CCP1CON}
+;;; T2CON = $details{T2CON}
+;;; PR2 = $details{PR2}
+;;; PSTRCON = $details{PSTRCON}
+;;; PWM1CON = $details{PWM1CON}
+;;; Prescaler = $details{PRESCALER}
+;;; Fosc = $details{FOSC}
 ;;; disable the PWM output driver for @pins by setting the associated TRIS bit
 \tbanksel TRISC
-$trisc_bsf
+$details{TRISC_BSF}
 ;;; set PWM period by loading PR2
 \tbanksel PR2
-\tmovlw $pr2_x
+\tmovlw $details{PR2}
 \tmovwf PR2
 ;;; configure the CCP module for the PWM mode by setting CCP1CON
 \tbanksel CCP1CON
-\tmovlw $ccp1con
+\tmovlw $details{CCP1CON}
 \tmovwf CCP1CON
 ;;; set PWM duty cycle
-\tmovlw $ccpr1l_x
+\tmovlw $details{CCPR1L}
 \tmovwf CCPR1L
 ;;; configure and start TMR2
 ;;; - clear TMR2IF flag of PIR1 register
 \tbanksel PIR1
 \tbcf PIR1, TMR2IF
-\tmovlw $t2con
+\tmovlw $details{T2CON}
 \tmovwf T2CON
 ;;; enable PWM output after a new cycle has started
 \tbtfss PIR1, TMR2IF
 \tgoto \$ - 1
 \tbcf PIR1, TMR2IF
 ;;; enable @pins pin output driver by clearing the associated TRIS bit
-\tbanksel PSTRCON
-\tmovlw $pstrcon
-\tmovwf PSTRCON
+$details{PSTRCON_CODE}
+;;; disable auto-shutdown mode
+\tbanksel ECCPAS
+\tclrf ECCPAS
+;;; set PWM1CON if half bridge mode
+\tbanksel PWM1CON
+\tmovlw $details{PWM1CON}
+\tmovwf PWM1CON
 \tbanksel TRISC
-$trisc_bcf
+$details{TRISC_BCF}
 ...
+}
+
+sub pwm_single {
+    my ($self, $pwm_frequency, $duty, @pins) = @_;
+    my %details = $self->pwm_details($pwm_frequency, $duty, 'single', @pins);
+    # pulse steering automatically taken care of
+    return $self->pwm_code(%details);
+}
+
+sub pwm_halfbridge {
+    my ($self, $pwm_frequency, $duty, $deadband, @pins) = @_;
+    # we ignore the @pins that comes in
+    @pins = qw(P1A P1B);
+    my %details = $self->pwm_details($pwm_frequency, $duty, 'half', @pins);
+    # override PWM1CON
+    if (defined $deadband and $deadband > 0) {
+        my $fosc = $details{FOSC};
+        my $pwm1con = $deadband * $fosc / 4e6; # $deadband is in microseconds
+        $pwm1con &= 0x7F; # 6-bits only
+        $pwm1con |= 0x80; # clear PRSEN bit
+        $details{PWM1CON} = sprintf "0x%02X", $pwm1con;
+    }
+    return $self->pwm_code(%details);
+}
+
+sub pwm_fullbridge {
+    my ($self, $direction, $pwm_frequency, $duty, @pins) = @_;
+    my $type = 'full_forward';
+    $type = 'full_reverse' if $direction =~ /reverse|backward|no?|0/i;
+    # we ignore the @pins that comes in
+    @pins = qw(P1A P1B P1C P1D);
+    my %details = $self->pwm_details($pwm_frequency, $duty, $type, @pins);
+    return $self->pwm_code(%details);
 }
 
 1;
