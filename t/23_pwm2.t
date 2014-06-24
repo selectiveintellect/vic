@@ -217,7 +217,7 @@ _start:
 	bsf CCP1CON, DC1B0
 	bcf CCP1CON, DC1B1
 	movlw 0x3D
-	movwf 0x3D
+	movwf CCPR1L
 
 	call _delay_5s
 

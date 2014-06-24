@@ -2991,7 +2991,7 @@ sub pwm_update {
 $ccp1con4
 $ccp1con5
 \tmovlw $details{CCPR1L}
-\tmovwf $details{CCPR1L}
+\tmovwf CCPR1L
 ...
 
 }
