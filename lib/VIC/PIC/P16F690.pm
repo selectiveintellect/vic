@@ -2963,6 +2963,39 @@ sub pwm_fullbridge {
     return $self->pwm_code(%details);
 }
 
+sub pwm_update {
+    my ($self, $pwm_frequency, $duty) = @_;
+    # hack into the existing functions to update only what we need
+    my @pins = qw(P1A P1B P1C P1D);
+    my %details = $self->pwm_details($pwm_frequency, $duty, 'single', @pins);
+    my ($ccp1con5, $ccp1con4);
+    $ccp1con4 = $details{CCPR1L_CCP1CON54} & 0x0001;
+    $ccp1con5 = ($details{CCPR1L_CCP1CON54} >> 1) & 0x0001;
+    if ($ccp1con4) {
+        $ccp1con4 = "\tbsf CCP1CON, DC1B0";
+    } else {
+        $ccp1con4 = "\tbcf CCP1CON, DC1B0";
+    }
+    if ($ccp1con5) {
+        $ccp1con5 = "\tbsf CCP1CON, DC1B1";
+    } else {
+        $ccp1con5 = "\tbcf CCP1CON, DC1B1";
+    }
+    return << "...";
+;;; updating PWM duty cycle for a given frequency
+;;; PWM Frequency = $details{PWM_FREQUENCY} Hz
+;;; Duty Cycle = $details{DUTYCYCLE} / 100
+;;; CCPR1L:CCP1CON<5:4> = $details{CCPR1L_CCP1CON54}
+;;; CCPR1L = $details{CCPR1L}
+;;; update CCPR1L and CCP1CON<5:4> or the DC1B[01] bits
+$ccp1con4
+$ccp1con5
+\tmovlw $details{CCPR1L}
+\tmovwf $details{CCPR1L}
+...
+
+}
+
 1;
 
 =encoding utf8

@@ -8,6 +8,7 @@ Main {
     #pwm_halfbridge 1220Hz, 20%, 4us;
     #pwm_fullbridge 'forward', 1220Hz, 20%;
     #pwm_fullbridge 'reverse', 1220Hz, 20%;
+    #pwm_update 1220Hz, 30%; # update duty cycle
     Loop {
         write RC0, CCP1;
     }
