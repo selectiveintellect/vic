@@ -69,7 +69,8 @@ uses the PICKit2 programmer to write to the microcontroller P16F690 on the
 board.
 
 You will need to have `gputils` installed on Linux or Mac OS X. (Have not
-experimented on Windows.)
+experimented on Windows.) For Mac OS X, you may need to use MacPorts to easily
+install the `gputils` and `gpsim` packages.
 
     $ cd share/examples/
     $ gpasm -pP16F690 -M -c helloworld.asm -o helloworld.o
