@@ -2839,7 +2839,7 @@ sub pwm_details {
     my $pstrcon = sprintf "b'0001%d%d%d%d'", $str{P1D}, $str{P1C}, $str{P1B}, $str{P1A};
     my $trisc_bsf = '';
     my $trisc_bcf = '';
-    foreach (keys %trisc) {
+    foreach (sort (keys %trisc)) {
         $trisc_bsf .= "\tbsf TRISC, TRISC$_\n";
         $trisc_bcf .= "\tbcf TRISC, TRISC$_\n";
     }

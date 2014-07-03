@@ -410,9 +410,9 @@ _start:
 ;;; Fosc = 4000000
 ;;; disable the PWM output driver for P1A P1B P1C P1D by setting the associated TRIS bit
 	banksel TRISC
-	bsf TRISC, TRISC4
-	bsf TRISC, TRISC3
 	bsf TRISC, TRISC2
+	bsf TRISC, TRISC3
+	bsf TRISC, TRISC4
 	bsf TRISC, TRISC5
 
 ;;; set PWM period by loading PR2
@@ -446,9 +446,9 @@ _start:
 	movlw 0x80
 	movwf PWM1CON
 	banksel TRISC
-	bcf TRISC, TRISC4
-	bcf TRISC, TRISC3
 	bcf TRISC, TRISC2
+	bcf TRISC, TRISC3
+	bcf TRISC, TRISC4
 	bcf TRISC, TRISC5
 
 
@@ -554,9 +554,9 @@ _start:
 ;;; Fosc = 4000000
 ;;; disable the PWM output driver for P1A P1B P1C P1D by setting the associated TRIS bit
 	banksel TRISC
-	bsf TRISC, TRISC4
-	bsf TRISC, TRISC3
 	bsf TRISC, TRISC2
+	bsf TRISC, TRISC3
+	bsf TRISC, TRISC4
 	bsf TRISC, TRISC5
 
 ;;; set PWM period by loading PR2
@@ -590,9 +590,9 @@ _start:
 	movlw 0x80
 	movwf PWM1CON
 	banksel TRISC
-	bcf TRISC, TRISC4
-	bcf TRISC, TRISC3
 	bcf TRISC, TRISC2
+	bcf TRISC, TRISC3
+	bcf TRISC, TRISC4
 	bcf TRISC, TRISC5
 
 
