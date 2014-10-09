@@ -6,7 +6,6 @@ use Carp;
 our $VERSION = '0.12';
 $VERSION = eval $VERSION;
 
-use VIC::PIC::P16F690;
 use VIC::PIC::Gpsim;
 
 # use this to map various PICs to their classes
@@ -24,6 +23,7 @@ sub new {
     my $utype = PICS->{uc $type};
     return unless defined $utype;
     $class =~ s/::Any/::$utype/g;
+    eval "require $class;" or croak "Unable to load $class: $@";
     return $class->new(type => lc $utype);
 }
 
