@@ -12,6 +12,7 @@ lib/VIC/Command.pm
 lib/VIC/Grammar.pm
 lib/VIC/Parser.pm
 lib/VIC/PIC/Any.pm
+lib/VIC/PIC/Base.pm
 lib/VIC/PIC/Gpsim.pm
 lib/VIC/PIC/P16F690.pm
 lib/VIC/Receiver.pm
