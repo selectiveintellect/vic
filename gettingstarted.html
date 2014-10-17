@@ -1,0 +1,236 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>VIC by Selective Intellect</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/vikasnkumar/vic">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/vikasnkumar/vic/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/vikasnkumar/vic/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOAD SOURCE</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+    <section>
+        <div id="title">
+        <p>VIC&trade;</p>
+        </div>
+<h1 id="gettingstartedwithvic">Getting Started With VIC</h1>
+
+<p>Writing VIC code is similar to writing Bash scripts except for the fact
+that there are no functions supported yet in version 0.08.</p>
+
+<p>Here is a quick description of the syntax:
+* there is a Main block that is required
+* there is a Simulator block that is optional but you can use it to simulate the
+  generated PIC assembly code in a supported simulator like <code>gpsim</code>
+* code generation can be manipulated by pragmas
+* the PIC MCU selected can be defined by a single line header
+* blocks are defined using braces <code>{}</code>
+* statements end with a semi-colon <code>;</code>
+* indentation is personal choice and not a forced choice like that of Python
+* you can have multiple statements on a single line if you want
+* you can make the code highly readable and follow a set logic
+* you can get VIC code match the logic of a flowchart
+* you can use VIC as an intermediate language and write even higher level
+  code in your favorite language like Perl, Python or Ruby and generate
+VIC code from it.</p>
+
+<p>Let us begin with the <em>hello world !</em> programs for the MCU world which is
+lighting up an LED. We hope you know what an LED is.</p>
+
+<h1 id="helloworld-lightingupanled">Hello World ! - lighting up an LED</h1>
+
+<p>This example is available in the file <code>share/examples/helloworld.vic</code>.</p>
+
+<p>Let us select the PIC MCU P16F690 that comes with the
+<a href="http://www.microchip.com/DevelopmentTools/ProductDetails.aspx?PartNO=DV164120">PICKit&trade; 2 Starter Kit</a>
+ from Microchip. You may want to look at the data sheet for this MCU to see the
+pin configuration and names.</p>
+
+<p>Let us select the pin RC0 to which we want to connect an LED to.</p>
+
+<p>Our code will look like this:</p>
+
+<pre><code>PIC P16F690;
+Main {
+    digital_output RC0;
+    write RC0, 1;
+}
+</code></pre>
+
+<p>That&quot;s it ! Just two lines to light up an LED and it is easy to read and
+understand what is happening. There is no need to know which registers to
+manipulate to switch a pin to digital output or input. There is no need to know
+how to write a value to a pin. All you need to know is the names of the pins
+which you can get from reading a single page of the datasheet showing the image
+of the MCU.</p>
+
+<p>Let us go over each line one at a time to see what
+they mean.</p>
+
+<p><code>PIC P16F690;</code> is the one-line header that defines which PIC MCU this program is
+targeting. It tells the VIC compiler to verify that the pin names that the user
+uses is correct and to generate code appropriately for the MCU.</p>
+
+<p><code>Main {</code> is the <em>main</em> block of code that will be executed by the MCU. This is a
+requirement for the code to be generated. You will have to create a <code>Main</code>
+block.</p>
+
+<p><code>digital_output RC0;</code> is pretty obvious. You are setting pin RC0 of the P16F690
+MCU as a digital output. The way MCUs are designed today, each pin can be used
+as a digital or analog I/O port at any point of time in the code. Hence we have
+an explicit function to set it. This function will generate the appropriate
+assembly instructions to set RC0 as a digital output port.</p>
+
+<p><code>write RC0, 1;</code> is a very important line. The <code>write</code> function can do various
+things. However, in this scenario, we use it to write the value 1 to the pin
+RC0. Assuming the LED is connected to RC0. This will set the RC0 digital output
+to 1 and the LED will turn on.</p>
+
+<p><code>}</code> is the end of the <code>Main</code> block. There is no semi-colon needed at the end of
+a block.</p>
+
+<p>Now that we have looked at the code, let us note the basic syntax of a typical
+program:</p>
+
+<pre><code>PIC pic_name;
+block_name {
+    function_name argument, argument, argument, ..., argument;
+    function_name argument, argument, argument, ..., argument;
+    function_name argument, argument, argument, ..., argument;
+    function_name argument, argument, argument, ..., argument;
+}
+</code></pre>
+
+<p>As simple as that. Each function name is just followed by the suppported
+arguments for that function. Each block is just a name followed by a brace <code>{</code>
+containing statements or function calls to pre-defined functions and ending by
+another <code>}</code>. <em>TODO: improve this</em></p>
+
+<p>An argument can be anything from the MCU pin, MCU port register, strings,
+numbers, hexadecimal numbers and blocks themselves.</p>
+
+<h2 id="simulatingthehelloworldprogram">Simulating the Hello World program</h2>
+
+<p>VIC also supports simulation of the code. Currently, simulation is
+slightly limited and is only supported if the user is using <code>gpsim</code> for
+simulation. However, more simulators or extended support for <code>gpsim</code> will be
+added in the future.</p>
+
+<p>To add a simulation code in VIC, we add a block titled <code>Simulator</code> as
+below. </p>
+
+<pre><code>Simulator {
+    attach_led RC0;
+    stop_after 1s;
+    log RC0;
+    logfile "helloworld.lxt";
+    scope RC0;
+}
+</code></pre>
+
+<p>Let us look at the above code and analyse what we are doing.</p>
+
+<p><code>attach_led RC0</code> attaches an LED to the pin RC0 in the simulator.
+<code>stop_after 1s</code> stops the simulation after 1 second.
+<code>log RC0</code> logs the output of the pin RC0.
+<code>logfile "helloworld.lxt"</code> logs the simulation output defined by the <code>log</code>
+commands in the <code>Simulator</code> block. The filename lxt can then be viewed by the
+<code>gtkwave</code> program to see waveforms of the digital outputs.
+<code>scope RC0</code> plots the output of the pin RC0 in the in-built software scope
+viewer of the simulator. The scope window in <code>gpsim</code> is not very good but it
+does a good job of real time plotting. For detailed offline analysis, using the
+logging mechanism with lxt files and <code>gtkwave</code> is a better method.</p>
+
+<h2 id="buildingthehelloworld.viccode">Building the helloworld.vic code</h2>
+
+<p>Compiling VIC code is really easy. To compile say the file helloworld.vic we run
+the following command:</p>
+
+<pre><code>bash$ vic helloworld.vic -o helloworld.asm
+</code></pre>
+
+<p>This creates the PIC assembly file that the user can then manipulate further if
+they want to. Then the user compiles this the standard way using <code>gputils</code>.</p>
+
+<pre><code>bash$ gpasm -o helloworld.o helloworld.asm
+bash$ gplink -m -o helloworld.hex helloworld.o
+</code></pre>
+
+<p>A sample of this is provided in the file share/examples/GNUmakefile for the user
+to take advantage of. The makefile is very generic and the user can just use it
+for their own VIC code. It compiles any file present in the same directory that
+has the extension <code>.vic</code>.</p>
+
+<h2 id="runningthesimulatorcode">Running the Simulator code</h2>
+
+<p>When compiling with <code>gputils</code> a file with the extension <code>.cod</code> is generated. If
+you're using the GNUmakefile to compile the code, then a file <code>.stc</code> is also
+generated.</p>
+
+<p>The contents of helloworld.stc are pretty simple.</p>
+
+<pre><code>bash$ cat helloworld.stc
+load s helloworld.cod
+</code></pre>
+
+<p>The user can manually create this file as well.</p>
+
+<p>This file can be loaded in <code>gpsim</code> using the command:</p>
+
+<pre><code>bash$ gpsim helloworld.stc
+</code></pre>
+
+<p>This will load the helloworld.cod file into the gpsim memory and it is ready to
+run. However, the user has to type the 'run' command in gpsim to do that.</p>
+
+<pre><code>gpsim&gt; run
+</code></pre>
+
+<p>This will start the simulator run and the user can then view the LED being lit.</p>
+
+<h2 id="runningthecodeonthepicitself">Running the code on the PIC itself</h2>
+
+<p>For the PICKit2 Starter Kit, there is an open source software called <code>pk2cmd</code>
+that can be used on Linux and Mac OS X to copy the hex file generated onto the
+MCU using PICKit2. We have not tried with the PICKit3 but the user can
+experiment with Microchip's IDE to perform the writing.</p>
+
+<p>The user can also combine the code generated by VIC with Microchip's IDE and use
+it that way instead of using gputils. However, we do not support Microchip's
+simulator yet as part of VIC. We may choose to do it in the future.</p>
+
+<h2 id="somepictures">Some pictures</h2>
+
+<p><img src="https://raw.githubusercontent.com/vikasnkumar/vic/master/doc/images/HelloworldCode.png" alt="Code" id="code" /></p>
+
+<p><img src="https://raw.githubusercontent.com/vikasnkumar/vic/master/doc/images/HelloworldSimBefore.png" alt="Simulator Before Run" id="simulatorbeforerun" /></p>
+
+<p><img src="https://raw.githubusercontent.com/vikasnkumar/vic/master/doc/images/HelloworldSimAfter.png" alt="Simulator After Run" id="simulatorafterrun" /></p>
+    <hr>
+    <span class="credits left">Project maintained by <a
+    href="https://github.com/vikasnkumar">Vikas N Kumar and Selective Intellect</a></span>
+    <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+    </section>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
