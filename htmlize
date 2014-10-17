@@ -68,6 +68,17 @@ cat >> $HTMLFILE << FOOTER
     </section>
     </div>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    <hr>
+    <footer><div class="container">
+    <h3>
+<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors</h3>
+
+<p>Vikas N Kumar (<a href="https://github.com/vikasnkumar"
+class="user-mention">@vikasnkumar</a>) is the author of <strong>VIC&trade;</strong>. All copyrights belong to the authors.</p>
+    <br/><br/><p style="font-size:10px;">
+        This page was last updated on __FDATE__.
+    </p>
+    </div></footer>
     
   </body>
 FOOTER
