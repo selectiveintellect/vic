@@ -1,29 +1,30 @@
-Getting Started With VIC
-================================
+# Getting Started With VIC
+
 
 Writing VIC code is similar to writing Bash scripts except for the fact
 that there are no functions supported yet in version 0.08.
 
 Here is a quick description of the syntax:
-* there is a Main block that is required
-* there is a Simulator block that is optional but you can use it to simulate the
+
+- there is a Main block that is required
+- there is a Simulator block that is optional but you can use it to simulate the
   generated PIC assembly code in a supported simulator like `gpsim`
-* code generation can be manipulated by pragmas
-* the PIC MCU selected can be defined by a single line header
-* blocks are defined using braces `{}`
-* statements end with a semi-colon `;`
-* indentation is personal choice and not a forced choice like that of Python
-* you can have multiple statements on a single line if you want
-* you can make the code highly readable and follow a set logic
-* you can get VIC code match the logic of a flowchart
-* you can use VIC as an intermediate language and write even higher level
+- code generation can be manipulated by pragmas
+- the PIC MCU selected can be defined by a single line header
+- blocks are defined using braces `{}`
+- statements end with a semi-colon `;`
+- indentation is personal choice and not a forced choice like that of Python
+- you can have multiple statements on a single line if you want
+- you can make the code highly readable and follow a set logic
+- you can get VIC code match the logic of a flowchart
+- you can use VIC as an intermediate language and write even higher level
   code in your favorite language like Perl, Python or Ruby and generate
 VIC code from it.
 
 Let us begin with the _hello world !_ programs for the MCU world which is
 lighting up an LED. We hope you know what an LED is.
 
-# Hello World ! - lighting up an LED
+## Hello World ! - lighting up an LED
 
 This example is available in the file `share/examples/helloworld.vic`.
 
