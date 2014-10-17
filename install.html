@@ -1,0 +1,212 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>VIC by Selective Intellect</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/vikasnkumar/vic">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/vikasnkumar/vic/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/vikasnkumar/vic/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOAD SOURCE</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+    <section>
+        <div id="title">
+        <p>VIC&trade; - A compiler for Microchip&#8217;s PIC&reg; Microcontrollers</p>
+        <hr>
+        <span class="credits left">Project sponsored by <a
+        href="http://selectiveintellect.com">Selective Intellect</a></span>
+        <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
+<h1 id="installation">Installation</h1>
+
+<p>There are two easy ways to install VIC. One is using CPAN and the other is
+from source.</p>
+
+<h2 id="installingfromcpan">Installing from CPAN</h2>
+
+<p>This is the simplest way to install the release versions of VIC.</p>
+
+<pre><code>$ cpan -i VIC
+</code></pre>
+
+<h2 id="buildingfromsource">Building from source</h2>
+
+<pre><code>$ perl ./Build.PL --install_base=/usr/local/
+$ ./Build test
+$ ./Build install
+</code></pre>
+
+<h2 id="dependencies">Dependencies</h2>
+
+<p>This module depends on the following:</p>
+
+<ul>
+<li><code>Module::Build</code> (this is needed for building)</li>
+<li><code>Pegex</code> (this is included as a subrepo <code>ext/pegex-pm</code>)</li>
+<li><code>Getopt::Long</code> (for handling command line options. Comes with perl itself)</li>
+<li><code>XXX</code> (only required for debugging)</li>
+</ul>
+
+<h2 id="testingthemodule">Testing the Module</h2>
+
+<p>To test you will need to have <code>App::Prove</code> installed if you&#8217;re developing</p>
+
+<pre><code>$ prove -lv t
+</code></pre>
+
+<p>Another option is to use <code>Build.PL</code></p>
+
+<pre><code>$ ./Build test
+</code></pre>
+
+<h1 id="vimsyntax">Vim Syntax</h1>
+
+<p>The <code>vim</code> syntax for VIC is in <code>share/vic.vim</code>. You can place it in
+<code>$HOME/.vim/syntax</code> on Linux and OS X and in <code>$HOME/vimfiles/syntax</code> on Windows
+systems.</p>
+
+<h2 id="compilingexamples">Compiling examples</h2>
+
+<p>The examples are in <code>share/examples</code> folder. To compile the <code>helloworld.vic</code>
+example you can do the following:</p>
+
+<pre><code>$ ./bin/vic ./share/examples/helloworld.vic -o ./share/examples/helloworld.asm
+</code></pre>
+
+<p>This will generate the PIC assembly for the VIC file.</p>
+
+<h2 id="placingvicinyourpathformakefiles">Placing <code>vic</code> in your <code>$PATH</code> for Makefiles</h2>
+
+<p>Let us assume that your git checkout copy is in <code>$HOME/github/vic</code> then,</p>
+
+<pre><code>$ export VICPATH=$HOME/github/vic
+$ export PERL5LIB=${VICPATH}/lib:${VICPATH}/pegex-pm/lib:$PERL5LIB
+$ export PATH=${VICPATH}/bin:$PATH
+$ which vic
+</code></pre>
+
+<p><em>If you&#8217;re installing it from CPAN or using <code>Build.PL</code> you do not need to set the
+above.</em></p>
+
+<h2 id="testingonpicmicrocontrollersonlinuxandmacosx">Testing on PIC microcontrollers on Linux and Mac OS X</h2>
+
+<p>The <code>helloworld.vic</code> test is for the Low Pin Count Demo board from Microchip and
+uses the PICKit2 programmer to write to the microcontroller P16F690 on the
+board.</p>
+
+<p>You will need to have <code>gputils</code> installed on Linux or Mac OS X. (Have not
+experimented on Windows.) For Mac OS X, you may need to use MacPorts to easily
+install the <code>gputils</code> and <code>gpsim</code> packages.</p>
+
+<pre><code>$ cd share/examples/
+$ gpasm -pP16F690 -M -c helloworld.asm -o helloworld.o
+$ gplink -q -o helloworld.hex helloworld.o
+</code></pre>
+
+<p>This will produce a <code>helloworld.hex</code> file which you will have to write to the
+microcontroller using PICKit2 programmer from Microchip. You could use any other
+programmer as well as long as you have the right software for it. To write to
+the microcontroller on Linux or Mac OS X you need to have <code>pk2cmd</code> installed.</p>
+
+<p>If you have <code>pk2cmd</code> installed in <code>/usr/local</code> you will need to set the <code>PATH</code>
+variable as follows before doing the write to the microcontroller:</p>
+
+<pre><code>$ export PATH=${PATH}:/usr/local/bin:/usr/share/pk2
+</code></pre>
+
+<p>Before you run <code>pk2cmd</code> on Mac OS X, you will need to set the <code>lsusb</code> command
+which is available on Linux but not on the Mac but is used by <code>pk2cmd</code>
+internally.</p>
+
+<pre><code>$ alias lsusb=&quot;system_profiler SPUSBDataType&quot;
+</code></pre>
+
+<p>To write to the microcontroller run the following:</p>
+
+<pre><code>$ pk2cmd -PP16F690 -M -Fhelloworld.hex
+</code></pre>
+
+<p>To run the test and have the microcontroller execute the code on the Low Pin
+Count Demo board to turn on the LED,</p>
+
+<pre><code>$ pk2cmd -PP16F690 -T
+</code></pre>
+
+<p>To stop the test and turn off the LED,</p>
+
+<pre><code>$ pk2cmd -PP16F690
+</code></pre>
+
+<p>To erase the code from the microcontroller,</p>
+
+<pre><code>$ pk2cmd -PP16F690 -E
+</code></pre>
+
+<p><em>NOTE</em>: All the above have been implemented in a <code>GNUmakefile</code> present under
+<code>share/examples/GNUmakefile</code>.</p>
+
+<h2 id="testingonpicmicrocontrollersonwindows">Testing on PIC microcontrollers on Windows</h2>
+
+<p>For Windows, we currently recommend using the Microchip provided IDE. You can
+use VIC to generate the assembly files which you can then load into the IDE as
+part of your project and use.</p>
+
+<p>If you want to use Cygwin to perform builds using <code>gpasm</code> and <code>pk2cmd</code> you may
+do that and let us know if you succeed so we can write instructions for other
+users.</p>
+
+<h2 id="recompilingthegrammar">Recompiling the grammar</h2>
+
+<p>This is for VIC developers only.</p>
+
+<p>To recompile the grammar into <code>lib/VIC/Grammar.pm</code> run,</p>
+
+<pre><code>$ ./share/rebuild-grammar
+</code></pre>
+
+<p>or</p>
+
+<pre><code>$ ./share/rebuild-grammar.PL
+</code></pre>
+
+<p>or</p>
+
+<pre><code>$ perl ./Build.PL
+$ ./Build
+</code></pre>
+
+<p>All of the above do the same thing.</p>
+    <hr>
+    <div id="footer">
+    <h3>
+<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors</h3>
+
+<p>Vikas N Kumar (<a href="https://github.com/vikasnkumar"
+class="user-mention">@vikasnkumar</a>) is the author of <strong>VIC&trade;</strong>. All copyrights belong to the authors.</p>
+    <br/><br/><p style="font-size:10px;">
+        This page was last updated on .
+    </p>
+    </div>
+    </section>
+    </div><!-- end wrapper -->
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+  </body>
