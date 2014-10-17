@@ -1,5 +1,4 @@
-The Philosophy of VIC
-======================
+#The Philosophy of VIC
 
 VIC came about as a result of finding difficulty in writing generic code that
 would run on any micro-controller of the PIC family that were similar in nature,
@@ -50,7 +49,7 @@ in detail to implement standard features like debouncing inputs, ADC operation,
 USART/SPI/I2C serial bus implementation could be completely avoided if VIC
 provided these out of the box.
 
-# Event-based Development
+## Event-based Development
 
 VIC's development style is a mixture of procedural and event-based. Certain
 instructions such as timers, debouncers have event-based _actions_ that get

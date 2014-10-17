@@ -1,5 +1,4 @@
-FAQ
-===
+# FAQ
 
 1. What is VIC&trade; ?
 
