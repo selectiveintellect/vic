@@ -55,7 +55,7 @@ cat > $HTMLFILE << HEADER
     <div class="wrapper">
     <section>
         <div id="title">
-        <p>VIC&trade; - A compiler for Microchip's PIC&reg; Microcontrollers</p>
+        <p>VIC&trade; - A compiler for Microchip&#8217;s PIC&reg; Microcontrollers</p>
         <hr>
         <span class="credits left">Project sponsored by <a
         href="http://selectiveintellect.com">Selective Intellect</a></span>
