@@ -1,6 +1,6 @@
 #The Philosophy of VIC&trade;
 
-VIC&trade; came about as a result of finding difficulty in writing generic code that
+VIC&trade; originated from finding difficulty in writing generic code that
 would run on any micro-controller of [Microchip's](http://www.microchip.com) 
 PIC&reg; family that were similar in nature,
 such as any PIC&reg; of the PIC12, PIC16 family or the PIC18 family.
