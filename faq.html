@@ -42,122 +42,102 @@
 <h1 id="faq">FAQ</h1>
 
 <ol>
-<li>What is VIC&trade; ?</li>
-</ol>
+<li><p>What is VIC&trade; ?</p>
 
-<p>VIC&trade; is a domain specific language to write code for Microchip&quot;s PIC&regd;
-microcontrollers (MCU). It&quot;s aim is for users or developers to write code that looks
+<p>VIC&trade; is a domain specific language to write code for
+<a href="http://www.microchip.com">Microchip&#8217;s</a> PIC&reg; microcontrollers (MCU).
+It&#8217;s aim is for users or developers to write code that looks
 simple, logical and can hide complexities that are in-built into VIC&trade; as language
-primitives. VIC&trade; also is the name of the compiler to compile that language.</p>
+primitives. The name of the compiler to compile the language is also called
+<code>vic</code>.</p></li>
+<li><p>Why should you use VIC&trade; ?</p>
 
-<ol>
-<li><p>Why should you use VIC&trade; ?</p></li>
-<li><p>If you like using PIC&regd; MCUs, do not like coding in PIC specific
+<p>If you :</p>
+
+<ul>
+<li>like using PIC&reg; MCUs, do not like coding in PIC specific
 C and/or assembly, would like to understand what your code does months or years
-from now, then you should use VIC&trade;.</p></li>
-<li><p>If you want to port existing code seamlessly
+from now, then you should use VIC&trade;.</li>
+<li>want to port existing code seamlessly
 to other MCUs in the same family without making any changes, you can
-use VIC&trade;. </p></li>
-<li><p>If you want to automatically simulate your code using supported PIC&regd;
- simulators, you should use VIC&trade;.</p></li>
-<li><p>If you like scripting languages you will like using VIC&trade;. It is designed in the
- same vein.</p></li>
-<li><p>Why was the decision made to create VIC&trade; ?</p></li>
-</ol>
+use VIC&trade;.</li>
+<li>want to automatically simulate your code using supported PIC&reg;
+ simulators, you should use VIC&trade;.</li>
+<li>like scripting languages you will like using VIC&trade;. It is designed in the
+ same vein.</li>
+</ul></li>
+<li><p>Why was the decision made to create VIC&trade; ?</p>
 
 <p>While coding firmware for various MCU projects, we ended up using a
 lot of common code between them. So we abstracted them into header files with
-macros, but that wasn&quot;t enough so we went down the path of auto-generating these
+macros, but that wasn&#8217;t enough so we went down the path of auto-generating these
 macros and instead went a step further and created a domain specific language &#8211;
-VIC&trade;. Our aim was to enable us to write code that looked really simple, was
-verifiable using a PIC simulator and did not need detailed reading of the data
+VIC&trade;. For more details look at its <a href="./philosophy.html">philosophy</a>.</p>
+
+<p>Our aim was to enable us to write code that looked really simple, was
+verifiable using a PIC&reg; simulator like <a href="http://gpsim.sourceforge.net/gpsim.html">GNU PIC simulator</a> <code>gpsim</code>,
+and did not need detailed reading of the data
 sheets every time we chose a particular MCU. We wanted to read the MCU data
 sheet once, abstract it out and then start using it. The work for abstraction is
 already done and now anyone can use it without having to read all the pages of a
-PIC MCU&quot;s data sheet.</p>
+PIC&reg; MCU&#8217;s data sheet.</p></li>
+<li><p>Will VIC&trade; support other MCUs like AVR, 8051, ARM-Cortex etc. ?</p>
 
-<ol>
-<li>Will VIC&trade; support other MCUs like AVR, 8051, ARM-Cortex etc. ?</li>
-</ol>
-
-<p>Currently, we are focused on supporting PIC MCUs. There are so many
-of them ! If you like using AVR, maybe the Arduino library is a better bet. This
-doesn&#8217;t mean that in the future we will not support the Atmel or Maxim
-MCU products.</p>
-
-<ol>
-<li>What license is the VIC&trade; released under ?</li>
-</ol>
+<p>Currently, we are focused on supporting PIC&reg; MCUs. There are so many
+of them ! If you like using AVR, maybe the popular <a href="http://arduino.cc">Arduino</a> is a better bet. This
+doesn&#8217;t mean that in the future we will not support the Atmel or Maxim or Freescale MCU products.</p></li>
+<li><p>What license is the VIC&trade; released under ?</p>
 
 <p>VIC&trade; is dual licensed under the <a href="http://opensource.org/licenses/artistic-license-2.0">Perl Artistic license</a> and the <a href="https://gnu.org/licenses/gpl-3.0.txt">GNU General Public
 License</a>. You can distribute the VIC&trade; compiler by following the requirements of
-the afore mentioned licenses.</p>
+the afore mentioned licenses.</p></li>
+<li><p>Can I create a proprietary compiler for the VIC&trade; language ?</p>
 
-<ol>
-<li>Can I create a proprietary compiler for the VIC&trade; language ?</li>
-</ol>
-
-<p>Yes you may, but you cannot name it <em>VIC&trade;</em> or any derivative of that name.
-VIC&trade; is designed to make life easy for its users. They should <em>not</em> have to pay for a compiler. If you
+<p>Yes you may, but you cannot name it <strong>VIC&trade;</strong> or any derivative of that name.
+VIC&trade; is designed to make life easy for its users. Users should <em>not</em> have to pay for a compiler. If you
 have suggestions and improvements, we appreciate you contributing them for the
 betterment of the product and the benefit of the community.</p>
 
 <p>You are free to make accessory applications like a debugger or a simulator for
-it though.</p>
+it though. We can help port VIC&trade; to such auxilliary applications.</p></li>
+<li><p>Where can I download VIC&trade; ?</p>
 
-<ol>
-<li>Where can I download VIC&trade; ?</li>
-</ol>
+<p>You can download the <strong>official</strong> development version of VIC&trade; from <a href="https://github.com/vikasnkumar/vic">Github</a>.</p>
 
-<p>You can download the <em>official</em> version of VIC&trade; from <a href="https://github.com/vikasnkumar/vic">Github</a>.</p>
-
-<ol>
-<li>What are the operating systems that VIC&trade; supports ?</li>
-</ol>
+<p>You can also download the releases from <a href="http://www.cpan.org">CPAN</a>. For
+more details on installation refer to the <a href="./install.html">installation</a> page.</p></li>
+<li><p>What are the operating systems that VIC&trade; supports ?</p>
 
 <p>The VIC&trade; compiler works on Linux, Mac OS X, FreeBSD, OpenBSD and Windows.
 So far, we have only tested the code generated by VIC&trade; with <code>gpasm</code> from
-<a href="http://gputils.sourceforge.net/">gputils</a> and the simulator we have tested with <a href="http://gpsim.sourceforge.net/gpsim.html">gpsim</a>. You may
-want to test with Microchip&#8217;s PIC&regd; compiler and simulator on Windows and
-Linux and let us know how it fares. We will be willing to see examples where it
-fails to work as expected.</p>
+<a href="http://gputils.sourceforge.net/">gputils</a> and the simulator we have tested with is <a href="http://gpsim.sourceforge.net/gpsim.html">gpsim</a>. You may
+want to test with Microchip&#8217;s PIC&reg; compiler and simulator on Windows and
+Linux and let us know how it fares.</p>
 
-<ol>
-<li>How do I help in development of VIC&trade; ?</li>
-</ol>
+<p>We will be interested in seeing examples where it fails to work as expected.</p></li>
+<li><p>How do I help in development of VIC&trade; ?</p>
 
 <p>VIC&trade; needs more testing on real chips, more interesting examples and bug
 reports. If you are willing to do this, please feel free to fork VIC&trade; and
-send us pull requests or submit patches on the <a href="https://github.com/vikasnkumar/vic/issues">Github issue tracker</a>.</p>
-
-<ol>
-<li>What editor or IDE is needed for VIC&trade; ?</li>
-</ol>
+send us pull requests or submit patches on the <a href="https://github.com/vikasnkumar/vic/issues">Github issue tracker</a>.</p></li>
+<li><p>What editor or IDE is needed for VIC&trade; ?</p>
 
 <p>We use <a href="http://www.vim.org/">Vim</a> as our editor of choice on all the systems we support,
 but you could use any text editor of your choice. We provide a syntax
-highlighting file located at <code>share/vic.vim</code> for Vim as part of the distribution of VIC&trade;.</p>
+highlighting file located at <code>share/vic.vim</code> for Vim as part of the distribution of VIC&trade;.</p></li>
+<li><p>How does one compile VIC&trade; programs ?</p>
 
-<ol>
-<li>How does one compile VIC&trade; programs ?</li>
-</ol>
-
-<p>Please refer to the <a href="gettingstarted.md">documentation</a> for more details.</p>
-
-<ol>
-<li>How does one compile the PIC&regd; assembly code generated by VIC&trade; ?</li>
-</ol>
+<p>Please refer to the <a href="gettingstarted.md">getting started documentation</a> for more details.</p></li>
+<li><p>How does one compile the PIC&reg; assembly code generated by VIC&trade; ?</p>
 
 <p>You can use <code>gpasm</code> from the <a href="http://gputils.sourceforge.net/">gputils</a> toolkit on Linux, Mac OS X, FreeBSD
 and OpenBSD. On Windows, if you have a Windows build of <code>gputils</code> you may use
-that or you can use Microchip&#8217;s compilers.</p>
-
-<ol>
-<li>Which simulator is to be used with VIC&trade; ?</li>
-</ol>
+that or you can use <a href="http://www.microchip.com/compilers/">Microchip&#8217;s compilers</a> for PIC&reg; assembly.</p></li>
+<li><p>Which simulator is to be used with VIC&trade; ?</p>
 
 <p>VIC&trade; supports <a href="http://gpsim.sourceforge.net/gpsim.html">gpsim</a> as its default simulator but future support
-for other simulators may be added as time permits.</p>
+for other simulators may be added as time permits.</p></li>
+</ol>
     <hr>
     <div id="title">
     <span class="credits left"><a href="./index.html">Table of Contents</a></span>
@@ -172,7 +152,7 @@ class="user-mention">@vikasnkumar</a>) is the author of <strong>VIC&trade;</stro
     href="http://selectiveintellect.com">Selective Intellect.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-17 15:53:52 -0400.
+        This page was last updated on 2014-10-18 11:36:49 -0400.
     </p>
     </div>
     </section>
