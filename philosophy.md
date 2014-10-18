@@ -79,5 +79,5 @@ instructions such as timers, debouncers have event-based _actions_ that get
 invoked when the conditions are met. This allows for the programmer to implement
 Perl or Javascript like event callbacks for such tasks.
 
-@@NEXT@@ faq.md @@PREV@@ index.md
+@@NEXT@@ install.md @@PREV@@ faq.md
 

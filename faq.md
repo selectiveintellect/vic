@@ -1,4 +1,4 @@
-# FAQ
+# What is VIC&trade; ?
 
 1. What is VIC&trade; ?
 
@@ -106,4 +106,4 @@ that or you can use [Microchip's compilers](http://www.microchip.com/compilers/)
     VIC&trade; supports [gpsim](http://gpsim.sourceforge.net/gpsim.html) as its default simulator but future support
 for other simulators may be added as time permits.
 
-@@NEXT@@ install.md @@PREV@@ philosophy.md
+@@NEXT@@ philosophy.md @@PREV@@ index.md

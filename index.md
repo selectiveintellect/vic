@@ -4,13 +4,10 @@ VIC&trade; is a nice syntax that compiles to Microchip's PIC&reg; assembly.
 
 ## Table of Contents
 
+1. [What is VIC ?](faq.html)
 1. [Philosophy](philosophy.html)
-1. [FAQ](faq.html)
 1. [Installation](install.html)
 1. [Getting Started](gettingstarted.html)
-
-## Meme
-![](images/vicmeme.jpg)
 
 ## Authors
 
