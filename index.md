@@ -5,7 +5,7 @@ VIC&trade; is a nice syntax that compiles to Microchip's PIC&reg; assembly.
 ## Table of Contents
 
 1. [What is VIC ?](faq.html)
-1. [Philosophy](philosophy.html)
+1. [Inception](inception.html)
 1. [Installation](install.html)
 1. [Getting Started](gettingstarted.html)
 
@@ -26,4 +26,4 @@ VIC&trade; is a nice syntax that compiles to Microchip's PIC&reg; assembly.
 VIC&trade; is licensed under the [license terms of
 Perl](http://dev.perl.org/licenses/).
 
-@@NEXT@@ philosophy.md @@PREV@@ index.md
+@@NEXT@@ faq.md @@PREV@@ index.md

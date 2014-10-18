@@ -1,4 +1,4 @@
-#The Philosophy of VIC&trade;
+#The Inception of VIC&trade;
 
 VIC&trade; originated from finding difficulty in writing generic code that
 would run on any micro-controller of [Microchip's](http://www.microchip.com) 
@@ -80,4 +80,3 @@ invoked when the conditions are met. This allows for the programmer to implement
 Perl or Javascript like event callbacks for such tasks.
 
 @@NEXT@@ install.md @@PREV@@ faq.md
-

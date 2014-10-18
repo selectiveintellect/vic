@@ -30,7 +30,7 @@ use VIC&trade;.
 lot of common code between them. So we abstracted them into header files with
 macros, but that wasn't enough so we went down the path of auto-generating these
 macros and instead went a step further and created a domain specific language --
-VIC&trade;. For more details look at its [philosophy](./philosophy.html).
+VIC&trade;. For more details look at its [inception](./inception.html).
 
     Our aim was to enable us to write code that looked really simple, was
 verifiable using a PIC&reg; simulator like [GNU PIC simulator](http://gpsim.sourceforge.net/gpsim.html) `gpsim`,
@@ -106,4 +106,4 @@ that or you can use [Microchip's compilers](http://www.microchip.com/compilers/)
     VIC&trade; supports [gpsim](http://gpsim.sourceforge.net/gpsim.html) as its default simulator but future support
 for other simulators may be added as time permits.
 
-@@NEXT@@ philosophy.md @@PREV@@ index.md
+@@NEXT@@ inception.md @@PREV@@ index.md
