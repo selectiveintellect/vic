@@ -60,19 +60,35 @@ cat > $HTMLFILE << HEADER
         <span class="credits left">Project sponsored by <a
         href="http://selectiveintellect.com">Selective Intellect</a></span>
         <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        <br/><br/>
+        <span class="credits left"><a href="./index.html">Table of Contents</a></span>
+        <span class="credits right"><a href="__PREV__">Prev</a>&nbsp;&nbsp;<a href="__NEXT__">Next</a></span>
         </div>
 HEADER
-$MKD $FILE >> $HTMLFILE
+NEXTLINE=$(grep @@NEXT@@ $FILE | sed -e 's/.*@@NEXT@@ \(.*md\)/\1/g' | awk '{print $1;}')
+PREVLINE=$(grep @@PREV@@ $FILE | sed -e 's/.*@@PREV@@ \(.*md\)/\1/g' | awk '{print $1;}')
+NEXTLINE=$(echo $NEXTLINE | sed -e 's/\.md$/\.html/g')
+PREVLINE=$(echo $PREVLINE | sed -e 's/\.md$/\.html/g')
+sed -e "s/.*@@NEXT@@.*//g" $FILE > ${FILE}.1
+sed -e "s/.*@@PREV@@.*//g" $FILE > ${FILE}.1
+$MKD ${FILE}.1 >> $HTMLFILE
+rm -f ${FILE}.1
 
 cat >> $HTMLFILE << FOOTER
     <hr>
-    <div id="footer">
-    <h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors</h3>
-
-<p>Vikas N Kumar (<a href="https://github.com/vikasnkumar"
-class="user-mention">@vikasnkumar</a>) is the author of <strong>VIC&trade;</strong>. All copyrights belong to the authors.</p>
-    <br/><br/><p style="font-size:10px;">
+    <div id="title">
+    <span class="credits left"><a href="./index.html">Table of Contents</a></span>
+    <span class="credits right"><a href="__PREV__">Prev</a>&nbsp;&nbsp;<a href="__NEXT__">Next</a></span>
+    <br/><br/>
+    <p style="font-size:14px;">Vikas N Kumar (<a href="https://github.com/vikasnkumar"
+class="user-mention">@vikasnkumar</a>) is the author of <strong>VIC&trade;</strong>. All copyrights belong to the author.</p>
+    <p style="font-size:12px;">VIC&trade; is licensed under the <a
+    href="http://dev.perl.org/licenses/">license terms of Perl</a>.
+    <br/>
+    The development of VIC&trade; is sponsored by <a
+    href="http://selectiveintellect.com">Selective Intellect.</a>
+    </p>
+    <p style="font-size:11px;">
         This page was last updated on __FDATE__.
     </p>
     </div>
@@ -83,6 +99,8 @@ class="user-mention">@vikasnkumar</a>) is the author of <strong>VIC&trade;</stro
 FOOTER
     DATE=`git log -1 --pretty="format:%ai" $FILE`
     sed -i -e "s/__FDATE__/${DATE}/g" $HTMLFILE
+    sed -i -e "s/__PREV__/${PREVLINE}/g" $HTMLFILE
+    sed -i -e "s/__NEXT__/${NEXTLINE}/g" $HTMLFILE
 }
 
 for i in $@; do

@@ -95,3 +95,5 @@ that or you can use Microchip's compilers.
 
 VIC&trade; supports [gpsim](http://gpsim.sourceforge.net/gpsim.html) as its default simulator but future support
 for other simulators may be added as time permits.
+
+@@NEXT@@ install.md @@PREV@@ philosophy.md

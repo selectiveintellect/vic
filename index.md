@@ -22,9 +22,11 @@ VIC&trade; is a nice syntax that compiles to Microchip's PIC&reg; assembly.
 
 ## Copyright
 
-Copyright: 2014. Vikas N Kumar. All Rights Reserved.
+&copy; 2014. Vikas N Kumar. All Rights Reserved.
 
 ## License
 
 VIC&trade; is licensed under the [license terms of
 Perl](http://dev.perl.org/licenses/).
+
+@@NEXT@@ philosophy.md @@PREV@@ index.md
