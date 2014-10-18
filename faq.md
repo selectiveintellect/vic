@@ -59,8 +59,8 @@ VIC&trade; is designed to make life easy for its users. Users should *not* have 
 have suggestions and improvements, we appreciate you contributing them for the
 betterment of the product and the benefit of the community.
 
-    You are free to make accessory applications like a debugger or a simulator for
-it though. We can help port VIC&trade; to such auxilliary applications.
+    You are free to make supporting applications like a debugger or a simulator for
+it though. We can help make VIC&trade; integrate with such applications.
 
 1. Where can I download VIC&trade; ?
 
