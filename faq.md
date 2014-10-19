@@ -2,9 +2,9 @@
 
 1. What is VIC&trade; ?
 
-    VIC&trade; is a domain specific language to write code for
+    VIC&trade; is a domain specific language to develop firmware for
 [Microchip's](http://www.microchip.com) PIC&reg; microcontrollers (MCU).
-It's aim is for users or developers to write code that looks
+It's aim is for users or developers to develop firmware that looks
 simple, logical and can hide complexities that are in-built into VIC&trade; as language
 primitives. The name of the compiler to compile the language is also called
 `vic`.
@@ -32,7 +32,7 @@ macros, but that wasn't enough so we went down the path of auto-generating these
 macros and instead went a step further and created a domain specific language --
 VIC&trade;. For more details look at its [inception](./inception.html).
 
-    Our aim was to enable us to write code that looked really simple, was
+    Our aim was to enable us to develop firmware that looked really simple, was
 verifiable using a PIC&reg; simulator like [GNU PIC simulator](http://gpsim.sourceforge.net/gpsim.html) `gpsim`,
 and did not need detailed reading of the data
 sheets every time we chose a particular MCU. We wanted to read the MCU data
