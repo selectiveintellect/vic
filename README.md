@@ -3,8 +3,6 @@
 VIC&trade; is a nice syntax that compiles to PIC assembly. For detailed documentation
 read <http://vikasnkumar.github.io/vic>.
 
-![MeMe](https://raw.githubusercontent.com/vikasnkumar/vic/master/doc/images/vicmeme.jpg)
-
 ##Building as a user
 
     $ perl ./Build.PL --install_base=/usr/local/
@@ -164,3 +162,8 @@ for more details.
 
 The development of VIC&trade; has been sponsored by [Selective
 Intellect](http://selectiveintellect.com)
+
+## Meme
+
+![MeMe](https://raw.githubusercontent.com/vikasnkumar/vic/master/doc/images/vicmeme.jpg)
+
