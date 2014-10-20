@@ -20,7 +20,7 @@ This is the simplest way to install the release versions of VIC.
 This module depends on the following:
 
 - `Module::Build` (this is needed for building)
-- `Pegex` (this is included as a subrepo `ext/pegex-pm`)
+- `Pegex` (this is needed for grammar parsing. Needs to be installed from CPAN)
 - `Getopt::Long` (for handling command line options. Comes with perl itself)
 - `XXX` (only required for debugging)
 

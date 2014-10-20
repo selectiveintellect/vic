@@ -86,8 +86,11 @@
 					</section>
                 </section>
 				<section>
-					<section>
+                    <section>
 						<h2>Why We Designed VIC&trade; ?</h2>
+                    </section>
+					<section>
+                        <h2>The Reasons</h2>
                         <br/>
                         <p>As we did more PIC&reg; microcontroller projects, we
                         found that ...</p><br/>
@@ -121,7 +124,7 @@
                         </ul>
 					</section>
 					<section>
-						<h2>And Also The Following ...</h2>
+						<h2>Some More Desires</h2>
                         <br/><br/>
                         <ul>
                             <li>reduce the need for reading data sheets all the
@@ -138,7 +141,7 @@
 					<section>
 						<h2>And Most Important of All</h2>
                         <br/>
-                        <p>We wanted a capability of auto-generating the DSL
+                        <p>We wanted a capability to auto-generate the DSL
                         from higher level languages like Perl or Python or from
                         flowcharts</p>
 					</section>
@@ -146,7 +149,98 @@
                         <h2>Thus VIC&trade; was born !</h2>
                     </section>
 				</section>
-
+                <section>
+                    <h2>License</h2>
+                    <p>VIC&trade; is dual-licensed under the </p>
+                    <ul>
+                        <li>Perl Artistic License</li>
+                        <li>GNU General Public License v3</li>
+                    </ul>
+                </section>
+                <section>
+                    <section>
+                    <h2>Installation</h2>
+                    </section>
+                    <section>
+                    <h2>Pre-requisites</h2>
+                    <br/>
+                    <ul>
+                        <li>An Operating System supporting Perl<br/>
+                        <ul>
+                            <li>Linux&reg;</li>
+                            <li>FreeBSD</li>
+                            <li>OpenBSD</li>
+                            <li>Apple&reg; Mac OS X</li>
+                            <li>Microsoft Windows&reg; (Strawberry Perl)</li>
+                            </ul>
+                        </li>
+                        <li>Perl 5.10.1 or greater</li>
+                        <li>Git (if installing from Github)</li>
+                    </ul>
+                    </section>
+                    <section>
+                    <h2>Supporting Applications</h2>
+                    <br/>
+                    <ul>
+                        <li><a href="http://gputils.sourceforge.net"><code>gputils</code></a> for compiling VIC&trade;
+                        output</li>
+                        <li><a href="http://gpsim.sourceforge.net/gpsim.html"><code>gpsim</code></a> for default simulator
+                        support</li>
+                        <li><a href="http://piklab.sourceforge.net/"><code>Piklab</code></a> as an IDE
+                        </li>
+                        <li><code>pk2cmd</code> for command-line programming of the device using
+                            <a href="http://www.microchip.com/pickit2">PICKit 2 Starter Kit</a></li>
+                        <li>Any of the following Device Programmers:
+                        <ul>
+                            <li><a href="http://www.microchip.com/pickit3">PICKit 3 Starter Kit</a></li>
+                            <li><a href="http://www.microchip.com/pickit2">PICKit 2 Starter Kit</a></li>
+                        </ul></li>
+                    </ul>
+                    </section>
+                    <section>
+                    <h2>From CPAN</h2>
+                    <p>If installing into <code>/usr/local</code>, run the
+                    following:</p>
+					<pre><code data-trim contenteditable style="font-size: 22px; margin-top: 20px;">
+$ sudo cpan -i VIC
+                    </code></pre>
+                    </section>
+                    <section>
+                    <h2>Using App::cpanminus</h2>
+                    <p>If you like using <code>cpanminus</code>, run the
+                    following:</p>
+					<pre><code data-trim contenteditable style="font-size: 22px; margin-top: 20px;">
+$ cpanm VIC
+                    </code></pre>
+                    </section>
+                    <section>
+                    <h2>From Github</h2>
+                    <p>If you like to run the bleeding edge codebase, run the
+                    following:</p>
+					<pre><code data-trim contenteditable style="font-size: 22px; margin-top: 20px;">
+$ git clone https://github.com/vikasnkumar/vic.git
+$ cd vic
+$ perl Build.PL --install_base=/usr/local
+$ ./Build test
+$ sudo ./Build install
+                    </code></pre>
+                    <p><strong>NOTE:</strong>&nbsp;&nbsp;You may need to install
+                    pre-requisites from CPAN</p>
+					<pre><code data-trim contenteditable style="font-size: 22px; margin-top: 20px;">
+$ sudo cpan -i Pegex App::Prove
+                    </code></pre>
+                    </section>
+                    <section>
+                    <h2>Installed Goodies</h2>
+                    <p>Nice things that come with the installation:</p>
+                    <ul>
+                        <li>Vim syntax file in <code>share/vic.vim</code></li>
+                        <li>Many sample examples in <code>share/examples</code></li>
+                        <li>Sample <code>Makefile</code> to compile these
+                        examples</li>
+                    </ul>
+                    </section>
+                </section>
 				<section>
 					<h2>Slides</h2>
 					<p>
@@ -219,7 +313,7 @@
 					<p>
 						Additionally custom events can be triggered on a per slide basis by binding to the <code>data-state</code> name.
 					</p>
-					<pre><code data-trim contenteditable style="font-size: 18px; margin-top: 20px;">
+					<pre><code data-trim contenteditable style="font-size: 22px; margin-top: 20px;">
 Reveal.addEventListener( 'customevent', function() {
 	console.log( '"customevent" has fired' );
 } );
