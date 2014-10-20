@@ -60,42 +60,91 @@
 				<section>
 					<h2>What is VIC&trade; ?</h2>
 					<p>
-                    VIC&trade; is an <strong style="color:red;">easy to use</strong> domain specific language to develop firmware
+                    VIC&trade; is an <strong style="color:yellow;">easy to use</strong> domain specific language to develop firmware
                         for <a href="http://www.microchip.com">Microchip's PIC&reg;</a> microcontroller units (MCU).
 					</p>
-
 				</section>
-
-				<!-- Example of nested vertical slides -->
+                <section>
+					<section id="fragments1">
+                        <h2>Why Should You Use VIC&trade; ?</h2>
+						<p>If you ...</p>
+						<ul style="text-align:center;">
+                            <li class="fragment">like to use Microchip PIC&reg;
+                            MCUs</li>
+                            <li class="fragment">do not like coding in C or
+                            assembly or BASIC</li>
+                            <li class="fragment">would like to understand what
+                            your code is doing months from now</li>
+                            <li class="fragment">want portability between
+                            various MCUs </li>
+                            <li class="fragment">want to simulate your code in
+                            PIC&reg; simulators easily</li>
+                            <li class="fragment">like scripting language
+                            constructs and paradigms</li>
+						</ul>
+                        <p class="fragment">... then VIC&trade; is for you !</p>
+					</section>
+                </section>
 				<section>
 					<section>
-						<h2>Vertical Slides</h2>
-						<p>
-							Slides can be nested inside of other slides,
-							try pressing <a href="#" class="navigate-down">down</a>.
-						</p>
-						<a href="#" class="image navigate-down">
-							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
-						</a>
+						<h2>Why We Designed VIC&trade; ?</h2>
+                        <br/>
+                        <p>As we did more PIC&reg; microcontroller projects, we
+                        found that ...</p><br/>
+                        <ul>
+                            <li>writing boiler plate code was tedious and
+                            boring</li>
+                            <li>using PICBASIC&reg; or Microchip&#8217;s C
+                            compilers was not fun</li>
+                            <li>portability of code across MCUs was difficult,
+                            annoying, time consuming and prone to error</li>
+                            <li>copy-pasting code between projects led to
+                            library creation which led to <em>subtle</em> maintenance
+                            problems over time</li>
+                        </ul> <br/><br/>
+                        <p>... so we decided to automate all of these problems
+                        away !</p>
 					</section>
 					<section>
-						<h2>Basement Level 1</h2>
-						<p>Press down or up to navigate.</p>
+						<h2>A Domain Specific Language</h2>
+                        <p>To automate our problems away we wanted a DSL that
+                        did the following for us:</p>
+                        <ul>
+                            <li>exemplify the Do What I Mean (DWIM)
+                            philosophy</li>
+                            <li>be easy to understand months later</li>
+                            <li>auto-generate efficient PIC&reg; assembly for
+                            the selected MCU</li>
+                            <li>be extremely portable between various MCUs</li>
+                            <li>automatically find incompatibilities between
+                            MCU functionality and the code being compiled</li>
+                        </ul>
 					</section>
 					<section>
-						<h2>Basement Level 2</h2>
-						<p>Cornify</p>
-						<a class="test" href="http://cornify.com">
-							<img width="280" height="326" src="https://s3.amazonaws.com/hakim-static/reveal-js/cornify.gif" alt="Unicorn">
-						</a>
+						<h2>And Also The Following ...</h2>
+                        <br/><br/>
+                        <ul>
+                            <li>reduce the need for reading data sheets all the
+                            time</li>
+                            <li>integrate with existing debuggers and
+                            simulators</li>
+                            <li>generate boiler plate code appropriately as
+                            needed for the selected MCU</li>
+                            <li>automate high level functions such as UART, I2C,
+                            SPI, switch debouncing, interrupt handling,
+                            etc.</li>
+                        </ul>
 					</section>
 					<section>
-						<h2>Basement Level 3</h2>
-						<p>That's it, time to go back up.</p>
-						<a href="#/2" class="image">
-							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Up arrow" style="-webkit-transform: rotate(180deg);">
-						</a>
+						<h2>And Most Important of All</h2>
+                        <br/>
+                        <p>We wanted a capability of auto-generating the DSL
+                        from higher level languages like Perl or Python or from
+                        flowcharts</p>
 					</section>
+                    <section>
+                        <h2>Thus VIC&trade; was born !</h2>
+                    </section>
 				</section>
 
 				<section>
