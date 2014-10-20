@@ -20,7 +20,8 @@ Microsoft Internet Explorer or Apple Safari.
 
 ## Authors
 
-- Vikas N Kumar [@selectiveintellect](https://github.com/selectiveintellect/)
+- Selective Intellect [@selectiveintellect](https://github.com/selectiveintellect/)
+- Vikas N Kumar [@vikasnkumar](https://github.com/vikasnkumar/)
 
 ## Contributors
 
@@ -28,7 +29,7 @@ Microsoft Internet Explorer or Apple Safari.
 
 ## Copyright
 
-&copy; 2014. Vikas N Kumar. All Rights Reserved.
+&copy; 2014. Selective Intellect LLC. All Rights Reserved.
 
 ## License
 
