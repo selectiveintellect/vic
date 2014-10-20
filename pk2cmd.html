@@ -52,6 +52,24 @@ the changing state of Microchip&#8217;s original <a href="http://www.microchip.c
 <li><a href="pickit2/pk2cmdv1.20LinuxMacSource.tar.gz">Linux and Mac OSX Source v1.20</a></li>
 <li><a href="pickit2/FirmwareV2-32-00.zip">Firmware Update v2.32</a></li>
 </ul>
+
+<h2 id="installationnotesforlinuxandmacosx">Installation Notes for Linux and Mac OS X</h2>
+
+<p>If you have <code>pk2cmd</code> installed in <code>/usr/local</code> you will need to set the <code>PATH</code>
+variable as follows before doing the write to the microcontroller:</p>
+
+<pre><code>$ export PATH=${PATH}:/usr/local/bin:/usr/share/pk2
+</code></pre>
+
+<p>Before you run <code>pk2cmd</code> on Mac OS X, you will need to set the <code>lsusb</code> command
+which is available on Linux but not on the Mac but is used by <code>pk2cmd</code>
+internally.</p>
+
+<pre><code>$ alias lsusb=&quot;system_profiler SPUSBDataType&quot;
+</code></pre>
+
+<p>You may need to set these in the <code>~/.bashrc</code> or <code>~/.profile</code> of your shell to avoid
+having to run these steps every time.</p>
     <hr>
     <div id="title">
     <span class="credits left"><a href="./index.html">Table of Contents</a></span>
@@ -66,7 +84,7 @@ class="user-mention">@vikasnkumar</a>) is the author of <strong>VIC&trade;</stro
     href="http://selectiveintellect.com">Selective Intellect.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on .
+        This page was last updated on 2014-10-20 00:40:12 -0400.
     </p>
     </div>
     </section>

@@ -181,20 +181,8 @@ $ gplink -q -o helloworld.hex helloworld.o
 <p>This will produce a <code>helloworld.hex</code> file which you will have to write to the
 microcontroller using PICKit2 programmer from Microchip. You could use any other
 programmer as well as long as you have the right software for it. To write to
-the microcontroller on Linux or Mac OS X you need to have <code>pk2cmd</code> installed.</p>
-
-<p>If you have <code>pk2cmd</code> installed in <code>/usr/local</code> you will need to set the <code>PATH</code>
-variable as follows before doing the write to the microcontroller:</p>
-
-<pre><code>$ export PATH=${PATH}:/usr/local/bin:/usr/share/pk2
-</code></pre>
-
-<p>Before you run <code>pk2cmd</code> on Mac OS X, you will need to set the <code>lsusb</code> command
-which is available on Linux but not on the Mac but is used by <code>pk2cmd</code>
-internally.</p>
-
-<pre><code>$ alias lsusb=&quot;system_profiler SPUSBDataType&quot;
-</code></pre>
+the microcontroller on Linux or Mac OS X you need to have <code>pk2cmd</code> installed, as
+mentioned <a href="pk2cmd.html">here</a>.</p>
 
 <p>To write to the microcontroller run the following:</p>
 
@@ -225,6 +213,9 @@ Count Demo board to turn on the LED,</p>
 <p>For Windows, we currently recommend using the Microchip provided IDE. You can
 use VIC to generate the assembly files which you can then load into the IDE as
 part of your project and use.</p>
+
+<p>You may choose to use <a href="http://piklab.sourceforge.net/">Piklab</a> as your IDE
+instead.</p>
 
 <p>If you want to use Cygwin to perform builds using <code>gpasm</code> and <code>pk2cmd</code> you may
 do that and let us know if you succeed so we can write instructions for other
@@ -265,7 +256,7 @@ class="user-mention">@vikasnkumar</a>) is the author of <strong>VIC&trade;</stro
     href="http://selectiveintellect.com">Selective Intellect.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-19 23:16:05 -0400.
+        This page was last updated on 2014-10-20 00:40:12 -0400.
     </p>
     </div>
     </section>

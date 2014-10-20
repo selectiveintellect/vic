@@ -127,18 +127,8 @@ For Mac OS X, you may need to use MacPorts to easily install the `gputils` and `
 This will produce a `helloworld.hex` file which you will have to write to the
 microcontroller using PICKit2 programmer from Microchip. You could use any other
 programmer as well as long as you have the right software for it. To write to
-the microcontroller on Linux or Mac OS X you need to have `pk2cmd` installed.
-
-If you have `pk2cmd` installed in `/usr/local` you will need to set the `PATH`
-variable as follows before doing the write to the microcontroller:
-
-    $ export PATH=${PATH}:/usr/local/bin:/usr/share/pk2
-
-Before you run `pk2cmd` on Mac OS X, you will need to set the `lsusb` command
-which is available on Linux but not on the Mac but is used by `pk2cmd`
-internally.
-
-    $ alias lsusb="system_profiler SPUSBDataType"
+the microcontroller on Linux or Mac OS X you need to have `pk2cmd` installed, as
+mentioned [here](pk2cmd.html).
 
 To write to the microcontroller run the following:
 
@@ -166,10 +156,12 @@ For Windows, we currently recommend using the Microchip provided IDE. You can
 use VIC to generate the assembly files which you can then load into the IDE as
 part of your project and use.
 
+You may choose to use [Piklab](http://piklab.sourceforge.net/) as your IDE
+instead.
+
 If you want to use Cygwin to perform builds using `gpasm` and `pk2cmd` you may
 do that and let us know if you succeed so we can write instructions for other
 users.
-
 
 ##Recompiling the grammar
 
