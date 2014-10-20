@@ -1,7 +1,7 @@
 #VIC&trade;
 
 VIC&trade; is a nice syntax that compiles to PIC assembly. For detailed up-to-date documentation
-read <http://vikasnkumar.github.io/vic>.
+read <http://selectiveintellect.github.io/vic>.
 
 ##Building as a user
 
@@ -78,7 +78,7 @@ This will produce a `helloworld.hex` file which you will have to write to the
 microcontroller using PICKit2 programmer from Microchip. You could use any other
 programmer as well as long as you have the right software for it. To write to
 the microcontroller on Linux or Mac OS X you need to have `pk2cmd` installed.
-Refer <http://vikasnkumar.github.io/vic/pk2cmd.html> for details on that.
+Refer <http://selectiveintellect.github.io/vic/pk2cmd.html> for details on that.
 
 If you have `pk2cmd` installed in `/usr/local` you will need to set the `PATH`
 variable as follows before doing the write to the microcontroller:
@@ -143,7 +143,7 @@ All of the above do the same thing.
 
 ##Authors
 
-- Vikas N Kumar [@vikasnkumar](https://github.com/vikasnkumar/)
+- Vikas N Kumar [@selectiveintellect](https://github.com/selectiveintellect/)
 
 ##Contributors
 
@@ -166,5 +166,5 @@ Intellect](http://selectiveintellect.com)
 
 ## Meme
 
-![MeMe](https://raw.githubusercontent.com/vikasnkumar/vic/master/doc/images/vicmeme.jpg)
+![MeMe](https://raw.githubusercontent.com/selectiveintellect/vic/master/doc/images/vicmeme.jpg)
 

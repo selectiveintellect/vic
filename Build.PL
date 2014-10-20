@@ -36,8 +36,8 @@ my $build = Module::Build->new(
     add_to_cleanup => [ qw/*.bak/ ],
     meta_merge => {
         resources => {
-            repository => "https://github.com/vikasnkumar/vic",
-            bugtracker => "https://github.com/vikasnkumar/vic/issues",
+            repository => "https://github.com/selectiveintellect/vic",
+            bugtracker => "https://github.com/selectiveintellect/vic/issues",
             x_IRC => "irc://irc.freenode.net/#vic",
         },
         keywords => [qw/VIC PIC assembly/],

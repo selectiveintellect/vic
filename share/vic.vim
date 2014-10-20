@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         Vic
 " Maintainter:      Vikas N Kumar <vikas@cpan.org>
-" URL:              http://github.com/vikasnkumar/vic
+" URL:              http://github.com/selectiveintellect/vic
 " Last Change:      2014-01-30
 " Contributors:     Vikas N Kumar <vikas@cpan.org>
 "
