@@ -44,18 +44,74 @@
 <p>There are two easy ways to install VIC. One is using CPAN and the other is
 from source.</p>
 
+<h2 id="pre-requisites">Pre-requisites</h2>
+
+<p>You will need an operating system that supports Perl, such as Linux&reg;,
+FreeBSD, OpenBSD and Apple&reg; Mac OS X.</p>
+
+<p>For Microsoft Windows&reg;, you can download <a href="http://www.strawberryperl.com">Strawberry
+Perl</a>.</p>
+
+<p>The minimum version of Perl required is 5.10.1.</p>
+
+<p>You will also need <code>git</code> installed if you&#8217;re downloading the code from
+<a href="https://github.com/vikasnkumar/vic">Github</a>.</p>
+
+<h2 id="supportingapplications">Supporting Applications</h2>
+
+<p>To make full use of VIC&trade; you need to install the following applications as
+well:</p>
+
+<ul>
+<li><a href="http://gputils.sourceforge.net">gputils</a> for compiling VIC&trade; output</li>
+<li><a href="http://gpsim.sourceforge.net/gpsim.html">gpsim</a> for default simulator support</li>
+<li><a href="http://piklab.sourceforge.net/">Piklab</a> as an IDE</li>
+<li><a href="pk2cmd.html">pk2cmd</a> for command-line programming of the device, if using the <a href="http://www.microchip.com/pickit2/">PICKit 2 Starter Kit</a></li>
+</ul>
+
 <h2 id="installingfromcpan">Installing from CPAN</h2>
 
-<p>This is the simplest way to install the release versions of VIC.</p>
+<p>This is the simplest way to install the release versions of VIC into
+<code>/usr/local</code> of your Unix-like system.</p>
 
-<pre><code>$ cpan -i VIC
+<pre><code>$ sudo cpan -i VIC
+</code></pre>
+
+<p>On Microsoft Windows&reg;, you can install using the below command from the
+Strawberry Perl command shell.</p>
+
+<pre><code>&gt; cpan -i VIC
+</code></pre>
+
+<p>Another way to install from CPAN is to use <code>App::cpanminus</code>, which may be
+available on your operating system or you could install that as well using the
+cpan client.</p>
+
+<pre><code>&gt; cpan -i App::cpanminus
+&gt; cpanm VIC
 </code></pre>
 
 <h2 id="buildingfromsource">Building from source</h2>
 
-<pre><code>$ perl ./Build.PL --install_base=/usr/local/
+<p>Download the software from Github.</p>
+
+<pre><code>$ git clone https://github.com/vikasnkumar/vic.git
+$ cd vic
+$ perl ./Build.PL --install_base=/usr/local/
 $ ./Build test
-$ ./Build install
+$ sudo ./Build install
+</code></pre>
+
+<p>You may need to install the Perl package dependencies first which are done as
+below:</p>
+
+<pre><code>$ sudo cpan -i Pegex App::Prove
+</code></pre>
+
+<p>or using <code>App::cpanminus</code></p>
+
+<pre><code>$ cpanm App::Prove
+$ cpanm Pegex
 </code></pre>
 
 <h2 id="dependencies">Dependencies</h2>
@@ -69,9 +125,10 @@ $ ./Build install
 <li><code>XXX</code> (only required for debugging)</li>
 </ul>
 
-<h2 id="testingthemodule">Testing the Module</h2>
+<h2 id="testingthemoduledevelopersonly">Testing the Module (Developers Only)</h2>
 
-<p>To test you will need to have <code>App::Prove</code> installed if you&#8217;re developing</p>
+<p>To test you will need to have <code>App::Prove</code> installed if you&#8217;re developing the
+software</p>
 
 <pre><code>$ prove -lv t
 </code></pre>
@@ -81,10 +138,14 @@ $ ./Build install
 <pre><code>$ ./Build test
 </code></pre>
 
-<h1 id="vimsyntax">Vim Syntax</h1>
+<h2 id="vimsyntaxhighlighting">Vim Syntax Highlighting</h2>
 
-<p>The <code>vim</code> syntax for VIC is in <code>share/vic.vim</code>. You can place it in
-<code>$HOME/.vim/syntax</code> on Linux and OS X and in <code>$HOME/vimfiles/syntax</code> on Windows
+<p>The installation provides syntax highlighting for the <a href="http://www.vim.org">Vim</a>
+editor.</p>
+
+<p>The syntax for VIC is available in the file <code>share/vic.vim</code> in the source
+repository or in the <code>share</code> directory of the installation. You can place it in
+<code>$HOME/.vim/syntax</code> on Linux, FreeBSD, OpenBSD and OS X, and in <code>$HOME/vimfiles/syntax</code> on Windows
 systems.</p>
 
 <h2 id="compilingexamples">Compiling examples</h2>
@@ -99,26 +160,18 @@ example you can do the following:</p>
 
 <h2 id="placingvicinyourpathformakefiles">Placing <code>vic</code> in your <code>$PATH</code> for Makefiles</h2>
 
-<p>Let us assume that your git checkout copy is in <code>$HOME/github/vic</code> then,</p>
-
-<pre><code>$ export VICPATH=$HOME/github/vic
-$ export PERL5LIB=${VICPATH}/lib:${VICPATH}/pegex-pm/lib:$PERL5LIB
-$ export PATH=${VICPATH}/bin:$PATH
-$ which vic
-</code></pre>
-
-<p><em>If you&#8217;re installing it from CPAN or using <code>Build.PL</code> you do not need to set the
-above.</em></p>
+<p>If you are installing VIC in a local directory, you may need to set it in the
+<code>$PATH</code> variable for your system.</p>
 
 <h2 id="testingonpicmicrocontrollersonlinuxandmacosx">Testing on PIC microcontrollers on Linux and Mac OS X</h2>
 
 <p>The <code>helloworld.vic</code> test is for the Low Pin Count Demo board from Microchip and
-uses the PICKit2 programmer to write to the microcontroller P16F690 on the
-board.</p>
+uses the <a href="http://www.microchip.com/pickit2/">PICKit 2 Starter Kit</a> programmer
+to write to the microcontroller P16F690 on the board.</p>
 
-<p>You will need to have <code>gputils</code> installed on Linux or Mac OS X. (Have not
-experimented on Windows.) For Mac OS X, you may need to use MacPorts to easily
-install the <code>gputils</code> and <code>gpsim</code> packages.</p>
+<p>You will need to have <code>gputils</code> and <code>gpsim</code> packages installed on Linux or Mac OS X.</p>
+
+<p>For Mac OS X, you may need to use MacPorts to easily install the <code>gputils</code> and <code>gpsim</code> packages.</p>
 
 <pre><code>$ cd share/examples/
 $ gpasm -pP16F690 -M -c helloworld.asm -o helloworld.o
@@ -212,7 +265,7 @@ class="user-mention">@vikasnkumar</a>) is the author of <strong>VIC&trade;</stro
     href="http://selectiveintellect.com">Selective Intellect.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-18 16:15:27 -0400.
+        This page was last updated on 2014-10-19 23:16:05 -0400.
     </p>
     </div>
     </section>
