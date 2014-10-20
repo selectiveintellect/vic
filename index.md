@@ -9,6 +9,13 @@ VIC&trade; is a nice syntax that compiles to Microchip's PIC&reg; assembly.
 1. [Installation](install.html)
 1. [Getting Started](gettingstarted.html)
 
+## Presentation Slides
+
+Slides for the most recent demo of VIC&trade; are available
+[here](presentations/index.html). You will need a modern HTML5 supporting
+browser like the latest versions of Mozilla Firefox, Google Chrome,
+Microsoft Internet Explorer or Apple Safari.
+
 ## Authors
 
 - Vikas N Kumar [@vikasnkumar](https://github.com/vikasnkumar/)
