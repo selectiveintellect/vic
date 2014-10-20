@@ -64,7 +64,7 @@ it though. We can help make VIC&trade; integrate with such applications.
 
 1. Where can I download VIC&trade; ?
 
-    You can download the **official** development version of VIC&trade; from [Github](https://github.com/vikasnkumar/vic).
+    You can download the **official** development version of VIC&trade; from [Github](https://github.com/selectiveintellect/vic).
     
     You can also download the releases from [CPAN](http://www.cpan.org). For
 more details on installation refer to the [installation](./install.html) page.
@@ -83,7 +83,7 @@ Linux and let us know how it fares.
 
     VIC&trade; needs more testing on real chips, more interesting examples and bug
 reports. If you are willing to do this, please feel free to fork VIC&trade; and
-send us pull requests or submit patches on the [Github issue tracker](https://github.com/vikasnkumar/vic/issues).
+send us pull requests or submit patches on the [Github issue tracker](https://github.com/selectiveintellect/vic/issues).
 
 1. What editor or IDE is needed for VIC&trade; ?
 

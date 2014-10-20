@@ -180,10 +180,10 @@ simulator yet as part of VIC. We may choose to do it in the future.
 
 ## Some pictures
 
-![Code](https://raw.githubusercontent.com/vikasnkumar/vic/master/doc/images/HelloworldCode.png)
+![Code](https://raw.githubusercontent.com/selectiveintellect/vic/master/doc/images/HelloworldCode.png)
 
-![Simulator Before Run](https://raw.githubusercontent.com/vikasnkumar/vic/master/doc/images/HelloworldSimBefore.png)
+![Simulator Before Run](https://raw.githubusercontent.com/selectiveintellect/vic/master/doc/images/HelloworldSimBefore.png)
 
-![Simulator After Run](https://raw.githubusercontent.com/vikasnkumar/vic/master/doc/images/HelloworldSimAfter.png)
+![Simulator After Run](https://raw.githubusercontent.com/selectiveintellect/vic/master/doc/images/HelloworldSimAfter.png)
 
 @@NEXT@@ index.md @@PREV@@ install.md

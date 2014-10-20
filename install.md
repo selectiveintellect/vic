@@ -14,7 +14,7 @@ Perl](http://www.strawberryperl.com).
 The minimum version of Perl required is 5.10.1.
 
 You will also need `git` installed if you're downloading the code from
-[Github](https://github.com/vikasnkumar/vic).
+[Github](https://github.com/selectiveintellect/vic).
 
 ## Supporting Applications
 
@@ -49,7 +49,7 @@ cpan client.
 
 Download the software from Github.
 
-    $ git clone https://github.com/vikasnkumar/vic.git
+    $ git clone https://github.com/selectiveintellect/vic.git
     $ cd vic
     $ perl ./Build.PL --install_base=/usr/local/
     $ ./Build test

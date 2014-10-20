@@ -20,7 +20,7 @@ Microsoft Internet Explorer or Apple Safari.
 
 ## Authors
 
-- Vikas N Kumar [@vikasnkumar](https://github.com/vikasnkumar/)
+- Vikas N Kumar [@selectiveintellect](https://github.com/selectiveintellect/)
 
 ## Contributors
 
