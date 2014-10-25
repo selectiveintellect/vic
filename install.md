@@ -25,6 +25,8 @@ well:
 - [gpsim](http://gpsim.sourceforge.net/gpsim.html) for default simulator support
 - [Piklab](http://piklab.sourceforge.net/) as an IDE
 - [pk2cmd](pk2cmd.html) for command-line programming of the device, if using the [PICKit 2 Starter Kit](http://www.microchip.com/pickit2/)
+- [gtkwave](http://gtkwave.sourceforge.net/) for viewing simulator output
+  waveforms.
 
 ##Installing from CPAN
 
