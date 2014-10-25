@@ -1,8 +1,7 @@
 # Getting Started With VIC&trade;
 
-
 Writing VIC&trade; code is similar to writing Bash scripts except for the fact
-that there are no functions supported yet in version 0.08.
+that there are no functions supported as of version 0.12.
 
 Here is a quick description of the syntax:
 
@@ -22,18 +21,22 @@ Here is a quick description of the syntax:
 VIC&trade; code from it.
 
 Let us begin with the _hello world !_ programs for the MCU world which is
-lighting up an LED. We hope you know what an LED is.
+lighting up an [LED](https://en.wikipedia.org/wiki/Light-emitting_diode).
 
-## Hello World ! - lighting up an LED
+## Hello World ! - Lighting up an LED
 
 This example is available in the file `share/examples/helloworld.vic`.
 
 Let us select the PIC MCU P16F690 that comes with the
 [PICKit&trade; 2 Starter Kit](http://www.microchip.com/DevelopmentTools/ProductDetails.aspx?PartNO=DV164120)
- from Microchip. You may want to look at the data sheet for this MCU to see the
-pin configuration and names.
+ from Microchip. From the data sheet of this MCU, we can see the following pin
+configuration:
 
-Let us select the pin RC0 to which we want to connect an LED to.
+![P16F690 Pin Diagram](./images/pinout_P16F690.png)
+
+---
+
+Let us select the pin 16, `RC0`, to which we want to connect an LED to.
 
 Our code will look like this:
     
@@ -43,14 +46,18 @@ Our code will look like this:
         write RC0, 1;
     }
 
-That&quot;s it ! Just two lines to light up an LED and it is easy to read and
-understand what is happening. There is no need to know which registers to
-manipulate to switch a pin to digital output or input. There is no need to know
-how to write a value to a pin. All you need to know is the names of the pins
-which you can get from reading a single page of the datasheet showing the image
-of the MCU.
+_That's it !_ Just two lines to light up an LED. And, the code is easy to
+comprehend.
 
-Let us go over each line one at a time to see what
+- There is **no** need for the developer to know which registers to
+manipulate for switching a pin to digital output or input.
+- There is **no** need to know how to write a value to a pin.
+- All you need to know are the names of the pins which you can get from the pin
+  diagram in the MCU's data sheet.
+
+### Understanding The Code
+
+Let us go over each line of the above code to see what
 they mean.
 
 `PIC P16F690;` is the one-line header that defines which PIC MCU this program is

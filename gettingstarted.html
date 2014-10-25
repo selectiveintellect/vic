@@ -42,7 +42,7 @@
 <h1 id="gettingstartedwithvictrade">Getting Started With VIC&trade;</h1>
 
 <p>Writing VIC&trade; code is similar to writing Bash scripts except for the fact
-that there are no functions supported yet in version 0.08.</p>
+that there are no functions supported as of version 0.12.</p>
 
 <p>Here is a quick description of the syntax:</p>
 
@@ -64,18 +64,24 @@ VIC&trade; code from it.</li>
 </ul>
 
 <p>Let us begin with the <em>hello world !</em> programs for the MCU world which is
-lighting up an LED. We hope you know what an LED is.</p>
+lighting up an <a href="https://en.wikipedia.org/wiki/Light-emitting_diode">LED</a>.</p>
 
-<h2 id="helloworld-lightingupanled">Hello World ! - lighting up an LED</h2>
+<h2 id="helloworld-lightingupanled">Hello World ! - Lighting up an LED</h2>
 
 <p>This example is available in the file <code>share/examples/helloworld.vic</code>.</p>
 
 <p>Let us select the PIC MCU P16F690 that comes with the
 <a href="http://www.microchip.com/DevelopmentTools/ProductDetails.aspx?PartNO=DV164120">PICKit&trade; 2 Starter Kit</a>
- from Microchip. You may want to look at the data sheet for this MCU to see the
-pin configuration and names.</p>
+ from Microchip. From the data sheet of this MCU, we can see the following pin
+configuration:</p>
 
-<p>Let us select the pin RC0 to which we want to connect an LED to.</p>
+<figure>
+<img src="./images/pinout_P16F690.png" alt="P16F690 Pin Diagram" />
+<figcaption>P16F690 Pin Diagram</figcaption></figure>
+
+<hr />
+
+<p>Let us select the pin 16, <code>RC0</code>, to which we want to connect an LED to.</p>
 
 <p>Our code will look like this:</p>
 
@@ -86,14 +92,20 @@ Main {
 }
 </code></pre>
 
-<p>That&quot;s it ! Just two lines to light up an LED and it is easy to read and
-understand what is happening. There is no need to know which registers to
-manipulate to switch a pin to digital output or input. There is no need to know
-how to write a value to a pin. All you need to know is the names of the pins
-which you can get from reading a single page of the datasheet showing the image
-of the MCU.</p>
+<p><em>That&#8217;s it !</em> Just two lines to light up an LED. And, the code is easy to
+comprehend.</p>
 
-<p>Let us go over each line one at a time to see what
+<ul>
+<li>There is <strong>no</strong> need for the developer to know which registers to
+manipulate for switching a pin to digital output or input.</li>
+<li>There is <strong>no</strong> need to know how to write a value to a pin.</li>
+<li>All you need to know are the names of the pins which you can get from the pin
+ diagram in the MCU&#8217;s data sheet.</li>
+</ul>
+
+<h3 id="understandingthecode">Understanding The Code</h3>
+
+<p>Let us go over each line of the above code to see what
 they mean.</p>
 
 <p><code>PIC P16F690;</code> is the one-line header that defines which PIC MCU this program is
@@ -257,7 +269,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-20 10:50:28 -0400.
+        This page was last updated on 2014-10-25 14:58:46 -0400.
     </p>
     </div>
     </section>
