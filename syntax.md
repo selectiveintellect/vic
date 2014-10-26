@@ -6,7 +6,7 @@ various syntactical details of VIC&trade;.
 VIC&trade; syntax is very much like Unix shell scripting with many similarities
 and some notable differences.
 
-A general VIC&trade; code file will have the following:
+A general VIC&trade; code file will have the following types of _statements_:
 
 - [**PIC Header**](#picheader): This is a statement defining which PIC MCU the code is targeting
   by default. This enables the `vic` compiler to generate the correct target
@@ -23,11 +23,11 @@ to be 16-bits, and all computations with that variable will generate code doing
 - [**Blocks**](#blocks): All code that will run on the MCU will have to be enclosed in
   named blocks denoted by `{}`. There are many types of blocks supported:
     - [Main](#mainblock)
-    - [Simulator](#simulatorblock)
-    - [Loops](#loops)
+    - [Conditional Blocks](#conditionalblocks)
+    - [Unconditional Loops](#unconditionalloops)
     - [Actions](#actions)
     - [Interrupt Service Routines](#interruptserviceroutines)
-    - [Conditional Blocks](#conditionalblocks)
+    - [Simulator](#simulatorblock)
 - [**Functions**](#functions): Various in-built functions are present as part of
   VIC&trade; which will be explained in the function [reference](functions.html).
 
@@ -200,10 +200,17 @@ The language keywords are: `if`, `else` and `while`. They are case _sensitive_.
 Constants are validated keywords that are not the language keywords but
 represent some aspect of the MCU being targeted. Generally they are the pin
 names, such as those shown in the [pin diagram](gettingstarted.html#savingcodeashelloworld.vic) of the MCU.
-Many other standard names are also accepted such as GPIO port names, Timer
-register names, UART/SPI/I2C port names, ADC/DAC port names, comparator names,
-clock pins, PWM pins, etc. It depends on the MCU being handled and the user may
-need to quickly read the pin listings from the data sheet for their MCU or use
+Many other standard names are also accepted such as:
+
+- GPIO port names
+- Timer register names
+- UART/SPI/I2C port names
+- ADC/DAC port names
+- Comparator names
+- Clock pins
+- PWM pins
+
+It depends on the MCU being handled and the user may need to refer to the pin listings from the data sheet for their MCU or use
 the `vic` compiler's [commandline](commandline.html) options to list the valid
 pin constants. Some sample constants look like `RC0`, `PORTA`, `TMR0`, `USART`.
 
@@ -213,15 +220,116 @@ characters. These identifiers are used for block names and function names.
 
 ## Blocks
 
+Code in VIC&trade; is arranged in _named_ blocks enclosed within `{}`. There are
+many different types of blocks but the most important and required block is the
+[`Main` block](#mainblock).
+
 ### Main Block
 
-### Loops
+For any code to be generated, it has to be contained in the `Main` block. The
+`Main` block has to be written after all the pragmas have been stated in the
+code.
+
+    PIC <MCU Name>;
+    ## ... pragmas go here...
+    Main {
+        # ... some statements that do something ...
+    }
+
+All the statements in the `Main` block work similar in concept to the C
+language's `main()` function. This is where the MCU code begins. The `Main`
+block can contain any statements or other types of blocks.
+
+### Conditional Blocks
+
+Two types of conditional statements are supported: `if-else` statements and
+`while` loops. Unconditional or forever loops are supported as well and are
+described in the [next section](#unconditionalloops).
+
+The syntax of the `if-else` blocks are similar to that of the C language or
+Javascript but the parentheses around conditions is optional. Precedence of the operators goes
+from left to right. The `else` and `else if` blocks are always optional.
+
+    if <conditions> {
+        # .. statements ..
+    } else if <conditions> {
+        # .. statements ..
+    # ... any number of else-if statements can go here ...
+    } else {
+        # .. statements ..
+    }
+
+A sample example is below:
+
+    if $var1 == true && $var2 == false {
+        # .. do something ..
+    } else if ($var1 == false && $var2 == true) {
+        # .. do something ..
+    } else {
+        # .. do something else ..
+    }
+
+In a similar fashion, the `while` loops are like that of the C language or
+Javascript but the parentheses around conditions is optional.
+
+    while $var1 < 30 {
+        # .. do something ..
+        $var1++;
+    }
+
+A good example of the usage of these statements is in the file
+`share/examples/conditional.vic`.
+
+The `while` loop accepts the `break` and `continue` statements as in the C
+programming language, and they have the same functionality. The `if-else` block
+also accepts the `break` statement to allow the user to break out of the
+inner-most loop that the code instructions might be in. This is very useful for
+conditional breaks out of nested loops.
+
+### Unconditional Loops
+
+Most microcontroller programming involves forever loops or unconditional loops,
+where certain tasks are being done by the microcontroller forever until the
+power is turned off.
+
+To account for this common situation, VIC&trade; has a special block construct
+`Loop{}`. This allows the `vic` compiler to automatically create the jump
+assembly instructions to manage the looping. Any blocks contained within the
+`Loop{}` block are also automatically managed by the compiler. The `Loop{}`
+construct accepts the `break` and `continue` statements.
+
+Nested `Loop{}` blocks are very useful in certain applications.
+
+The `Loop{}` construct is the same as `while true {}` but instead of making it
+look ugly, we felt the need to make it obvious.
+
+A simple loop construct looks like this:
+
+    Loop {
+        # ... do something ...
+    }
+
+A nested loop construct looks like this:
+
+
+    Loop {
+        # ... do something ...
+        # ... enter inner loop ...
+        Loop {
+            # ... do something ...
+            if <some conditions> {
+                # ... do something maybe ...
+                break; # break out of inner loop
+            }
+        }
+        # ... back to outer loop ...
+    }
+
+A simple example of a forever loop is in `share/examples/blinker.vic`.
 
 ### Actions
 
 ### Interrupt Service Routines
-
-### Conditional Blocks
 
 ### Simulator Block
 
