@@ -37,21 +37,90 @@
         <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
         <br/><br/>
         <span class="credits left"><a href="./index.html">Table of Contents</a></span>
-        <span class="credits right"><a href="gettingstarted.html">Prev</a>&nbsp;&nbsp;<a href="simulator.html">Next</a></span>
+        <span class="credits right"><a href="gettingstarted.html">Prev</a>&nbsp;&nbsp;<a href="commandline.html">Next</a></span>
         </div>
 <h1 id="victradesyntax">VIC&trade; Syntax</h1>
 
-<p>Now that we have looked at the code, let us note the basic syntax of a typical
-program:</p>
+<p>Now that we have looked at some example code, let us describe more in detail the
+various syntactical details of VIC&trade;.</p>
+
+<p>VIC&trade; syntax is very much like Unix shell scripting with many similarities
+and some notable differences.</p>
+
+<p>A general VIC&trade; code file will have the following:</p>
+
+<ul>
+<li><a href="#picheader"><strong>PIC Header</strong></a>: This is a statement defining which PIC MCU the code is targeting
+ by default. This enables the <code>vic</code> compiler to generate the correct target
+assembly code.</li>
+<li><a href="#pragmas"><strong>Pragmas</strong></a>: These are statements that are specific to the code that the user
+ is writing and informs the <code>vic</code> compiler how to optimize or select certain
+traits for the assembly generation. For example, the user can specify a variable
+to be 16-bits, and all computations with that variable will generate code doing
+16-bit mathematics.</li>
+<li><a href="#comments"><strong>Comments</strong></a>: Comments are supported in VIC&trade; like any other
+ scripting language.</li>
+<li><a href="#blocks"><strong>Blocks</strong></a>: All code that will run on the MCU will have to be enclosed in
+ named blocks denoted by <code>{}</code>. There are many types of blocks supported:
+
+<ul>
+<li><a href="#mainblock">Main</a></li>
+<li><a href="#simulatorblock">Simulator</a></li>
+<li><a href="#loops">Loops</a></li>
+<li><a href="#actions">Actions</a></li>
+<li><a href="#interruptserviceroutines">Interrupt Service Routines</a></li>
+<li><a href="#conditionalblocks">Conditional Blocks</a></li>
+</ul></li>
+</ul>
+
+<p>A typical VIC&trade; program is arranged in the following way:</p>
 
 <pre><code>PIC pic_name;
-block_name {
+pragma pragma_type pragma_values;
+Main {
+    # user invokes functions
     function_name argument, argument, argument, ..., argument;
     function_name argument, argument, argument, ..., argument;
+    function_name argument, argument, argument, ..., argument;
+    function_name argument, argument, argument, ..., argument;
+    ## maybe the user wants to add a loop to perform a certain function
+    ## programs do not need to have loops.
+    Loop {
+        function_name argument, argument, ..., argument;
+    }
+}
+## optional simulator block
+Simulator {
+    # special simulator functions
     function_name argument, argument, argument, ..., argument;
     function_name argument, argument, argument, ..., argument;
 }
 </code></pre>
+
+<p>We shall now describe each of these above items in detail below.</p>
+
+<h2 id="picheader">PIC Header</h2>
+
+<p>Even though the PIC name is required, the <code>vic</code> compiler allows the user to
+change the name of the PIC MCU on the commandline as well.</p>
+
+<h2 id="pragmas">Pragmas</h2>
+
+<h2 id="comments">Comments</h2>
+
+<h2 id="blocks">Blocks</h2>
+
+<h3 id="mainblock">Main Block</h3>
+
+<h3 id="loops">Loops</h3>
+
+<h3 id="actions">Actions</h3>
+
+<h3 id="interruptserviceroutines">Interrupt Service Routines</h3>
+
+<h3 id="conditionalblocks">Conditional Blocks</h3>
+
+<h3 id="simulatorblock">Simulator Block</h3>
 
 <p>As simple as that. Each function name is just followed by the suppported
 arguments for that function. Each block is just a name followed by a brace <code>{</code>
@@ -63,7 +132,7 @@ numbers, hexadecimal numbers and blocks themselves.</p>
     <hr>
     <div id="title">
     <span class="credits left"><a href="./index.html">Table of Contents</a></span>
-    <span class="credits right"><a href="gettingstarted.html">Prev</a>&nbsp;&nbsp;<a href="simulator.html">Next</a></span>
+    <span class="credits right"><a href="gettingstarted.html">Prev</a>&nbsp;&nbsp;<a href="commandline.html">Next</a></span>
     <br/><br/>
     <p style="font-size:14px;">Vikas N Kumar (<a href="https://github.com/vikasnkumar"
 class="user-mention">@vikasnkumar</a>) is the author of
@@ -76,7 +145,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-25 17:50:43 -0400.
+        This page was last updated on 2014-10-26 09:50:32 -0400.
     </p>
     </div>
     </section>

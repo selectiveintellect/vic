@@ -3,7 +3,10 @@
 Writing VIC&trade; code is similar to writing Bash scripts except for the fact
 that there are no functions supported as of version 0.12.
 
-Here is a quick description of the [syntax](syntax.html):
+For more details on the syntax and features of VIC&trade; visit the
+[syntax](syntax.html) page after you have completed this chapter.
+
+To get you quickly started, here is a quick description of the syntax:
 
 - there is a Main block that is required
 - there is a Simulator block that is optional but you can use it to simulate the
@@ -19,6 +22,7 @@ Here is a quick description of the [syntax](syntax.html):
 - you can use VIC&trade; as an intermediate language and write even higher level
   code in your favorite language like Perl, Python or Ruby and generate
 VIC&trade; code from it.
+
 
 Let us begin with the _Hello World!_ program for the MCU world, which is
 lighting up an [LED](https://en.wikipedia.org/wiki/Light-emitting_diode).

@@ -1,2 +1,2 @@
 
-@@NEXT@@ examples.md @@PREV@@ syntax.md
+@@NEXT@@ examples.md @@PREV@@ commandline.md
