@@ -18,3 +18,5 @@ another `}`. _TODO: improve this_
 
 An argument can be anything from the MCU pin, MCU port register, strings,
 numbers, hexadecimal numbers and blocks themselves.
+
+@@NEXT@@ simulator.md @@PREV@@ gettingstarted.md
