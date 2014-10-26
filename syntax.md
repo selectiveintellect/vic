@@ -30,6 +30,8 @@ to be 16-bits, and all computations with that variable will generate code doing
     - [Simulator](#simulatorblock)
 - [**Functions**](#functions): Various in-built functions are present as part of
   VIC&trade; which will be explained in the function [reference](functions.html).
+- [**Operations**](#operations): Arithmetic, assignment, bitwise, complement, logical and unary operations are described
+  here.
 
 A typical VIC&trade; program is arranged in the following way:
 
@@ -142,12 +144,16 @@ such as 32, you can use:
     Note the difference the above two pragma lines, when you use the special
 pragma type `variable`, the property `bits` or `export` is set for all
 variables. When you use the pragma type as the variable name `$myvar`, the
-property `bits` is set only for that variable. The `export` property is valid
-only for the `variable` pragma type.
+property `bits` or `export` is set only for that variable.
 
     This pragma can be used when handling overflows during arithmetic
 operations. It also can be used to optimize code generation and manage memory as
 some MCUs may have very small amounts of free memory.
+
+1. Function-specific
+
+    There are various pragmas that are function specific and will be described in
+the [function reference](functions.html) with the function descriptions.
 
 ## Comments
 
@@ -181,6 +187,12 @@ with the MCU assembly variable handling.
     $var1 = 20;
     $var2 = "hello";
     $var3 = 0xAB;
+
+There are **no** such things as variable declarations. The type of the variable
+is automatically inferred by the `vic compiler. The first time a particular
+variable is used is where it gets _declared_. Currently, as of version 0.12, all
+variables are global. There is no scoping implemented. However, to have a
+variable be accessed by a simulator, they have to be exported using the pragma.
 
 String and numeric literals are supported as in any language. Strings can be
 enclosed within single or double quotes. Numeric literals supported are
@@ -277,14 +289,14 @@ Javascript but the parentheses around conditions is optional.
         $var1++;
     }
 
-A good example of the usage of these statements is in the file
-`share/examples/conditional.vic`.
-
 The `while` loop accepts the `break` and `continue` statements as in the C
 programming language, and they have the same functionality. The `if-else` block
 also accepts the `break` statement to allow the user to break out of the
 inner-most loop that the code instructions might be in. This is very useful for
 conditional breaks out of nested loops.
+
+A good example of the usage of these statements is in the file
+`share/examples/conditional.vic` and `share/examples/loopbreak.vic`.
 
 ### Unconditional Loops
 
@@ -325,22 +337,83 @@ A nested loop construct looks like this:
         # ... back to outer loop ...
     }
 
-A simple example of a forever loop is in `share/examples/blinker.vic`.
+A simple example of a forever loop is in `share/examples/blinker.vic` in the
+source code.
 
 ### Actions
 
+Certain in-built VIC&trade; functions call for certain user-defined callbacks to
+be executed when a condition is met or an event is triggered. This allows for
+VIC&trade; code to natively support events. Such callbacks blocks are called _Actions_.
+
+A typical `Action` block looks like this:
+
+    function_name argument, ..., Action {
+        # .. do something here ...
+    };
+
+`Action` blocks are like any other block where the user adds regular statements to
+the block and they get executed. Variables outside of the `Action` block can be
+accessed in the `Action` block and those inside the block can be accessed
+outside it as well.
+
+Refer the [function reference](functions.html) to see which functions support
+`Action` blocks.
+
 ### Interrupt Service Routines
+
+Interrupt Service Routines (ISR) are similar to `Action` blocks except they are
+invoked based on the interrupt handling of the MCU. One common usage of ISRs are
+with timers. The ISR block starts with the `ISR` keyword.
+
+A typical `ISR` block for a timer looks like this:
+
+    timer_enable TMR0, 256, ISR {
+        # .. do something ..
+    };
+
+An advantage of having an `ISR` block is for the `vic` compiler to handle
+various different ISRs added by the user be managed correctly without errors.
+
+Multiple `ISR` blocks are supported in a single program with this feature. 
 
 ### Simulator Block
 
+Simulator test benches can be created for the VIC&trade; program and this code
+must reside in the `Simulator` block. Except for the `sim_assert` instruction
+which adds C-style assert statements to the `Main` block and its nested blocks,
+all other simulator statements have to be in the `Simulator` block.
+
+For more details on the various simulator commands and functions, click [here](simulator.html).
+
+A sample example displaying the simulator use can be seen on the
+[Getting Started](gettingstarted.html#simulatingthehelloworldprogram) page.
+
 ### Functions
 
-As simple as that. Each function name is just followed by the suppported
-arguments for that function. Each block is just a name followed by a brace `{`
-containing statements or function calls to pre-defined functions and ending by
-another `}`. _TODO: improve this_
+VIC&trade; provides a variety of in-built functions handling various aspects of
+using an MCU such as writing to ports, selection of a port as digital or analog
+input or output, reading from the ADC, debouncing a switch connected to a pin,
+bit rotation, timers, delays and many more as described in the
+[reference](functions.html).
+
+Each function name is just followed by the suppported
+arguments for that function. 
 
 An argument can be anything from the MCU pin, MCU port register, strings,
-numbers, hexadecimal numbers and blocks themselves.
+numbers, hexadecimal numbers, expressions and blocks themselves.
 
+### Operations
+
+Six types of operations are supported on variables: arithmetic, assignment, bitwise, complement, logical and unary.
+These are similar to the C language's arithmetic and logical operators.
+
+- Arithmetic operators: `+`, `-`, `*`, `/`, `%`
+- Assignment operators: `=`, `+=`, `-=`, `*=`, `/=`, `%=`, `^=`, `|=`, `&=`, `<<=`, `>>=`
+- Bitwise operators: `>>`, `<<`, `^`, `&`, `|`
+- Complement operators: `!`, `~`
+- Logical operators: `<`, `>`, `<=`, `>=`, `!=`, `==`, `&&`, `||`
+- Increment/decrement operators: `++`, `--`
+
+The precedence of these operators follows that of the C language.
 @@NEXT@@ commandline.md @@PREV@@ gettingstarted.md
