@@ -60,6 +60,8 @@ to be 16-bits, and all computations with that variable will generate code doing
 16-bit mathematics.</li>
 <li><a href="#comments"><strong>Comments</strong></a>: Comments are supported in VIC&trade; like any other
  scripting language.</li>
+<li><a href="#variablesconstantsandidentifiers"><strong>Variables, Constants and Identifiers</strong></a>: Many types of variables and identifiers are
+ supported.</li>
 <li><a href="#blocks"><strong>Blocks</strong></a>: All code that will run on the MCU will have to be enclosed in
  named blocks denoted by <code>{}</code>. There are many types of blocks supported:
 
@@ -71,6 +73,8 @@ to be 16-bits, and all computations with that variable will generate code doing
 <li><a href="#interruptserviceroutines">Interrupt Service Routines</a></li>
 <li><a href="#conditionalblocks">Conditional Blocks</a></li>
 </ul></li>
+<li><a href="#functions"><strong>Functions</strong></a>: Various in-built functions are present as part of
+ VIC&trade; which will be explained in the function <a href="functions.html">reference</a>.</li>
 </ul>
 
 <p>A typical VIC&trade; program is arranged in the following way:</p>
@@ -101,12 +105,170 @@ Simulator {
 
 <h2 id="picheader">PIC Header</h2>
 
+<p>The PIC header is a single line statement that begins the program. It is a
+<strong>required</strong> statement and tells the <code>vic</code> compiler and the program author which PIC
+MCU is being targeted.</p>
+
+<p>The general syntax of the PIC header is as below:</p>
+
+<pre><code>PIC &lt;MCU name&gt;;
+</code></pre>
+
+<p>The name of the PIC MCU used is case insensitive although the
+keyword <code class="highlight"><span class="kn">PIC</span></code> is case sensitive.</p>
+
 <p>Even though the PIC name is required, the <code>vic</code> compiler allows the user to
-change the name of the PIC MCU on the commandline as well.</p>
+change the name of the PIC MCU on the <a href="commandline.html">commandline</a> using the <code>-p</code> option.</p>
+
+<p>Thus the same code file can be compiled to various PIC MCU assembly targets by
+changing the PIC MCU name at runtime, without editing the code.</p>
 
 <h2 id="pragmas">Pragmas</h2>
 
+<p>Pragmas are <em>optional</em> statements provided by the user to fine tune code
+generation performed by the compiler. The user should use pragmas to inform the
+compiler of specific code generation traits or properties. Depending on the
+function being used, it may or may not have a pragma associated with it.</p>
+
+<p>All pragmas start with the keyword <code class="highlight"><span class="kn">pragma</span></code>.
+The general syntax of a pragma statement is one of the two types:</p>
+
+<pre><code>pragma &lt;pragma type&gt; &lt;property&gt; = &lt;value&gt;;
+pragma &lt;pragma type&gt; &lt;property&gt;;
+</code></pre>
+
+<p>Some pragma types have properties that are key-value pairs, and some pragma
+types have properties which act as the values for the pragma type itself.</p>
+
+<p>General pragma types are described as follows:</p>
+
+<ol>
+<li><p><code>simulator</code></p>
+
+<p>The simulator pragma type defines the type of simulator that the
+<code>vic</code> compiler will be generating target code for. By default, if the
+pragma is not given, the simulator code will be generated for the default
+simulator. Otherwise, the property of this pragma type is the name of any of the
+supported simulators.</p>
+
+<p>Currently, since only <code>gpsim</code> is supported the default simulator is also
+<code>gpsim</code>. Hence any of the following statments are valid statements:</p>
+
+<pre><code>pragma simulator gpsim;
+pragma simulator default;
+</code></pre>
+
+<p>To disable code generation of the simulator, in the scenario that <code>gpsim</code> is not
+installed, such as on Microsoft Windows&reg; the user can use the following
+pragma:</p>
+
+<pre><code>pragma simulator disable;
+</code></pre></li>
+<li><p><code>variable</code></p>
+
+<p>The variable pragma type is used to define the bit-width of either all
+variables, or only certain variables, and also handles exporting of variables to
+the global namespace in the code generated, for use by <a href="simulator.html">simulator statements</a> like
+<code>sim_assert</code>.</p>
+
+<p>To export all variables to the global namespace, you have to use the below
+pragma:</p>
+
+<pre><code>pragma variable export;
+</code></pre>
+
+<p>To set the bit width of all variables to be 16, you have to use the below
+pragma:</p>
+
+<pre><code>pragma variable bits = 16;
+</code></pre>
+
+<p>By default the bit width of all variables is a property of the MCU, and the
+most common value is 8. The different types of bit widths supported are 8, 16,
+32 and 64.</p>
+
+<p>To set the bit width of a specific variable <code>$myvar</code> to be a value greater than 8
+such as 32, you can use:</p>
+
+<pre><code>pragma $myvar bits = 32;
+</code></pre>
+
+<p>Note the difference the above two pragma lines, when you use the special
+pragma type <code>variable</code>, the property <code>bits</code> or <code>export</code> is set for all
+variables. When you use the pragma type as the variable name <code>$myvar</code>, the
+property <code>bits</code> is set only for that variable. The <code>export</code> property is valid
+only for the <code>variable</code> pragma type.</p>
+
+<p>This pragma can be used when handling overflows during arithmetic
+operations. It also can be used to optimize code generation and manage memory as
+some MCUs may have very small amounts of free memory.</p></li>
+</ol>
+
 <h2 id="comments">Comments</h2>
+
+<p>Like any scripting language such as Perl, Python, Ruby or shell, VIC&trade;
+accepts anything that follows a <code>#</code> to be a comment as long as it is not
+enclosed within quotes.</p>
+
+<p>The following are comments:</p>
+
+<pre><code># this is a comment
+some_random_statement ....; # this part is a comment too
+</code></pre>
+
+<p>The following are not comments:</p>
+
+<pre><code>$var = &quot;this is a string # this is not a comment&quot;;
+</code></pre>
+
+<p>Empty lines and lines with all spaces are also considered as comments by the <code>vic</code> compiler and they
+are ignored.</p>
+
+<h2 id="variablesconstantsandidentifiers">Variables, Constants and Identifiers</h2>
+
+<p>VIC&trade; supports user defined variables, string and numeric literals,
+constant identifiers such as MCU pin numbers and
+general identifiers such as function names, conditional keywords and block names.</p>
+
+<p>All variables should start with a <code>$</code> sign followed by an alphanumeric string of
+any length. The name of the variable has to start with an alphabet in the set
+<code>[A-Za-z]</code>. The variable names are case insensitive to maintain compatibility
+with the MCU assembly variable handling.</p>
+
+<pre><code>$var1 = 20;
+$var2 = &quot;hello&quot;;
+$var3 = 0xAB;
+</code></pre>
+
+<p>String and numeric literals are supported as in any language. Strings can be
+enclosed within single or double quotes. Numeric literals supported are
+integers, hexadecimal numbers and booleans. The boolean keywords are <code>true</code> and
+<code>false</code> and they are case insensitive.</p>
+
+<p>Numeric constants can also accept units such as <code>s</code> for seconds, <code>ms</code> for
+milliseconds, <code>us</code> for microseconds, <code>Hz</code> for Hertz, <code>kHz</code> for kilo Hertz,
+<code>MHz</code> for mega Hertz and <code>%</code> for percent.</p>
+
+<pre><code>$my_timer = 1s;
+$frequency = 4MHz;
+$pwmcycle = 20%;
+</code></pre>
+
+<p>The language keywords are: <code>if</code>, <code>else</code> and <code>while</code>. They are case <em>sensitive</em>.</p>
+
+<p>Constants are validated keywords that are not the language keywords but
+represent some aspect of the MCU being targeted. Generally they are the pin
+names, such as those shown in the <a href="gettingstarted.html#savingcodeashelloworld.vic">pin diagram</a> of the MCU.
+Many other standard names are also accepted such as GPIO port names, Timer
+register names, UART/SPI/I2C port names, ADC/DAC port names, comparator names,
+clock pins, PWM pins, etc. It depends on the MCU being handled and the user may
+need to quickly read the pin listings from the data sheet for their MCU or use
+the <code>vic</code> compiler&#8217;s <a href="commandline.html">commandline</a> options to list the valid
+pin constants. Some sample constants look like <code>RC0</code>, <code>PORTA</code>, <code>TMR0</code>, <code>USART</code>.</p>
+
+<p>Other general identifiers are standard alphanumeric strings which start with an
+alphabet in the range <code>[A-Za-z]</code> followed by any number of alphanumeric
+characters. These identifiers are used for block names and function names. </p>
 
 <h2 id="blocks">Blocks</h2>
 
@@ -121,6 +283,8 @@ change the name of the PIC MCU on the commandline as well.</p>
 <h3 id="conditionalblocks">Conditional Blocks</h3>
 
 <h3 id="simulatorblock">Simulator Block</h3>
+
+<h3 id="functions">Functions</h3>
 
 <p>As simple as that. Each function name is just followed by the suppported
 arguments for that function. Each block is just a name followed by a brace <code>{</code>
@@ -145,7 +309,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-26 09:50:32 -0400.
+        This page was last updated on 2014-10-26 11:07:49 -0400.
     </p>
     </div>
     </section>
