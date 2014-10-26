@@ -184,4 +184,4 @@ or
 
 All of the above do the same thing.
 
-@@NEXT@@ gettingstarted.md @@PREV@@ inception.md
+@@NEXT@@ hardware.md @@PREV@@ inception.md

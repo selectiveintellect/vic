@@ -7,6 +7,7 @@ VIC&trade; is a nice syntax that compiles to Microchip's PIC&reg; assembly.
 1. [What is VIC ?](faq.html)
 1. [Inception](inception.html)
 1. [Installation](install.html)
+1. [Supported Target Hardware](hardware.html)
 1. [Getting Started](gettingstarted.html)
 1. [Language Syntax](syntax.html)
 1. [Commandline Options](commandline.html)
