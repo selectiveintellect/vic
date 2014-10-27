@@ -22,7 +22,7 @@ test $IS_OK -eq 0 && {
     exit 1
 }
 echo "Using $MKD on $FILE to create $HTMLFILE"
-cat > $HTMLFILE << HEADER
+cat > $HTMLFILE << HEADER_1
 <!doctype html>
 <html>
   <head>
@@ -39,6 +39,16 @@ cat > $HTMLFILE << HEADER
     <!--[if lt IE 8]>
     <link rel="stylesheet" href="stylesheets/ie.css">
     <![endif]-->
+HEADER_1
+HIGHLIGHT=$(grep @@HIGHLIGHT@@ $FILE | wc -l)
+if [[ $HIGHLIGHT -ne 0 ]]; then
+    cat >> $HTMLFILE <<HIGHLIGHTER
+    <link rel="stylesheet" href="stylesheets/zenburn.css">
+    <script src="javascripts/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+HIGHLIGHTER
+fi
+cat >> $HTMLFILE << HEADER_2
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
   </head>
@@ -64,15 +74,16 @@ cat > $HTMLFILE << HEADER
         <span class="credits left"><a href="./index.html">Table of Contents</a></span>
         <span class="credits right"><a href="__PREV__">Prev</a>&nbsp;&nbsp;<a href="__NEXT__">Next</a></span>
         </div>
-HEADER
+HEADER_2
 NEXTLINE=$(grep @@NEXT@@ $FILE | sed -e 's/.*@@NEXT@@ \(.*md\)/\1/g' | awk '{print $1;}')
 PREVLINE=$(grep @@PREV@@ $FILE | sed -e 's/.*@@PREV@@ \(.*md\)/\1/g' | awk '{print $1;}')
 NEXTLINE=$(echo $NEXTLINE | sed -e 's/\.md$/\.html/g')
 PREVLINE=$(echo $PREVLINE | sed -e 's/\.md$/\.html/g')
 sed -e "s/.*@@NEXT@@.*//g" $FILE > ${FILE}.1
-sed -e "s/.*@@PREV@@.*//g" $FILE > ${FILE}.1
+sed -i -e "s/.*@@PREV@@.*//g" $FILE.1
+sed -i -e "s/.*@@HIGHLIGHT@@.*//g" $FILE.1
 $MKD ${FILE}.1 >> $HTMLFILE
-rm -f ${FILE}.1
+rm -f ${FILE}.1 ${FILE}-e ${FILE}.1-e
 
 cat >> $HTMLFILE << FOOTER
     <hr>
