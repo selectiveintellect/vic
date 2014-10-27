@@ -22,7 +22,7 @@ Slides for the most recent demo of VIC&trade; are available
 
 You will need a modern HTML5 supporting
 browser, such as the latest versions of Mozilla Firefox, Google Chrome,
-Microsoft Internet Explorer or Apple Safari.
+Microsoft Internet Explorer or Apple Safari to view the slides.
 
 ## Authors
 
