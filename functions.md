@@ -462,6 +462,23 @@ enabling of the ADC, if it needs to be enabled again later.
 
 - `adc_read`
 
+    Syntax:
+
+        adc_read <output variable>;
+
+    This function does the conversion when called and once the conversion is
+complete, fills the output variable with the converted value. If the output
+value is greater than 8-bits the variable size is automatically adjusted to
+handle that.
+
+    Examples:
+
+        Main {
+            adc_enable;
+            # .. do something ..
+            adc_read $var1; # read the conversion into $var1
+        }
+
 ## Pulse Width Modulation (PWM) Functions
 
 - `pwm_single`
