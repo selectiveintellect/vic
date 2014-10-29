@@ -2242,6 +2242,7 @@ sub adc_disable {
 }
 
 sub adc_read {
+    #TODO: if the variable is 16-bit the varlow should be auto-adjusted
     my ($self, $varhigh, $varlow) = @_;
     $varhigh = uc $varhigh;
     $varlow = uc $varlow if defined $varlow;
