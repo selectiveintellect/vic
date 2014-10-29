@@ -2200,7 +2200,8 @@ sub adc_enable {
     my $self = shift;
     if (@_) {
         my ($clock, $channel) = @_;
-        my $scale = int(1e6 / $clock) if $clock > 0;
+        my $f_osc = $self->frequency;
+        my $scale = int(($f_osc / 4) / $clock) if $clock > 0;
         $scale = 2 unless $clock;
         $scale = 2 if $scale < 2;
         my $adcs = $self->adcon1_scale->{$scale};
