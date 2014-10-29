@@ -8,7 +8,7 @@ and some notable differences.
 
 A general VIC&trade; code file will have the following types of _statements_:
 
-- [**PIC Header**](#picheader): This is a statement defining which PIC MCU the code is targeting
+- [**PIC Header**](#picheader): This is a statement defining which Microchip's PIC&reg; MCU the code is targeting
   by default. This enables the `vic` compiler to generate the correct target
 assembly code.
 - [**Pragmas**](#pragmas): These are statements that are specific to the code that the user
@@ -68,14 +68,14 @@ The general syntax of the PIC header is as below:
 
     PIC <MCU name>;
 
-The name of the PIC MCU used is case insensitive although the
+The name of the PIC&reg; MCU used is case insensitive although the
 keyword <code class="highlight"><span class="kn">PIC</span></code> is case sensitive.
 
 Even though the PIC name is required, the `vic` compiler allows the user to
-change the name of the PIC MCU on the [commandline](commandline.html) using the `-p` option.
+change the name of the PIC&reg; MCU on the [commandline](commandline.html) using the `-p` option.
 
-Thus the same code file can be compiled to various PIC MCU assembly targets by
-changing the PIC MCU name at runtime, without editing the code.
+Thus the same code file can be compiled to various PIC&reg; MCU assembly targets by
+changing the PIC&reg; MCU name at runtime, without editing the code.
 
 ## Pragmas
 

@@ -105,7 +105,7 @@ example you can do the following:
 
     $ ./bin/vic ./share/examples/helloworld.vic -o ./share/examples/helloworld.asm
 
-This will generate the PIC assembly for the VIC file.
+This will generate the PIC&reg; assembly for the VIC file.
 
 ##Placing `vic` in your `$PATH` for Makefiles
 

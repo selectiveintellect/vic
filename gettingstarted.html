@@ -52,9 +52,9 @@ that there are no functions supported as of version 0.12.</p>
 <ul>
 <li>there is a Main block that is required</li>
 <li>there is a Simulator block that is optional but you can use it to simulate the
- generated PIC assembly code in a supported simulator like <code>gpsim</code></li>
+ generated PIC&reg; assembly code in a supported simulator like <code>gpsim</code></li>
 <li>code generation properties can be manipulated by pragmas</li>
-<li>the PIC MCU selected can be defined by a single line header</li>
+<li>the PIC&reg; MCU selected can be defined by a single line header</li>
 <li>blocks are defined using braces <code>{}</code></li>
 <li>statements end with a semi-colon <code>;</code></li>
 <li>indentation is personal choice and not a forced choice like that of Python</li>
@@ -73,7 +73,7 @@ lighting up an <a href="https://en.wikipedia.org/wiki/Light-emitting_diode">LED<
 
 <p>This example is available in the file <code>share/examples/helloworld.vic</code>.</p>
 
-<p>Let us select the PIC MCU P16F690 that comes with the
+<p>Let us select the PIC&reg; MCU P16F690 that comes with the
 <a href="http://www.microchip.com/DevelopmentTools/ProductDetails.aspx?PartNO=DV164120">PICKit&trade; 2 Starter Kit</a>
  from Microchip. From the data sheet of this MCU, we can see the following pin
 configuration:</p>
@@ -117,7 +117,7 @@ they mean.</p>
 <ol>
 <li><p><code class="highlight"><span class="kn">PIC</span> <span class="l">P16F690</span>;</code></p>
 
-<p>This is the one-line header that defines which PIC MCU this program is
+<p>This is the one-line header that defines which PIC&reg; MCU this program is
 targeting. It tells the VIC&trade; compiler to verify the pin names that the
 user has used in the code, inform the user if they are wrong and generate custom
 assembly code for that specific MCU.</p></li>
@@ -240,7 +240,7 @@ the following command:</p>
 <pre><code>$ vic helloworld.vic -o helloworld.asm
 </code></pre>
 
-<p>This creates the PIC assembly file that the user can then manipulate further if
+<p>This creates the PIC&reg; assembly file that the user can then manipulate further if
 they want to. Then the user compiles this the standard way using <code>gputils</code>.</p>
 
 <pre><code>$ gpasm -o helloworld.o helloworld.asm
@@ -303,7 +303,7 @@ simulation.</p>
 
 <hr />
 
-<h2 id="runningthecodeonthepicitself">Running the code on the PIC itself</h2>
+<h2 id="runningthecodeonthepicregitself">Running the code on the PIC&reg; itself</h2>
 
 <p>For the <a href="http://www.microchip.com/pickit2/">PICKit 2 Starter Kit</a>, there is an open source software called
 <a href="pk2cmd.html"><code>pk2cmd</code></a>

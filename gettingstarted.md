@@ -10,9 +10,9 @@ To get you quickly started, here is a quick description of the syntax:
 
 - there is a Main block that is required
 - there is a Simulator block that is optional but you can use it to simulate the
-  generated PIC assembly code in a supported simulator like `gpsim`
+  generated PIC&reg; assembly code in a supported simulator like `gpsim`
 - code generation properties can be manipulated by pragmas
-- the PIC MCU selected can be defined by a single line header
+- the PIC&reg; MCU selected can be defined by a single line header
 - blocks are defined using braces `{}`
 - statements end with a semi-colon `;`
 - indentation is personal choice and not a forced choice like that of Python
@@ -31,7 +31,7 @@ lighting up an [LED](https://en.wikipedia.org/wiki/Light-emitting_diode).
 
 This example is available in the file `share/examples/helloworld.vic`.
 
-Let us select the PIC MCU P16F690 that comes with the
+Let us select the PIC&reg; MCU P16F690 that comes with the
 [PICKit&trade; 2 Starter Kit](http://www.microchip.com/DevelopmentTools/ProductDetails.aspx?PartNO=DV164120)
  from Microchip. From the data sheet of this MCU, we can see the following pin
 configuration:
@@ -70,7 +70,7 @@ they mean.
 
 1. <code class="highlight"><span class="kn">PIC</span> <span class="l">P16F690</span>;</code>
 
-    This is the one-line header that defines which PIC MCU this program is
+    This is the one-line header that defines which PIC&reg; MCU this program is
 targeting. It tells the VIC&trade; compiler to verify the pin names that the
 user has used in the code, inform the user if they are wrong and generate custom
 assembly code for that specific MCU.
@@ -198,7 +198,7 @@ the following command:
 
     $ vic helloworld.vic -o helloworld.asm
 
-This creates the PIC assembly file that the user can then manipulate further if
+This creates the PIC&reg; assembly file that the user can then manipulate further if
 they want to. Then the user compiles this the standard way using `gputils`.
 
     $ gpasm -o helloworld.o helloworld.asm
@@ -252,7 +252,7 @@ simulation.
 
 ---
 
-## Running the code on the PIC itself
+## Running the code on the PIC&reg; itself
 
 For the [PICKit 2 Starter Kit](http://www.microchip.com/pickit2/), there is an open source software called
 [`pk2cmd`](pk2cmd.html)
