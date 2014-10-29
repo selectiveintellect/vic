@@ -162,7 +162,7 @@ pragma debounce delay = &lt;TIME&gt;;
 
 <p>This function performs <a href="https://en.wikipedia.org/wiki/Debouncing#Contact_bounce">debouncing</a> of the input on the given MCU pin. The pin
 should have been configured as a digital or analog input for this to work
-properly. Once the debouncing has completed, the <code>Action</code> block provided is
+properly. Once the debouncing has completed, the <a href="syntax.html#actions">action block</a> provided is
 invoked by the program.</p>
 
 <p>The debouncing function can be configured to generate code based on
@@ -289,9 +289,103 @@ chip has been restarted or for testing.</p>
 <h2 id="timerandinterruptfunctions">Timer and Interrupt Functions</h2>
 
 <ul>
-<li><p><code>timer_enable</code></p></li>
-<li><p><code>timer_disable</code></p></li>
-<li><p><code>timer</code></p></li>
+<li><p><code>timer_enable</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>timer_enable &lt;TIMER PORT&gt;, &lt;prescale value&gt;;
+timer_enable &lt;TIMER PORT&gt;, &lt;prescale value&gt;, ISR {
+    ## ... do something ...
+};
+</code></pre>
+
+<p>This function has two ways it can be used. Each of these ways are
+independent of the other.</p>
+
+<p>The first syntax line shown simply enables the timer
+given by the timer port, such as <code>TMR0</code> or <code>TMR1</code> or <code>WDT</code> of a PIC&reg; MCU, with a
+pre-scaler value as specified by the timer port&#8217;s data sheet. Pre-scaler values
+generally are powers of 2 between 1 and 256, inclusive. Once the timer has been
+enabled, the user will need to use the <code>timer</code> function described in this
+section to use the events created by the timer. This can be used if there is a
+periodic task that needs to be done in a loop on a timer. The pre-scaler is used
+to adjust the clock frequency by dividing the default clock frequency of the
+PIC&reg; MCU by the pre-scale value, e.g. a pre-scale value of 4 when dividing a
+<code>TMR0</code> input 1 MHz frequency would send a 250kHz clock into the <code>TMR0</code>.</p>
+
+<p>The second syntax line shown enables the timer and sets it up as an
+interrupt handler to invoke the <a href="syntax.html#interruptserviceroutines">interrupt service routine</a> <code>ISR</code> block.
+This is different since it is completely asynchronous and the event handling is
+done by the MCU itself. There is a different section of the code section where
+the interrupt service routine is stored unlike in the <code>timer</code> function. This can
+be used to use interrupts to handle asynchronous events such as A/D converter
+reads or for watchdog timer <code>WDT</code> usage.</p>
+
+<p>Examples:</p>
+
+<p>The first syntax usage example:</p>
+
+<pre><code>Main {
+    timer_enable TMR0, 256;
+    Loop {
+        timer Action {
+            # ... do something ...
+        };
+    }
+}
+</code></pre>
+
+<p>The second syntax usage example:</p>
+
+<pre><code>Main {
+    timer_enable TMR0, 256, ISR {
+        # .. do something ..
+    };
+}
+</code></pre></li>
+<li><p><code>timer_disable</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>timer_disable &lt;TIMER PORT&gt;;
+</code></pre>
+
+<p>This function disables a timer that had been enabled using <code>timer_enable</code>.
+It takes the timer port as an argument.</p>
+
+<p>Examples:</p>
+
+<pre><code>Main {
+    timer_enable TMR0, 256;
+    # .. do something ..
+    timer_disable TMR0;
+}
+</code></pre></li>
+<li><p><code>timer</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>timer Action {
+    # .. do something ..
+};
+</code></pre>
+
+<p>This function sets up a synchronous polling event handler for the timer port
+that was setup using the <code>timer_enable</code> function. If the timer is ready, the
+<a href="#syntax.html#actions">action block</a> is invoked. The timer is ready based on the
+pre-scale value given in the <code>timer_enable</code> function.</p>
+
+<p>Examples:</p>
+
+<pre><code>Main {
+    timer_enable TMR0, 256;
+    Loop {
+        timer Action {
+            # ... do something ...
+        };
+    }
+}
+</code></pre></li>
 </ul>
 
 <h2 id="mathfunctions">Math Functions</h2>
@@ -348,7 +442,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-29 12:05:22 -0400.
+        This page was last updated on 2014-10-29 12:19:51 -0400.
     </p>
     </div>
     </section>

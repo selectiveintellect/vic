@@ -111,7 +111,7 @@ analog input.
 
     This function performs [debouncing](https://en.wikipedia.org/wiki/Debouncing#Contact_bounce) of the input on the given MCU pin. The pin
 should have been configured as a digital or analog input for this to work
-properly. Once the debouncing has completed, the `Action` block provided is
+properly. Once the debouncing has completed, the [action block](syntax.html#actions) provided is
 invoked by the program.
 
     The debouncing function can be configured to generate code based on
@@ -229,9 +229,96 @@ chip has been restarted or for testing.
 
 - `timer_enable`
 
+    Syntax:
+
+        timer_enable <TIMER PORT>, <prescale value>;
+        timer_enable <TIMER PORT>, <prescale value>, ISR {
+            ## ... do something ...
+        };
+
+    This function has two ways it can be used. Each of these ways are
+independent of the other.
+
+    The first syntax line shown simply enables the timer
+given by the timer port, such as `TMR0` or `TMR1` or `WDT` of a PIC&reg; MCU, with a
+pre-scaler value as specified by the timer port's data sheet. Pre-scaler values
+generally are powers of 2 between 1 and 256, inclusive. Once the timer has been
+enabled, the user will need to use the `timer` function described in this
+section to use the events created by the timer. This can be used if there is a
+periodic task that needs to be done in a loop on a timer. The pre-scaler is used
+to adjust the clock frequency by dividing the default clock frequency of the
+PIC&reg; MCU by the pre-scale value, e.g. a pre-scale value of 4 when dividing a
+`TMR0` input 1 MHz frequency would send a 250kHz clock into the `TMR0`.
+
+    The second syntax line shown enables the timer and sets it up as an
+interrupt handler to invoke the [interrupt service routine](syntax.html#interruptserviceroutines) `ISR` block.
+This is different since it is completely asynchronous and the event handling is
+done by the MCU itself. There is a different section of the code section where
+the interrupt service routine is stored unlike in the `timer` function. This can
+be used to use interrupts to handle asynchronous events such as A/D converter
+reads or for watchdog timer `WDT` usage.
+
+    Examples:
+
+    The first syntax usage example:
+
+        Main {
+            timer_enable TMR0, 256;
+            Loop {
+                timer Action {
+                    # ... do something ...
+                };
+            }
+        }
+
+    The second syntax usage example:
+
+        Main {
+            timer_enable TMR0, 256, ISR {
+                # .. do something ..
+            };
+        }
+
 - `timer_disable`
 
+    Syntax:
+
+        timer_disable <TIMER PORT>;
+
+    This function disables a timer that had been enabled using `timer_enable`.
+It takes the timer port as an argument.
+
+    Examples:
+
+        Main {
+            timer_enable TMR0, 256;
+            # .. do something ..
+            timer_disable TMR0;
+        }
+
 - `timer`
+
+    Syntax:
+
+        timer Action {
+            # .. do something ..
+        };
+
+    This function sets up a synchronous polling event handler for the timer port
+that was setup using the `timer_enable` function. If the timer is ready, the
+[action block](#syntax.html#actions) is invoked. The timer is ready based on the
+pre-scale value given in the `timer_enable` function.
+
+    Examples:
+
+        Main {
+            timer_enable TMR0, 256;
+            Loop {
+                timer Action {
+                    # ... do something ...
+                };
+            }
+        }
 
 ## Math Functions
 
