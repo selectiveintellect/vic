@@ -63,7 +63,7 @@ like [GNU PIC simulator](http://gpsim.sourceforge.net/gpsim.html) `gpsim`, and i
 
 In addition to all of this, having to read data sheets for each microcontroller
 in detail to implement standard features like debouncing inputs, analog to
-digital (A/D) conversion,
+digital conversion (ADC),
 UART/SPI/I<sup>2</sup>C serial bus implementation could be completely avoided if
 VIC&trade; provided these out of the box.
 

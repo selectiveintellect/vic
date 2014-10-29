@@ -64,7 +64,7 @@ very noisy about it and inform the programmer on how to fix their code.</p>
 
 <p>Syntax:</p>
 
-<pre><code>digital_output &lt;PORT | PIN&gt;;
+<pre><code>digital_output &lt;port | pin&gt;;
 </code></pre>
 
 <p>This function sets the given MCU port or pin name as a digital output. It
@@ -82,8 +82,8 @@ digital_output RC0;
 
 <p>Syntax:</p>
 
-<pre><code>write &lt;PORT&gt;, &lt;CONSTANT| variable | PORT&gt;;
-write &lt;PIN&gt;, &lt;CONSTANT | variable | PIN&gt;;
+<pre><code>write &lt;port&gt;, &lt;CONSTANT| variable | port&gt;;
+write &lt;pin&gt;, &lt;CONSTANT | variable | pin&gt;;
 </code></pre>
 
 <p>This function <em>writes</em> values to an MCU pin or a port register. The values
@@ -109,7 +109,7 @@ write PORTA, PORTC;
 
 <p>Syntax:</p>
 
-<pre><code>analog_input &lt;PORT | PIN&gt;;
+<pre><code>analog_input &lt;port | analog pin&gt;;
 </code></pre>
 
 <p>This function sets the given MCU port or pin name as an analog input. It
@@ -128,7 +128,7 @@ analog_input PORTA; # sets all the capable analog pins only
 
 <p>Syntax:</p>
 
-<pre><code>digital_input &lt;PORT | PIN&gt;;
+<pre><code>digital_input &lt;port | pin&gt;;
 </code></pre>
 
 <p>This function sets the given MCU port or pin name as a digital input. This
@@ -149,7 +149,7 @@ digital_input PORTA; # sets all the capable analog pins only
 
 <p>Syntax:</p>
 
-<pre><code>debounce &lt;PIN&gt;, Action {
+<pre><code>debounce &lt;pin&gt;, Action {
     ## ... do something ...
 };
 </code></pre>
@@ -293,8 +293,8 @@ chip has been restarted or for testing.</p>
 
 <p>Syntax:</p>
 
-<pre><code>timer_enable &lt;TIMER PORT&gt;, &lt;prescale value&gt;;
-timer_enable &lt;TIMER PORT&gt;, &lt;prescale value&gt;, ISR {
+<pre><code>timer_enable &lt;timer port&gt;, &lt;frequency&gt;;
+timer_enable &lt;timer port&gt;, &lt;frequency&gt;, ISR {
     ## ... do something ...
 };
 </code></pre>
@@ -304,29 +304,32 @@ independent of the other.</p>
 
 <p>The first syntax line shown simply enables the timer
 given by the timer port, such as <code>TMR0</code> or <code>TMR1</code> or <code>WDT</code> of a PIC&reg; MCU, with a
-pre-scaler value as specified by the timer port&#8217;s data sheet. Pre-scaler values
-generally are powers of 2 between 1 and 256, inclusive. Once the timer has been
-enabled, the user will need to use the <code>timer</code> function described in this
+frequency of invoking the timer in <code>Hz</code>, <code>kHz</code> or <code>MHz</code>. Depending on the
+PIC&reg; MCU, the frequency may be adjusted to levels acceptable by the MCU. For
+example, if an MCU can accept a minimum frequency of 4kHz and the user gives
+2kHz, the code generation will still use 4kHz since that is the minimum
+acceptable frequency for the MCU.</p>
+
+<p>Once the timer has been enabled, the user will need to use the <code>timer</code> function described in this
 section to use the events created by the timer. This can be used if there is a
-periodic task that needs to be done in a loop on a timer. The pre-scaler is used
-to adjust the clock frequency by dividing the default clock frequency of the
-PIC&reg; MCU by the pre-scale value, e.g. a pre-scale value of 4 when dividing a
-<code>TMR0</code> input 1 MHz frequency would send a 250kHz clock into the <code>TMR0</code>.</p>
+periodic task that needs to be done in a loop on a timer. The frequency argument is used
+to adjust the clock frequency when the timer port on the MCU gets sent a
+positive clock signal.</p>
 
 <p>The second syntax line shown enables the timer and sets it up as an
 interrupt handler to invoke the <a href="syntax.html#interruptserviceroutines">interrupt service routine</a> <code>ISR</code> block.
 This is different since it is completely asynchronous and the event handling is
 done by the MCU itself. There is a different section of the code section where
 the interrupt service routine is stored unlike in the <code>timer</code> function. This can
-be used to use interrupts to handle asynchronous events such as A/D converter
-reads or for watchdog timer <code>WDT</code> usage.</p>
+be used to use interrupts to handle asynchronous events such as
+analog-to-digital converter (ADC) reads or for watchdog timer <code>WDT</code> usage.</p>
 
 <p>Examples:</p>
 
 <p>The first syntax usage example:</p>
 
 <pre><code>Main {
-    timer_enable TMR0, 256;
+    timer_enable TMR0, 4kHz;
     Loop {
         timer Action {
             # ... do something ...
@@ -338,7 +341,7 @@ reads or for watchdog timer <code>WDT</code> usage.</p>
 <p>The second syntax usage example:</p>
 
 <pre><code>Main {
-    timer_enable TMR0, 256, ISR {
+    timer_enable TMR0, 8kHz, ISR {
         # .. do something ..
     };
 }
@@ -347,7 +350,7 @@ reads or for watchdog timer <code>WDT</code> usage.</p>
 
 <p>Syntax:</p>
 
-<pre><code>timer_disable &lt;TIMER PORT&gt;;
+<pre><code>timer_disable &lt;timer port&gt;;
 </code></pre>
 
 <p>This function disables a timer that had been enabled using <code>timer_enable</code>.
@@ -402,7 +405,7 @@ pre-scale value given in the <code>timer_enable</code> function.</p>
 specified towards the left. The value in the variable is then updated with the
 rotated value.</p>
 
-<p>Since the rotation does not have an operator like <code>&gt;&gt;</code> or <code>&lt;&lt;</code>, we have a special
+<p>Since the rotation does not have an operator like <code>&gt;&gt;</code> or <code>&lt;&lt;</code> we have a special
 function dedicated to it.</p>
 
 <p>Example:</p>
@@ -425,7 +428,7 @@ function dedicated to it.</p>
 specified towards the right. The value in the variable is then updated with the
 rotated value.</p>
 
-<p>Since the rotation does not have an operator like <code>&gt;&gt;</code> or <code>&lt;&lt;</code>, we have a special
+<p>Since the rotation does not have an operator like <code>&gt;&gt;</code> or <code>&lt;&lt;</code> we have a special
 function dedicated to it.</p>
 
 <p>Example:</p>
@@ -458,11 +461,83 @@ unlike the <code>ror</code> or <code>rol</code> functions.</p>
 </code></pre></li>
 </ul>
 
-<h2 id="analogdigitalconverterfunctions">Analog/Digital Converter Functions</h2>
+<h2 id="analog-to-digitalconverteradcfunctions">Analog-to-Digital Converter (ADC) Functions</h2>
 
 <ul>
-<li><p><code>adc_enable</code></p></li>
-<li><p><code>adc_disable</code></p></li>
+<li><p><code>adc_enable</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>adc_enable;
+adc_enable &lt;frequency&gt;;
+adc_enable &lt;frequency&gt;, &lt;analog pin&gt;;
+</code></pre>
+
+<p>Pragmas:</p>
+
+<pre><code>pragma adc right_justify = &lt;0 | 1&gt;;
+pragma adc vref = &lt;0 | 1&gt;;
+pragma adc internal = &lt;0 | 1&gt;;
+</code></pre>
+
+<p>This function enables the ADC on the PIC&reg; MCU. It either
+takens no arguments or takes a frequency and optionally an analog pin or channel as the argument.
+The frequency is the MCU frequency divided by a power of 2 between 1 and 64. It
+sets the conversion clock of the ADC. When no frequency is specified, the
+default frequency of the MCU is used. When no analog pin is specified the
+default analog channel is used. Generally this default channel is <code>AN0</code> but that
+may change depending on the PIC&reg; MCU being used. The units of frequency are
+in <code>Hz</code>, <code>kHz</code> or <code>MHz</code>.</p>
+
+<p>The function can be configured to generate code based on
+<a href="syntax.html#pragmas">pragmas</a>. As we note above, three pragmas are accepted. The
+<code>right_justify</code> pragma is useful if the ADC result is greater than
+8-bits which is the case in many PIC&reg; MCUs. Some MCUs represent these
+results in a 10-bit format, and when storing the 10-bits in two 8-bit registers
+the user can select whether to right-justify the output or left-justify.
+Essentially, this just affects the code generation and the user should <strong>not</strong>
+have to use this pragma at all unless they are generating code with <code>vic</code> and
+then modifying it by hand. The default value for this pragma is <code>1</code>. The user may
+choose to use <code>0</code> as the other possible value.</p>
+
+<p>The <code>vref</code> pragma is used to define if the positive reference voltage is
+<code>V&lt;sub&gt;DD&lt;/sub&gt;</code> of the MCU or an external voltage source on the <code>V&lt;sub&gt;REF&lt;/sub&gt;</code>
+pin. The default value is <code>0</code> which is for the <code>V&lt;sub&gt;DD&lt;/sub&gt;</code> as the reference
+voltage source. The value of <code>1</code> will select the voltage source from the
+<code>V&lt;sub&gt;REF&lt;/sub&gt;</code> pin on the MCU.</p>
+
+<p>The <code>internal</code> pragma, if set to <code>1</code> will choose the internal oscillator of
+the ADC instead of the MCU clock. The frequency argument will be ignored if this
+is set. The default value is <code>0</code>.</p>
+
+<p>Examples:</p>
+
+<pre><code>pragma adc right_justify = 1;
+
+Main {
+    adc_enable; # enable the ADC for the default channel
+    # .. or for a specific channel at a fixed frequency of 500kHz
+    adc_enable 500kHz, AN1;
+}
+</code></pre></li>
+<li><p><code>adc_disable</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>adc_disable;
+</code></pre>
+
+<p>This function disables the ADC if it had been enabled earlier, or resets the
+enabling of the ADC, if it needs to be enabled again later.</p>
+
+<p>Examples:</p>
+
+<pre><code>Main {
+    adc_enable;
+    # .. do something ..
+    adc_disable;
+}
+</code></pre></li>
 <li><p><code>adc_read</code></p></li>
 </ul>
 
@@ -504,7 +579,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-29 13:31:22 -0400.
+        This page was last updated on 2014-10-29 13:39:48 -0400.
     </p>
     </div>
     </section>
