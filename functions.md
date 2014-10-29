@@ -23,8 +23,8 @@ very noisy about it and inform the programmer on how to fix their code.
 
     This function sets the given MCU port or pin name as a digital output. It
 internally will generate code handling the appropriate registers for the MCU to
-accomplish this task. A port for a PIC&reg; MCU allows all the pins to be
-selected at once. An example of a port is `PORTA` and an example of a pin is
+accomplish this task. A port for a PIC&reg; MCU allows all the pins
+corresponding to that port, to be selected at once. An example of a port is `PORTA` and an example of a pin is
 `RA0`.
 
     Examples:
@@ -60,9 +60,83 @@ your scenario. Hence, we provide such an option.
 
 - `analog_input`
 
+    Syntax:
+
+        analog_input <PORT | PIN>;
+
+    This function sets the given MCU port or pin name as an analog input. It
+internally will generate code handling the appropriate registers for the MCU to
+accomplish this task. A port for a PIC&reg; MCU allows all the pins
+corresponding to that port, to be selected at once. An example of a port is `PORTA` and an example of a pin is
+`AN0`. The user is more likely to use a single pin rather than a port for the
+analog input.
+
+    Examples:
+
+        analog_input AN0;
+        analog_input PORTA; # sets all the capable analog pins only
+
 - `digital_input`
 
+    Syntax:
+
+        digital_input <PORT | PIN>;
+
+    This function sets the given MCU port or pin name as a digital input. This
+is needed when a pin is capable of being both an analog or a digital input. For
+a pin that is not capable of being a digital input, this function is redundant.
+The function will generate code handling the appropriate registers for the MCU to
+accomplish this task. A port for a PIC&reg; MCU allows all the pins
+corresponding to that port, to be selected at once. An example of a port is `PORTA` and an example of a pin is
+`AN0`. The user is more likely to use a single pin rather than a port for the
+analog input.
+
+    Examples:
+
+        digital_input RA3;
+        digital_input PORTA; # sets all the capable analog pins only
+
 - `debounce`
+
+    Syntax:
+
+        debounce <PIN>, Action {
+            ## ... do something ...
+        };
+
+    Pragmas:
+
+        pragma debounce count = <integer>;
+        pragma debounce delay = <time>;
+
+    This function performs [debouncing](https://en.wikipedia.org/wiki/Debouncing#Contact_bounce) of the input on the given MCU pin. The pin
+should have been configured as a digital or analog input for this to work
+properly. Once the debouncing has completed, the `Action` block provided is
+invoked by the program.
+
+    The debouncing function can be configured to generate code based on
+[pragmas](syntax.html#pragmas). As we note above, two pragmas are accepted. The
+`count` pragma uses the given number as the number of possible signals to count
+before accepting the input as a positive signal to invoke the `Action` block on.
+The `delay` pragma uses the given time to check the signal on the pin
+periodically for counting. Default values of the `delay` pragma is 1000
+microseconds and `count` pragma is 5.
+
+    If the user does not give any pragmas, the default pragmas are used.
+
+    Examples:
+
+        pragma debounce count = 3;
+        pragma debounce delay = 1ms;
+
+        Main {
+            digital_input RA3; # we need the pin to be setup as input
+            debounce RA3, Action {
+                write RA0, 1; # do some action
+            };
+        }
+
+    
 
 ## Time Management Functions
 

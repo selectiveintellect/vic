@@ -69,11 +69,11 @@ very noisy about it and inform the programmer on how to fix their code.</p>
 
 <p>This function sets the given MCU port or pin name as a digital output. It
 internally will generate code handling the appropriate registers for the MCU to
-accomplish this task. A port for a PIC&reg; MCU allows all the pins to be
-selected at once. An example of a port is <code>PORTA</code> and an example of a pin is
+accomplish this task. A port for a PIC&reg; MCU allows all the pins
+corresponding to that port, to be selected at once. An example of a port is <code>PORTA</code> and an example of a pin is
 <code>RA0</code>.</p>
 
-<p>Example:</p>
+<p>Examples:</p>
 
 <pre><code>digital_output PORTA;
 digital_output RC0;
@@ -96,7 +96,7 @@ really bit-banging the value. Sometimes it might make sense to just use a wire
 between the pins if they are always mirroring each other but that might not be
 your scenario. Hence, we provide such an option.</p>
 
-<p>Example:</p>
+<p>Examples:</p>
 
 <pre><code>write RC0, 1;
 write RA0, $flag; # $flag is a variable
@@ -105,9 +105,88 @@ write PORTC, $display; # $display is a variable
 write RC0, RA0;
 write PORTA, PORTC;
 </code></pre></li>
-<li><p><code>analog_input</code></p></li>
-<li><p><code>digital_input</code></p></li>
-<li><p><code>debounce</code></p></li>
+<li><p><code>analog_input</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>analog_input &lt;PORT | PIN&gt;;
+</code></pre>
+
+<p>This function sets the given MCU port or pin name as an analog input. It
+internally will generate code handling the appropriate registers for the MCU to
+accomplish this task. A port for a PIC&reg; MCU allows all the pins
+corresponding to that port, to be selected at once. An example of a port is <code>PORTA</code> and an example of a pin is
+<code>AN0</code>. The user is more likely to use a single pin rather than a port for the
+analog input.</p>
+
+<p>Examples:</p>
+
+<pre><code>analog_input AN0;
+analog_input PORTA; # sets all the capable analog pins only
+</code></pre></li>
+<li><p><code>digital_input</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>digital_input &lt;PORT | PIN&gt;;
+</code></pre>
+
+<p>This function sets the given MCU port or pin name as a digital input. This
+is needed when a pin is capable of being both an analog or a digital input. For
+a pin that is not capable of being a digital input, this function is redundant.
+The function will generate code handling the appropriate registers for the MCU to
+accomplish this task. A port for a PIC&reg; MCU allows all the pins
+corresponding to that port, to be selected at once. An example of a port is <code>PORTA</code> and an example of a pin is
+<code>AN0</code>. The user is more likely to use a single pin rather than a port for the
+analog input.</p>
+
+<p>Examples:</p>
+
+<pre><code>digital_input RA3;
+digital_input PORTA; # sets all the capable analog pins only
+</code></pre></li>
+<li><p><code>debounce</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>debounce &lt;PIN&gt;, Action {
+    ## ... do something ...
+};
+</code></pre>
+
+<p>Pragmas:</p>
+
+<pre><code>pragma debounce count = &lt;integer&gt;;
+pragma debounce delay = &lt;time&gt;;
+</code></pre>
+
+<p>This function performs <a href="https://en.wikipedia.org/wiki/Debouncing#Contact_bounce">debouncing</a> of the input on the given MCU pin. The pin
+should have been configured as a digital or analog input for this to work
+properly. Once the debouncing has completed, the <code>Action</code> block provided is
+invoked by the program.</p>
+
+<p>The debouncing function can be configured to generate code based on
+<a href="syntax.html#pragmas">pragmas</a>. As we note above, two pragmas are accepted. The
+<code>count</code> pragma uses the given number as the number of possible signals to count
+before accepting the input as a positive signal to invoke the <code>Action</code> block on.
+The <code>delay</code> pragma uses the given time to check the signal on the pin
+periodically for counting. Default values of the <code>delay</code> pragma is 1000
+microseconds and <code>count</code> pragma is 5.</p>
+
+<p>If the user does not give any pragmas, the default pragmas are used.</p>
+
+<p>Examples:</p>
+
+<pre><code>pragma debounce count = 3;
+pragma debounce delay = 1ms;
+
+Main {
+    digital_input RA3; # we need the pin to be setup as input
+    debounce RA3, Action {
+        write RA0, 1; # do some action
+    };
+}
+</code></pre></li>
 </ul>
 
 <h2 id="timemanagementfunctions">Time Management Functions</h2>
@@ -182,7 +261,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-28 21:27:34 -0400.
+        This page was last updated on 2014-10-29 11:27:35 -0400.
     </p>
     </div>
     </section>
