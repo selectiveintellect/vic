@@ -538,7 +538,26 @@ enabling of the ADC, if it needs to be enabled again later.</p>
     adc_disable;
 }
 </code></pre></li>
-<li><p><code>adc_read</code></p></li>
+<li><p><code>adc_read</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>adc_read &lt;output variable&gt;;
+</code></pre>
+
+<p>This function does the conversion when called and once the conversion is
+complete, fills the output variable with the converted value. If the output
+value is greater than 8-bits the variable size is automatically adjusted to
+handle that.</p>
+
+<p>Examples:</p>
+
+<pre><code>Main {
+    adc_enable;
+    # .. do something ..
+    adc_read $var1; # read the conversion into $var1
+}
+</code></pre></li>
 </ul>
 
 <h2 id="pulsewidthmodulationpwmfunctions">Pulse Width Modulation (PWM) Functions</h2>
@@ -579,7 +598,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-29 13:39:48 -0400.
+        This page was last updated on 2014-10-29 14:46:25 -0400.
     </p>
     </div>
     </section>
