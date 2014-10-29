@@ -216,8 +216,8 @@ Many other standard names are also accepted such as:
 
 - GPIO port names
 - Timer register names
-- UART/SPI/I2C port names
-- ADC/DAC port names
+- UART/SPI/I<sup>2</sup>C port names
+- A/D converter port names
 - Comparator names
 - Clock pins
 - PWM pins
@@ -393,7 +393,7 @@ A sample example displaying the simulator use can be seen on the
 
 VIC&trade; provides a variety of in-built functions handling various aspects of
 using an MCU such as writing to ports, selection of a port as digital or analog
-input or output, reading from the ADC, debouncing a switch connected to a pin,
+input or output, reading from the A/D converter, debouncing a switch connected to a pin,
 bit rotation, timers, delays and many more as described in the
 [reference](functions.html).
 

@@ -62,8 +62,9 @@ like [GNU PIC simulator](http://gpsim.sourceforge.net/gpsim.html) `gpsim`, and i
 [GNU PIC assembler](http://gputils.sourceforge.net/) `gpasm`.
 
 In addition to all of this, having to read data sheets for each microcontroller
-in detail to implement standard features like debouncing inputs, ADC operation,
-USART/SPI/I2C serial bus implementation could be completely avoided if
+in detail to implement standard features like debouncing inputs, analog to
+digital (A/D) conversion,
+UART/SPI/I<sup>2</sup>C serial bus implementation could be completely avoided if
 VIC&trade; provided these out of the box.
 
 Last but not the least, VIC&trade; would have a method to perform formal verification
