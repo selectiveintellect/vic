@@ -9,7 +9,7 @@ pragma adc right_justify = 0;
 
 Main {
     digital_output PORTC;
-    analog_input RA0;
+    analog_input AN0;
     digital_input RA3;
     adc_enable 500kHz, AN0;
     $display = 0x08; # create a 8-bit register

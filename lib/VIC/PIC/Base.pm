@@ -381,7 +381,14 @@ $an_code
 ...
         }
     } else {
-        carp "Cannot find $inp the list of ports or pins";
+        if (exists $self->analog_pins->{$inp}) {
+            # ok the pin exists in the analog list
+            # let's find the corresponding digital name
+            my ($pin) = @{$self->analog_pins->{$inp}};
+            my $dpin = $self->visible_pins->{$pin} if defined $pin;
+            return $self->analog_input($dpin) if defined $dpin;
+        }
+        carp "Cannot find $inp in the list of ports or pins";
     }
     return $code;
 }

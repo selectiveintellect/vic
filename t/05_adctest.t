@@ -6,7 +6,7 @@ PIC P16F690;
 pragma adc right_justify = 0;
 Main {
     digital_output RC0;
-    analog_input RA0;
+    analog_input AN0;
     # adc_setup clock, channel
     adc_enable 500kHz, AN0;
     Loop {
