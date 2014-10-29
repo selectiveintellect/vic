@@ -294,7 +294,7 @@ It takes the timer port as an argument.
     Examples:
 
         Main {
-            timer_enable TMR0, 256;
+            timer_enable TMR0, 4kHz;
             # .. do something ..
             timer_disable TMR0;
         }
@@ -315,7 +315,7 @@ pre-scale value given in the `timer_enable` function.
     Examples:
 
         Main {
-            timer_enable TMR0, 256;
+            timer_enable TMR0, 8kHz;
             Loop {
                 timer Action {
                     # ... do something ...

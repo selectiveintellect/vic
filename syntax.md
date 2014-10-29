@@ -368,7 +368,7 @@ with timers. The ISR block starts with the `ISR` keyword.
 
 A typical `ISR` block for a timer looks like this:
 
-    timer_enable TMR0, 256, ISR {
+    timer_enable TMR0, 4kHz, ISR {
         # .. do something ..
     };
 
