@@ -40,6 +40,56 @@
         <span class="credits right"><a href="functions.html">Prev</a>&nbsp;&nbsp;<a href="examples.html">Next</a></span>
         </div>
 <h1 id="simulatingvictradecode">Simulating VIC&trade; Code</h1>
+
+<p>As you have read in the syntax page on the <a href="syntax.html#simulatorblock"><code>Simulator</code>
+block</a>, VIC&trade; provides integration with a
+software simulator for Microchip&#8217;s PIC&reg; MCUs.</p>
+
+<p>One such simulator is <a href="http://gpsim.sourceforge.net/gpsim.html">gpsim</a> which we
+recommend you install on your operating system.</p>
+
+<p><code>gpsim</code> allows the user to write simple instructions to control the simulation
+and to create standard test fragments such as C-style asserts and debugger style
+break points, and to add peripherals like LEDs, 7-segment LEDs, switches, and ports
+like UART.</p>
+
+<p>To abstract out these instructions and auto-generate <code>gpsim</code> specific code, VIC&trade; provides
+various in-built functions that will be described in this chapter. This will
+enable the user to write testing code in the same file where the <code>Main</code> block is
+present and keep the relevance of the testing visible.</p>
+
+<p>For details on pragmas used by the simulator refer to the section on
+<a href="syntax.html#pragmas">pragmas</a>.</p>
+
+<h2 id="simulatorcontrol">Simulator Control</h2>
+
+<ul>
+<li><p><code>stop_after</code></p></li>
+<li><p><code>stopwatch</code></p></li>
+<li><p><code>sim_assert</code></p></li>
+<li><p><code>autorun</code></p></li>
+</ul>
+
+<h2 id="logging">Logging</h2>
+
+<ul>
+<li><p><code>log</code></p></li>
+<li><p><code>logfile</code></p></li>
+<li><p><code>scope</code></p></li>
+</ul>
+
+<h2 id="wavesimulations">Wave Simulations</h2>
+
+<ul>
+<li><code>stimulate</code></li>
+</ul>
+
+<h2 id="peripheralattachments">Peripheral Attachments</h2>
+
+<ul>
+<li><p><code>attach_led</code></p></li>
+<li><p><code>attach_led7seg</code></p></li>
+</ul>
     <hr>
     <div id="title">
     <span class="credits left"><a href="./index.html">Table of Contents</a></span>
