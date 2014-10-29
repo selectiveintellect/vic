@@ -324,9 +324,65 @@ pre-scale value given in the `timer_enable` function.
 
 - `rol`
 
+    Syntax:
+
+        rol <variable>, <number of bits>;
+
+    This function rotates the value in the variable by the number of bits
+specified towards the left. The value in the variable is then updated with the
+rotated value.
+
+    Since the rotation does not have an operator like `>>` or `<<`, we have a special
+function dedicated to it.
+
+    Example:
+
+        Main {
+            $var1 = 0x01;
+            Loop {
+                rol $var1, 1;
+            }
+        }
+
 - `ror`
 
+    Syntax:
+
+        ror <variable>, <number of bits>;
+
+    This function rotates the value in the variable by the number of bits
+specified towards the right. The value in the variable is then updated with the
+rotated value.
+
+    Since the rotation does not have an operator like `>>` or `<<`, we have a special
+function dedicated to it.
+
+    Example:
+
+        Main {
+            $var1 = 0x80;
+            Loop {
+                ror $var1, 1;
+            }
+        }
+
 - `sqrt`
+
+    Syntax:
+
+        <output variable> = sqrt <input variable>;
+
+    This is a _special_ function since it returns a value and can be used in
+expressions directly. This does not modify the value in the input variable
+unlike the `ror` or `rol` functions.
+
+    Examples:
+
+        Main {
+            $var1 = 100;
+            $var2 = sqrt $var1;
+            $var2 += sqrt $var2;
+        }
 
 ## Analog/Digital Converter Functions
 

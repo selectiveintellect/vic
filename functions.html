@@ -391,9 +391,71 @@ pre-scale value given in the <code>timer_enable</code> function.</p>
 <h2 id="mathfunctions">Math Functions</h2>
 
 <ul>
-<li><p><code>rol</code></p></li>
-<li><p><code>ror</code></p></li>
-<li><p><code>sqrt</code></p></li>
+<li><p><code>rol</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>rol &lt;variable&gt;, &lt;number of bits&gt;;
+</code></pre>
+
+<p>This function rotates the value in the variable by the number of bits
+specified towards the left. The value in the variable is then updated with the
+rotated value.</p>
+
+<p>Since the rotation does not have an operator like <code>&gt;&gt;</code> or <code>&lt;&lt;</code>, we have a special
+function dedicated to it.</p>
+
+<p>Example:</p>
+
+<pre><code>Main {
+    $var1 = 0x01;
+    Loop {
+        rol $var1, 1;
+    }
+}
+</code></pre></li>
+<li><p><code>ror</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>ror &lt;variable&gt;, &lt;number of bits&gt;;
+</code></pre>
+
+<p>This function rotates the value in the variable by the number of bits
+specified towards the right. The value in the variable is then updated with the
+rotated value.</p>
+
+<p>Since the rotation does not have an operator like <code>&gt;&gt;</code> or <code>&lt;&lt;</code>, we have a special
+function dedicated to it.</p>
+
+<p>Example:</p>
+
+<pre><code>Main {
+    $var1 = 0x80;
+    Loop {
+        ror $var1, 1;
+    }
+}
+</code></pre></li>
+<li><p><code>sqrt</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>&lt;output variable&gt; = sqrt &lt;input variable&gt;;
+</code></pre>
+
+<p>This is a <em>special</em> function since it returns a value and can be used in
+expressions directly. This does not modify the value in the input variable
+unlike the <code>ror</code> or <code>rol</code> functions.</p>
+
+<p>Examples:</p>
+
+<pre><code>Main {
+    $var1 = 100;
+    $var2 = sqrt $var1;
+    $var2 += sqrt $var2;
+}
+</code></pre></li>
 </ul>
 
 <h2 id="analogdigitalconverterfunctions">Analog/Digital Converter Functions</h2>
@@ -442,7 +504,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-29 12:19:51 -0400.
+        This page was last updated on 2014-10-29 13:31:22 -0400.
     </p>
     </div>
     </section>
