@@ -1,12 +1,5 @@
 bin/vic
 Build.PL
-doc/faq.md
-doc/gettingstarted.md
-doc/images/HelloworldCode.png
-doc/images/HelloworldSimAfter.png
-doc/images/HelloworldSimBefore.png
-doc/images/vicmeme.jpg
-doc/philosophy.md
 lib/VIC.pm
 lib/VIC/Command.pm
 lib/VIC/Grammar.pm

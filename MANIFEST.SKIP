@@ -91,3 +91,5 @@ compile_into_module$
 \.stc$
 \.asm$
 gh-pages
+Helloworld*
+vicmeme.jpg
