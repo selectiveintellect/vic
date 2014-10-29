@@ -6,7 +6,7 @@ PIC P16F690;
 Main {
     digital_output PORTC;
     $display = 0;    
-    timer_enable TMR0, 256;
+    timer_enable TMR0, 4kHz;
     Loop {
         timer Action {
             ++$display;

@@ -14,7 +14,7 @@ Main {
     adc_enable 500kHz, AN0;
     $display = 0x08; # create a 8-bit register
     $dirxn = FALSE;
-    timer_enable TMR0, 256, ISR {#set the interrupt service routine
+    timer_enable TMR0, 4kHz, ISR {#set the interrupt service routine
         adc_read $userval;
         $userval += 100;
     };

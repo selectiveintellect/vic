@@ -2201,7 +2201,7 @@ sub adc_enable {
     if (@_) {
         my ($clock, $channel) = @_;
         my $f_osc = $self->frequency;
-        my $scale = int(($f_osc / 4) / $clock) if $clock > 0;
+        my $scale = POSIX::ceil(($f_osc / 4) / $clock) if $clock > 0;
         $scale = 2 unless $clock;
         $scale = 2 if $scale < 2;
         my $adcs = $self->adcon1_scale->{$scale};
@@ -2306,13 +2306,40 @@ _isr_exit:
 ...
 }
 
+sub get_timer_prescaler {
+    my ($self, $freq) = @_;
+    my $f_osc = $self->frequency;
+    my $scale = POSIX::ceil(($f_osc / 4) / $freq); # assume prescaler = 1 here
+    if ($scale <=2) {
+        $scale = 2;
+    } elsif ($scale > 2 && $scale <= 4) {
+        $scale = 4;
+    } elsif ($scale > 4 && $scale <= 8) {
+        $scale = 8;
+    } elsif ($scale > 8 && $scale <= 16) {
+        $scale = 16;
+    } elsif ($scale > 16 && $scale <= 32) {
+        $scale = 32;
+    } elsif ($scale > 32 && $scale <= 64) {
+        $scale = 64;
+    } elsif ($scale > 64 && $scale <= 128) {
+        $scale = 128;
+    } elsif ($scale > 128 && $scale <= 256) {
+        $scale = 256;
+    } else {
+        $scale = 256;
+    }
+    my $psx = $self->timer_prescaler->{$scale} || $self->timer_prescaler->{256};
+    return $psx;
+}
+
 sub timer_enable {
-    my ($self, $tmr, $scale, %isr) = @_;
+    my ($self, $tmr, $freq, %isr) = @_;
     unless (exists $self->timer_pins->{$tmr}) {
         carp "$tmr is not a timer.";
         return;
     }
-    my $psx = $self->timer_prescaler->{$scale} || $self->timer_prescaler->{256};
+    my $psx = $self->get_timer_prescaler($freq);
     my $code = << "...";
 ;; timer prescaling
 \tbanksel OPTION_REG
