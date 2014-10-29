@@ -14,6 +14,9 @@
     <!--[if lt IE 8]>
     <link rel="stylesheet" href="stylesheets/ie.css">
     <![endif]-->
+    <link rel="stylesheet" href="stylesheets/zenburn.css">
+    <script src="javascripts/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
   </head>
@@ -56,15 +59,103 @@ very noisy about it and inform the programmer on how to fix their code.</p>
 
 <h2 id="piniofunctions">Pin I/O Functions</h2>
 
-<h2 id="timerfunctions">Timer Functions</h2>
+<ul>
+<li><p><code>digital_output</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>digital_output &lt;PORT | PIN&gt;;
+</code></pre>
+
+<p>This function sets the given MCU port or pin name as a digital output. It
+internally will generate code handling the appropriate registers for the MCU to
+accomplish this task. A port for a PIC&reg; MCU allows all the pins to be
+selected at once. An example of a port is <code>PORTA</code> and an example of a pin is
+<code>RA0</code>.</p>
+
+<p>Example:</p>
+
+<pre><code>digital_output PORTA;
+digital_output RC0;
+</code></pre></li>
+<li><p><code>write</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>write &lt;PORT&gt;, &lt;constant | variable | PORT&gt;;
+write &lt;PIN&gt;, &lt;constant | variable | PIN&gt;;
+</code></pre>
+
+<p>This function <em>writes</em> values to an MCU pin or a port register. The values
+written to a pin can be a constant such as <code>0</code> or <code>1</code> or a variable with those
+values or another pin. The values written to a port can be an 8-bit constant or
+a variable with contents of its lower 8-bits or another port.</p>
+
+<p>When you write a pin to another pin or a port to another port, you are
+really bit-banging the value. Sometimes it might make sense to just use a wire
+between the pins if they are always mirroring each other but that might not be
+your scenario. Hence, we provide such an option.</p>
+
+<p>Example:</p>
+
+<pre><code>write RC0, 1;
+write RA0, $flag; # $flag is a variable
+write PORTA, 0xFF;
+write PORTC, $display; # $display is a variable
+write RC0, RA0;
+write PORTA, PORTC;
+</code></pre></li>
+<li><p><code>analog_input</code></p></li>
+<li><p><code>digital_input</code></p></li>
+<li><p><code>debounce</code></p></li>
+</ul>
+
+<h2 id="timemanagementfunctions">Time Management Functions</h2>
+
+<ul>
+<li><p><code>delay</code></p></li>
+<li><p><code>delay_us</code></p></li>
+<li><p><code>delay_ms</code></p></li>
+<li><p><code>delay_s</code></p></li>
+<li><p><code>hang</code></p></li>
+</ul>
+
+<h2 id="timerandinterruptfunctions">Timer and Interrupt Functions</h2>
+
+<ul>
+<li><p><code>timer_enable</code></p></li>
+<li><p><code>timer_disable</code></p></li>
+<li><p><code>timer</code></p></li>
+</ul>
+
+<h2 id="mathfunctions">Math Functions</h2>
+
+<ul>
+<li><p><code>rol</code></p></li>
+<li><p><code>ror</code></p></li>
+<li><p><code>sqrt</code></p></li>
+</ul>
 
 <h2 id="analogdigitalconverterfunctions">Analog/Digital Converter Functions</h2>
+
+<ul>
+<li><p><code>adc_enable</code></p></li>
+<li><p><code>adc_disable</code></p></li>
+<li><p><code>adc_read</code></p></li>
+</ul>
+
+<h2 id="pulsewidthmodulationpwmfunctions">Pulse Width Modulation (PWM) Functions</h2>
+
+<ul>
+<li><p><code>pwm_single</code></p></li>
+<li><p><code>pwm_halfbridge</code></p></li>
+<li><p><code>pwm_fullbridge</code></p></li>
+<li><p><code>pwm_update</code></p></li>
+</ul>
 
 <h2 id="powermanagementfunctions">Power Management Functions</h2>
 
 <h2 id="comparatorfunctions">Comparator Functions</h2>
-
-<h2 id="pulsewidthmodulationpwmfunctions">Pulse Width Modulation (PWM) Functions</h2>
 
 <h2 id="uartfunctions">UART Functions</h2>
 
@@ -91,7 +182,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-26 15:11:42 -0400.
+        This page was last updated on 2014-10-28 21:27:34 -0400.
     </p>
     </div>
     </section>
