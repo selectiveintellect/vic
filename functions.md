@@ -36,8 +36,8 @@ corresponding to that port, to be selected at once. An example of a port is `POR
 
     Syntax:
 
-        write <PORT>, <constant | variable | PORT>;
-        write <PIN>, <constant | variable | PIN>;
+        write <PORT>, <CONSTANT| variable | PORT>;
+        write <PIN>, <CONSTANT | variable | PIN>;
 
     This function _writes_ values to an MCU pin or a port register. The values
 written to a pin can be a constant such as `0` or `1` or a variable with those
@@ -106,8 +106,8 @@ analog input.
 
     Pragmas:
 
-        pragma debounce count = <integer>;
-        pragma debounce delay = <time>;
+        pragma debounce count = <INTEGER>;
+        pragma debounce delay = <TIME>;
 
     This function performs [debouncing](https://en.wikipedia.org/wiki/Debouncing#Contact_bounce) of the input on the given MCU pin. The pin
 should have been configured as a digital or analog input for this to work
@@ -136,19 +136,94 @@ microseconds and `count` pragma is 5.
             };
         }
 
-    
-
 ## Time Management Functions
 
 - `delay`
 
+    Syntax:
+
+        delay <TIME | variable>;
+
+    This function generates assembly instructions to create a perfect delay (as
+verified by the simulator) of the given time argument. When the user provides
+the time as a constant, the units expected are `s`, `ms` or `us` for seconds,
+milliseconds or microseconds, respectively. If the user does not provide a unit,
+`us` is assumed. If the user wants to use a variable, it is recommended to use
+the explicit `delay_us`, `delay_ms` or `delay_s` variations of the function
+instead.
+
+    Examples:
+
+        delay 1s; # 1 second delay
+        delay 2ms; # 2 millisecond delay
+        delay 500us; # 500 microsecond delay
+        delay 500; # 500 microsecond delay
+        delay $something; # $something microseconds delay
+
 - `delay_us`
+
+    Syntax:
+
+        delay_us <INTEGER | variable>;
+
+    This function generates assembly instructions to create a perfect delay (as
+verified by the simulator) of the given integer or variable value in microseconds. It is an
+explicit instantiation of the `delay` function. It is more useful in scenarios
+where the user wants to change the delays using a variable.
+
+    Examples:
+
+        delay_us 500; # 500 microsecond delay
+        delay_us $something; # $something microseconds delay
 
 - `delay_ms`
 
+    Syntax:
+
+        delay_ms <INTEGER | variable>;
+
+    This function generates assembly instructions to create a perfect delay (as
+verified by the simulator) of the given integer or variable value in milliseconds. It is an
+explicit instantiation of the `delay` function. It is more useful in scenarios
+where the user wants to change the delays using a variable.
+
+    Examples:
+
+        delay_ms 5; # 5 millisecond delay
+        delay_ms $something; # $something milliseconds delay
+
 - `delay_s`
 
+    Syntax:
+
+        delay_s <INTEGER | variable>;
+
+    This function generates assembly instructions to create a perfect delay (as
+verified by the simulator) of the given integer or variable value in seconds. It is an
+explicit instantiation of the `delay` function. It is more useful in scenarios
+where the user wants to change the delays using a variable.
+
+    Examples:
+
+        delay_s 1; # 1 second delay
+        delay_s $something; # $something seconds delay
+
 - `hang`
+
+    Syntax:
+
+        hang;
+
+    This function basically generates an instruction that loops infinitely to
+itself. It is equivalent to a `Loop {}` invocation. This may be useful in some
+scenarios such as to stop any processing if certain conditions are met until the
+chip has been restarted or for testing.
+
+    Examples:
+
+        if $failure = TRUE {
+            hang; # hang on failure
+        }
 
 ## Timer and Interrupt Functions
 

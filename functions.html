@@ -82,8 +82,8 @@ digital_output RC0;
 
 <p>Syntax:</p>
 
-<pre><code>write &lt;PORT&gt;, &lt;constant | variable | PORT&gt;;
-write &lt;PIN&gt;, &lt;constant | variable | PIN&gt;;
+<pre><code>write &lt;PORT&gt;, &lt;CONSTANT| variable | PORT&gt;;
+write &lt;PIN&gt;, &lt;CONSTANT | variable | PIN&gt;;
 </code></pre>
 
 <p>This function <em>writes</em> values to an MCU pin or a port register. The values
@@ -156,8 +156,8 @@ digital_input PORTA; # sets all the capable analog pins only
 
 <p>Pragmas:</p>
 
-<pre><code>pragma debounce count = &lt;integer&gt;;
-pragma debounce delay = &lt;time&gt;;
+<pre><code>pragma debounce count = &lt;INTEGER&gt;;
+pragma debounce delay = &lt;TIME&gt;;
 </code></pre>
 
 <p>This function performs <a href="https://en.wikipedia.org/wiki/Debouncing#Contact_bounce">debouncing</a> of the input on the given MCU pin. The pin
@@ -192,11 +192,98 @@ Main {
 <h2 id="timemanagementfunctions">Time Management Functions</h2>
 
 <ul>
-<li><p><code>delay</code></p></li>
-<li><p><code>delay_us</code></p></li>
-<li><p><code>delay_ms</code></p></li>
-<li><p><code>delay_s</code></p></li>
-<li><p><code>hang</code></p></li>
+<li><p><code>delay</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>delay &lt;TIME | variable&gt;;
+</code></pre>
+
+<p>This function generates assembly instructions to create a perfect delay (as
+verified by the simulator) of the given time argument. When the user provides
+the time as a constant, the units expected are <code>s</code>, <code>ms</code> or <code>us</code> for seconds,
+milliseconds or microseconds, respectively. If the user does not provide a unit,
+<code>us</code> is assumed. If the user wants to use a variable, it is recommended to use
+the explicit <code>delay_us</code>, <code>delay_ms</code> or <code>delay_s</code> variations of the function
+instead.</p>
+
+<p>Examples:</p>
+
+<pre><code>delay 1s; # 1 second delay
+delay 2ms; # 2 millisecond delay
+delay 500us; # 500 microsecond delay
+delay 500; # 500 microsecond delay
+delay $something; # $something microseconds delay
+</code></pre></li>
+<li><p><code>delay_us</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>delay_us &lt;INTEGER | variable&gt;;
+</code></pre>
+
+<p>This function generates assembly instructions to create a perfect delay (as
+verified by the simulator) of the given integer or variable value in microseconds. It is an
+explicit instantiation of the <code>delay</code> function. It is more useful in scenarios
+where the user wants to change the delays using a variable.</p>
+
+<p>Examples:</p>
+
+<pre><code>delay_us 500; # 500 microsecond delay
+delay_us $something; # $something microseconds delay
+</code></pre></li>
+<li><p><code>delay_ms</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>delay_ms &lt;INTEGER | variable&gt;;
+</code></pre>
+
+<p>This function generates assembly instructions to create a perfect delay (as
+verified by the simulator) of the given integer or variable value in milliseconds. It is an
+explicit instantiation of the <code>delay</code> function. It is more useful in scenarios
+where the user wants to change the delays using a variable.</p>
+
+<p>Examples:</p>
+
+<pre><code>delay_ms 5; # 5 millisecond delay
+delay_ms $something; # $something milliseconds delay
+</code></pre></li>
+<li><p><code>delay_s</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>delay_s &lt;INTEGER | variable&gt;;
+</code></pre>
+
+<p>This function generates assembly instructions to create a perfect delay (as
+verified by the simulator) of the given integer or variable value in seconds. It is an
+explicit instantiation of the <code>delay</code> function. It is more useful in scenarios
+where the user wants to change the delays using a variable.</p>
+
+<p>Examples:</p>
+
+<pre><code>delay_s 1; # 1 second delay
+delay_s $something; # $something seconds delay
+</code></pre></li>
+<li><p><code>hang</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>hang;
+</code></pre>
+
+<p>This function basically generates an instruction that loops infinitely to
+itself. It is equivalent to a <code>Loop {}</code> invocation. This may be useful in some
+scenarios such as to stop any processing if certain conditions are met until the
+chip has been restarted or for testing.</p>
+
+<p>Examples:</p>
+
+<pre><code>if $failure = TRUE {
+    hang; # hang on failure
+}
+</code></pre></li>
 </ul>
 
 <h2 id="timerandinterruptfunctions">Timer and Interrupt Functions</h2>
@@ -261,7 +348,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-29 11:27:35 -0400.
+        This page was last updated on 2014-10-29 12:05:22 -0400.
     </p>
     </div>
     </section>
