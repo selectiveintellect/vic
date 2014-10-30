@@ -219,7 +219,7 @@ sub stop_after {
 
 sub logfile {
     my ($self, $file) = @_;
-    $file = '' unless defined $file;
+    $file = "vicsim.log" unless defined $file;
     return "\t.sim \"log lxt $file\"\n" if $file =~ /\.lxt/i;
     return "\t.sim \"log on $file\"\n";
 }
