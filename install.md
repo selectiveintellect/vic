@@ -100,8 +100,7 @@ systems.
 
 ##Compiling examples
 
-The examples are in `share/examples` folder. To compile the `helloworld.vic`
-example you can do the following:
+The examples are in `share/examples` folder. To compile the [`helloworld.vic` example](examples.html#helloworld) you can do the following:
 
     $ ./bin/vic ./share/examples/helloworld.vic -o ./share/examples/helloworld.asm
 
@@ -114,7 +113,7 @@ If you are installing VIC in a local directory, you may need to set it in the
 
 ##Testing on PIC microcontrollers on Linux and Mac OS X
 
-The `helloworld.vic` test is for the Low Pin Count Demo board from Microchip and
+The [`helloworld.vic`](examples.html#helloworld) test is for the Low Pin Count Demo board from Microchip and
 uses the [PICKit 2 Starter Kit](http://www.microchip.com/pickit2/) programmer
 to write to the microcontroller P16F690 on the board.
 

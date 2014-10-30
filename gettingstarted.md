@@ -29,7 +29,8 @@ lighting up an [LED](https://en.wikipedia.org/wiki/Light-emitting_diode).
 
 ## _Hello World!_ - Lighting up an LED
 
-This example is available in the file `share/examples/helloworld.vic`.
+This example is available in the file `share/examples/helloworld.vic` and also
+on the [examples chapter](examples.html#helloworld).
 
 Let us select the PIC&reg; MCU P16F690 that comes with the
 [PICKit&trade; 2 Starter Kit](http://www.microchip.com/DevelopmentTools/ProductDetails.aspx?PartNO=DV164120)

@@ -334,7 +334,7 @@ inner-most loop that the code instructions might be in. This is very useful for
 conditional breaks out of nested loops.
 
 A good example of the usage of these statements is in the file
-`share/examples/conditional.vic` and `share/examples/loopbreak.vic`.
+`share/examples/conditional.vic` (or in the [examples chapter](examples.html#conditionalloops)) and `share/examples/loopbreak.vic` (or in the [examples chapter](examples.html#breakingoutofnestedloops)).
 
 ### Unconditional Loops
 
@@ -376,7 +376,7 @@ A nested loop construct looks like this:
     }
 
 A simple example of a forever loop is in `share/examples/blinker.vic` in the
-source code.
+source code or in the [examples chapter](examples.html#blinkinganled).
 
 ### Actions
 

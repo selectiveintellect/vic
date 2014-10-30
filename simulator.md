@@ -227,7 +227,8 @@ any other color as outlined in the `attach_led` function.
 ports as needed by the 7-segment LED. The `gpsim` 7-segment LED needs a minimum
 of 5 pins. To use the 7-segment LED of the simulator, the user will need to
 manipulate the output pins as per the needs of the simulator. For an example
-look at the `share/examples/led7seg.vic` file in the source code.
+look at the `share/examples/led7seg.vic` file in the source code or in the
+[examples chapter](examples.html#usinga7-segmentled).
 
     Examples:
 
@@ -264,7 +265,8 @@ by the value of the wave on the Y-axis. Currently supported values are all
 integers. Floating point values are not yet supported in VIC&trade;
 
     For a standard square wave, the values oscillate between `0` and `1`, as
-shown in the below example, or in the `share/examples/debouncer.vic` showing how
+shown in the below example, in the [debouncing a switch
+example](examples.html#debouncingaswitch) or in the `share/examples/debouncer.vic` showing how
 to simulate a debouncing switch in `gpsim`.
 
     Examples:
