@@ -64,31 +64,282 @@ present and keep the relevance of the testing visible.</p>
 <h2 id="simulatorcontrol">Simulator Control</h2>
 
 <ul>
-<li><p><code>stop_after</code></p></li>
-<li><p><code>stopwatch</code></p></li>
-<li><p><code>sim_assert</code></p></li>
-<li><p><code>autorun</code></p></li>
+<li><p><code>stop_after</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>stop_after &lt;time&gt;;
+</code></pre>
+
+<p>This function generates code for the simulator to stop running the
+simulation after the time given. This is <strong>not</strong> wall clock time but the time
+based on the frequency of the MCU. If the MCU cycle rate is 1MHz, then 1 second
+will be 10<sup>6</sup> cycles. Once the simulator has completed that many cycles
+it will break the run and provide the user a way to either continue the
+simulation manually if desired or exit.</p>
+
+<p>The time values need units like <code>s</code>, <code>ms</code>, <code>us</code> for seconds, milliseconds
+and microseconds respectively. If no units are given, microseconds are assumed.</p>
+
+<p>Examples:</p>
+
+<pre><code>Simulator {
+    # .. do something ..
+    stop_after 5s; # stop after 5 seconds
+};
+</code></pre></li>
+<li><p><code>stopwatch</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>stopwatch &lt;time&gt;;
+</code></pre>
+
+<p>This function invokes the stopwatch module of the simulator, if it exists,
+to allow for the user to measure the actual time taken by the simulator to
+execute a VIC&trade; function. This is very useful to test the <code>delay</code> function
+as noted in the <a href="functions.html#timemanagementfunctions">function reference</a>.</p>
+
+<p>Examples:</p>
+
+<pre><code>## to compare whether the delay 1s instruction works as expected
+Main {
+    delay 1s;
+}
+Simulator {
+    stopwatch 1s;
+}
+</code></pre></li>
+<li><p><code>sim_assert</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>sim_assert &lt;condition&gt;, &lt;msg string&gt;;
+sim_assert &lt;msg string&gt;;
+</code></pre>
+
+<p>This is a <em>special</em> simulator statement in the sense that it can only be
+used in the <code>Main</code> block and not in the <code>Simulator</code> block. Hence it is called
+<code>sim_assert</code>. It basically informs the simulator as to which location of the
+generated code the simulator should create assert break points in, just like a
+C-style assert statement.</p>
+
+<p>Two types of assert statements are accepted: conditional and unconditional.
+The message string is optional but is useful for the programmer to know why they
+are asserting. The string has to be enclosed in quotes <code>&quot;&quot;</code>.</p>
+
+<p>The unconditional assert is like a forced break point and is useful for
+debugging applications or stopping simulation once a certain point in the code
+has reached, especially if the user does not want to use the <code>stop_after</code>
+function or even a <code>Simulator</code> block.</p>
+
+<p>Examples:</p>
+
+<pre><code>Main {
+    $var1 = 0xDEADBEEF; # enter a 32-bit value
+    sim_assert $var1 == 0xEF, &quot;32-bit is stored as 8-bit&quot;;
+    sim_assert &quot;*** Stop the simulation ***&quot;;
+}
+</code></pre></li>
+<li><p><code>autorun</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>autorun;
+</code></pre>
+
+<p>This statement when present in the simulator block will start the simulation
+as soon as the generated simulator <code>.stc</code> file or <code>.cod</code> file is loaded up in the
+simulator <code>gpsim</code>. Normally, the user will have to manually type the <code>run</code>
+command first in <code>gpsim</code> to do so. Currently, since we do not support any other
+simulators yet, this command is specific to <code>gpsim</code>. In the future, it may be
+redundant.</p>
+
+<p>Examples:</p>
+
+<pre><code>Simulator {
+    # .. do something ..
+    autorun;
+}
+</code></pre></li>
 </ul>
 
 <h2 id="logging">Logging</h2>
 
 <ul>
-<li><p><code>log</code></p></li>
-<li><p><code>logfile</code></p></li>
-<li><p><code>scope</code></p></li>
-</ul>
+<li><p><code>log</code></p>
 
-<h2 id="wavesimulations">Wave Simulations</h2>
+<p>Syntax:</p>
 
-<ul>
-<li><code>stimulate</code></li>
+<pre><code>log &lt;port | pin&gt; [, &lt;port | pin&gt;];
+</code></pre>
+
+<p>This statement will start logging information for the given port or pin on
+the MCU. This is needed if the user wants to view the output of the port or pin
+on the simulator&#8217;s oscilloscope utility or using an external utility like
+<a href="http://gtkwave.sourceforge.net/">gtkwave</a>. The function takes any number of
+ports and pins as arguments, with at least one argument at a minimum.</p>
+
+<p>Examples:</p>
+
+<pre><code>Simulator {
+    # .. do something ..
+    log PORTC, RA0;
+}
+</code></pre></li>
+<li><p><code>logfile</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>logfile &lt;filename&gt;;
+logfile;
+</code></pre>
+
+<p>This statement does the logging to a file given as the argument. There is a
+special type of logging for <code>gtkwave</code> called <code>LXT</code> logging that is turned on if
+the file name has an extension <code>.lxt</code>. Otherwise text based logging is done to
+the file. If no filename is provided, the default filename of <code>vicsim.log</code> is
+used. The filename string has to be enclosed in quotes <code>&quot;&quot;</code>.</p>
+
+<p>Examples:</p>
+
+<pre><code>Simulator {
+    # .. do something ..
+    logfile &quot;helloworld.lxt&quot;;
+}
+</code></pre></li>
+<li><p><code>scope</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>scope &lt;port | pin&gt; [, &lt;port | pin&gt;];
+</code></pre>
+
+<p>This function connects the simulator&#8217;s oscilloscope tool to the list of pins
+and ports provided as arguments. It takes any number of arguments, with a
+minimum of at least 1. This will turn on the oscilloscope view of the simulator
+if it exists. It <strong>has</strong> to be used in conjunction with the <code>log</code> command.</p>
+
+<p>Examples:</p>
+
+<pre><code>Simulator {
+    # .. do something ..
+    log PORTC, RA0;
+    scope PORTC, RA0;
+}
+</code></pre></li>
 </ul>
 
 <h2 id="peripheralattachments">Peripheral Attachments</h2>
 
 <ul>
-<li><p><code>attach_led</code></p></li>
-<li><p><code>attach_led7seg</code></p></li>
+<li><p><code>attach_led</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>attach_led &lt;port | pin&gt;, &lt;number&gt;, &lt;color&gt;;
+attach_led &lt;port | pin&gt;, &lt;number&gt;;
+attach_led &lt;port | pin&gt;;
+</code></pre>
+
+<p>This function attaches the given number of colored LEDs to the pin or port
+name provided. Simulators like <code>gpsim</code> allow for a circuit diagram to be
+displayed and attachments like LEDs and 7-segment LEDs can be used to display
+the workings of code.</p>
+
+<p>If the color argument is not provided, the default LED color (most likely
+<code>red</code>) is used. Acceptable colors for <code>gpsim</code> are: <code>red</code>, <code>orange</code>, <code>green</code>,
+<code>yellow</code> and <code>blue</code>. If any other string is used as a color, <code>red</code> is used.</p>
+
+<p>If the number argument is not provided it defaults to 1. If a pin is given
+and the number is greater than 1 it still attaches only 1 LED. If a port is
+given, then depending on how many pins the port is attached to the lower number
+is picked. For example, if a port has 4 pins and the user wants to attach 8 LEDs
+to the port, then only 4 get attached.</p>
+
+<p>Examples:</p>
+
+<pre><code>Simulator {
+    # attach 1 green LED to RC0
+    attach_led RC0, 1, 'green';
+    # attach 4 red LEDs to all the pins in PORTA (RA0-RA3)
+    attach_led PORTA, 4, 'red';
+    # attach 1 LED of the default color to RB0
+    attach_led RB0;
+}
+</code></pre></li>
+<li><p><code>attach_led7seg</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>attach_led7seg &lt;port | pin&gt; [, &lt;port | pin&gt;], &lt;color&gt;;
+attach_led7seg &lt;port | pin&gt; [, &lt;port | pin&gt;];
+</code></pre>
+
+<p>This function attaches the in-built 7-segment LED for the simulator if it
+exists, such as in <code>gpsim</code>. The default color is <code>red</code> but the user can specify
+any other color as outlined in the <code>attach_led</code> function.</p>
+
+<p>This function takes any number of arguments with any number of pins and
+ports as needed by the 7-segment LED. The <code>gpsim</code> 7-segment LED needs a minimum
+of 5 pins. To use the 7-segment LED of the simulator, the user will need to
+manipulate the output pins as per the needs of the simulator. For an example
+look at the <code>share/examples/led7seg.vic</code> file in the source code.</p>
+
+<p>Examples:</p>
+
+<pre><code>Simulator {
+    attach_led7seg RA0, PORTC;
+    # .. do something ..
+}
+</code></pre></li>
+</ul>
+
+<h2 id="wavesimulations">Wave Simulations</h2>
+
+<ul>
+<li><p><code>stimulate</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>stimulate &lt;pin&gt;, every &lt;time&gt;, wave [
+    &lt;number of cycles&gt;, &lt;value&gt;,
+    &lt;number of cycles&gt;, &lt;value&gt;,
+     ...
+    &lt;number of cycles&gt;, &lt;value&gt;
+];
+</code></pre>
+
+<p>This function allows the user to simulate a pin with a periodic digital wave.</p>
+
+<p>The period argument denoted by <code>every &lt;time&gt;</code> could be optional, but we
+force it to be used so that the user knows and understands what they are trying
+to express to the simulator.</p>
+
+<p>The wave argument is basically an array of pairs of numbers, with the first
+number being the instance of the time on the X-axis in cycles of the MCU (generally microseconds), followed
+by the value of the wave on the Y-axis. Currently supported values are all
+integers. Floating point values are not yet supported in VIC&trade;</p>
+
+<p>For a standard square wave, the values oscillate between <code>0</code> and <code>1</code>, as
+shown in the below example, or in the <code>share/examples/debouncer.vic</code> showing how
+to simulate a debouncing switch in <code>gpsim</code>.</p>
+
+<p>Examples:</p>
+
+<pre><code>Simulator {
+    # log a pin to view in scope
+    log RA3;
+    scope RA3;
+    # stimulate the pin with an input square wave
+    stimulate RA3, every 5s, wave [
+        300, 1, 1300, 0,
+        1400, 1, 2400, 0,
+        2500, 1, 3500, 0,
+        3600, 1, 4600, 0
+    ];
+}
+</code></pre></li>
 </ul>
     <hr>
     <div id="title">
@@ -106,7 +357,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-26 15:11:42 -0400.
+        This page was last updated on 2014-10-29 15:31:27 -0400.
     </p>
     </div>
     </section>

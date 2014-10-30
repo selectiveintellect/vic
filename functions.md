@@ -107,7 +107,7 @@ analog input.
     Pragmas:
 
         pragma debounce count = <INTEGER>;
-        pragma debounce delay = <TIME>;
+        pragma debounce delay = <time>;
 
     This function performs [debouncing](https://en.wikipedia.org/wiki/Debouncing#Contact_bounce) of the input on the given MCU pin. The pin
 should have been configured as a digital or analog input for this to work
@@ -142,7 +142,7 @@ microseconds and `count` pragma is 5.
 
     Syntax:
 
-        delay <TIME | variable>;
+        delay <time | variable>;
 
     This function generates assembly instructions to create a perfect delay (as
 verified by the simulator) of the given time argument. When the user provides
