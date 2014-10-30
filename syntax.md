@@ -211,7 +211,8 @@ integers, hexadecimal numbers and booleans. The boolean keywords are `true` and
 
 Numeric constants can also accept units such as `s` for seconds, `ms` for
 milliseconds, `us` for microseconds, `Hz` for Hertz, `kHz` for kilo Hertz,
-`MHz` for mega Hertz and `%` for percent.
+`MHz` for mega Hertz and `%` for percentage (useful for [PWM duty
+cycle](functions.html#pulsewidthmodulationpwmfunctions)).
 
     $my_timer = 1s;
     $frequency = 4MHz;

@@ -496,7 +496,49 @@ as checking the ADC is now done on an event-based timer instead of using a synch
 
 ## Pulse Width Modulation (PWM)
 
-** TODO **
+### Single PWM
+
+The _single_ PWM example can be found in `share/examples/pwm2.vic`. This example
+starts a PWM duty cycle at `20%` and then updates it to `30%`.
+
+    PIC P16F690;
+
+    Main {
+        pwm_single 1220Hz, 20%, CCP1;
+        delay 5s;
+        pwm_update 1220Hz, 30%; # update duty cycle
+        delay 5s;
+    }
+
+### Half-bridge and Full-bridge Modes
+
+This example can be modified to run all the different PWM modes by uncommenting
+the appropriate line with the required `pwm_*bridge` function call. It can be found in
+`share/examples/pwm.vic`. Here we see the _half bridge_ mode being used and
+uncommenting the other lines will turn on the forward or reverse _full bridge_
+modes.
+
+    PIC P16F690;
+
+    Main {
+        digital_output RC0;
+        pwm_halfbridge 1220Hz, 20%, 4us;
+        #pwm_fullbridge 'forward', 1220Hz, 20%;
+        #pwm_fullbridge 'reverse', 1220Hz, 20%;
+        Loop {
+            write RC0, CCP1;
+        }
+    }
+
+    Simulator {
+        attach_led CCP1;
+        attach_led RC0;
+        stop_after 20s;
+        logfile "pwm.lxt";
+        log CCP1;
+        scope CCP1, RC0;
+        autorun;
+    }
 
 This brings us to the end of the list of examples.
 

@@ -563,10 +563,102 @@ handle that.</p>
 <h2 id="pulsewidthmodulationpwmfunctions">Pulse Width Modulation (PWM) Functions</h2>
 
 <ul>
-<li><p><code>pwm_single</code></p></li>
-<li><p><code>pwm_halfbridge</code></p></li>
-<li><p><code>pwm_fullbridge</code></p></li>
-<li><p><code>pwm_update</code></p></li>
+<li><p><code>pwm_single</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>pwm_single &lt;frequency&gt;, &lt;duty cycle&gt;, &lt;pin&gt; [, &lt;pin&gt;];
+</code></pre>
+
+<p>This function generates a Pulse Width Modulated signal on the specified pin.
+The pin names are specific to the PIC&reg; MCU, and generally they are named
+something like <code>CCP1</code>, <code>P1A</code>, <code>P1B</code> etc. The PWM is output in <em>single</em> mode
+where all the PWM pins get the same output. The PWM period is automatically
+calculated using the duty cycle and the frequency.</p>
+
+<p>The frequency argument is a number followed by units such as <code>Hz</code>, <code>kHz</code>,
+<code>MHz</code> and the duty cycle argument is a number followed by a <code>%</code> sign such as
+<code>20%</code>. The function may take any number of acceptable pin arguments and
+internally handle cases specific to the MCU being used.</p>
+
+<p>Examples:</p>
+
+<pre><code>Main {
+    digital_output RC0;
+    # .. do something ..
+    pwm_single 1220Hz, 20%, CCP1;
+    # .. do something ..
+}
+</code></pre></li>
+<li><p><code>pwm_halfbridge</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>pwm_halfbridge &lt;frequency&gt;, &lt;duty cycle&gt;, &lt;dead band delay&gt;;
+</code></pre>
+
+<p>This function outputs the PWM in <em>half-bridge</em> mode and automatically picks
+up the MCU&#8217;s pins if the mode is supported. The period and duty cycle are
+caculated using the frequency and duty cycle arguments which are the same as in
+the <code>pwm_single</code> function. The dead band delay argument is a time argument, generally
+in microseconds, but it is recommended that the user use the <code>us</code> units to be
+specific. This value may be specific to the MCU and it is recommended that the
+user read the MCU&#8217;s data sheet for setting this.</p>
+
+<p>Examples:</p>
+
+<pre><code>Main {
+    digital_output RC0;
+    # .. do something ..
+    pwm_halfbridge 1220Hz, 20%, 4us;
+    # .. do something ..
+}
+</code></pre></li>
+<li><p><code>pwm_fullbridge</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>pwm_fullbridge 'forward', &lt;frequency&gt;, &lt;duty cycle&gt;;
+pwm_fullbridge 'reverse', &lt;frequency&gt;, &lt;duty cycle&gt;;
+</code></pre>
+
+<p>This function outputs the PWM in <em>full-bridge</em> mode, either <em>forward</em> or
+<em>reverse</em> depending on what is specified. The pins of the MCU are automatically
+selected by the <code>vic</code> compiler. The period and duty cycle are
+caculated using the frequency and duty cycle arguments which are the same as in
+the <code>pwm_single</code> function. The <code>'forward'</code> and <code>'reverse'</code> arguments are
+strings in the syntax and they should be used that way.</p>
+
+<p>Examples:</p>
+
+<pre><code>Main {
+    digital_output RC0;
+    # .. do something ..
+    pwm_fullbridge 'forward', 1220Hz, 20%;
+    # .. do something ..
+    pwm_fullbridge 'reverse', 1220Hz, 20%;
+}
+</code></pre></li>
+<li><p><code>pwm_update</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>pwm_update &lt;frequency&gt;, &lt;duty cycle&gt;;
+</code></pre>
+
+<p>This function updates the existing PWM duty cycle and frequency as needed by
+the program. The <code>vic</code> compiler automatically picks up which type of PWM version was invoked
+earlier and adjusts the handling of the PWM update.</p>
+
+<p>Examples:</p>
+
+<pre><code>Main {
+    pwm_single 1220Hz, 20%, CCP1;
+    ## .. do something ..
+    pwm_update 1220Hz, 30%; # update duty cycle
+    ## .. do something ..
+}
+</code></pre></li>
 </ul>
 
 <h2 id="powermanagementfunctions">Power Management Functions</h2>
@@ -598,7 +690,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-29 14:49:14 -0400.
+        This page was last updated on 2014-10-30 12:28:08 -0400.
     </p>
     </div>
     </section>

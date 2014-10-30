@@ -483,11 +483,95 @@ handle that.
 
 - `pwm_single`
 
+    Syntax:
+
+        pwm_single <frequency>, <duty cycle>, <pin> [, <pin>];
+
+    This function generates a Pulse Width Modulated signal on the specified pin.
+The pin names are specific to the PIC&reg; MCU, and generally they are named
+something like `CCP1`, `P1A`, `P1B` etc. The PWM is output in _single_ mode
+where all the PWM pins get the same output. The PWM period is automatically
+calculated using the duty cycle and the frequency.
+
+    The frequency argument is a number followed by units such as `Hz`, `kHz`,
+`MHz` and the duty cycle argument is a number followed by a `%` sign such as
+`20%`. The function may take any number of acceptable pin arguments and
+internally handle cases specific to the MCU being used.
+
+    Examples:
+
+        Main {
+            digital_output RC0;
+            # .. do something ..
+            pwm_single 1220Hz, 20%, CCP1;
+            # .. do something ..
+        }
+
 - `pwm_halfbridge`
+
+    Syntax:
+
+        pwm_halfbridge <frequency>, <duty cycle>, <dead band delay>;
+
+    This function outputs the PWM in _half-bridge_ mode and automatically picks
+up the MCU's pins if the mode is supported. The period and duty cycle are
+caculated using the frequency and duty cycle arguments which are the same as in
+the `pwm_single` function. The dead band delay argument is a time argument, generally
+in microseconds, but it is recommended that the user use the `us` units to be
+specific. This value may be specific to the MCU and it is recommended that the
+user read the MCU's data sheet for setting this.
+
+    Examples:
+
+        Main {
+            digital_output RC0;
+            # .. do something ..
+            pwm_halfbridge 1220Hz, 20%, 4us;
+            # .. do something ..
+        }
 
 - `pwm_fullbridge`
 
+    Syntax:
+
+        pwm_fullbridge 'forward', <frequency>, <duty cycle>;
+        pwm_fullbridge 'reverse', <frequency>, <duty cycle>;
+
+    This function outputs the PWM in _full-bridge_ mode, either _forward_ or
+_reverse_ depending on what is specified. The pins of the MCU are automatically
+selected by the `vic` compiler. The period and duty cycle are
+caculated using the frequency and duty cycle arguments which are the same as in
+the `pwm_single` function. The `'forward'` and `'reverse'` arguments are
+strings in the syntax and they should be used that way.
+
+    Examples:
+
+        Main {
+            digital_output RC0;
+            # .. do something ..
+            pwm_fullbridge 'forward', 1220Hz, 20%;
+            # .. do something ..
+            pwm_fullbridge 'reverse', 1220Hz, 20%;
+        }
+
 - `pwm_update`
+
+    Syntax:
+
+        pwm_update <frequency>, <duty cycle>;
+
+    This function updates the existing PWM duty cycle and frequency as needed by
+the program. The `vic` compiler automatically picks up which type of PWM version was invoked
+earlier and adjusts the handling of the PWM update.
+
+    Examples:
+
+        Main {
+            pwm_single 1220Hz, 20%, CCP1;
+            ## .. do something ..
+            pwm_update 1220Hz, 30%; # update duty cycle
+            ## .. do something ..
+        }
 
 ## Power Management Functions
 

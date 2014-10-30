@@ -552,7 +552,51 @@ Main {
 
 <h2 id="pulsewidthmodulationpwm">Pulse Width Modulation (PWM)</h2>
 
-<p>** TODO **</p>
+<h3 id="singlepwm">Single PWM</h3>
+
+<p>The <em>single</em> PWM example can be found in <code>share/examples/pwm2.vic</code>. This example
+starts a PWM duty cycle at <code>20%</code> and then updates it to <code>30%</code>.</p>
+
+<pre><code>PIC P16F690;
+
+Main {
+    pwm_single 1220Hz, 20%, CCP1;
+    delay 5s;
+    pwm_update 1220Hz, 30%; # update duty cycle
+    delay 5s;
+}
+</code></pre>
+
+<h3 id="half-bridgeandfull-bridgemodes">Half-bridge and Full-bridge Modes</h3>
+
+<p>This example can be modified to run all the different PWM modes by uncommenting
+the appropriate line with the required <code>pwm_*bridge</code> function call. It can be found in
+<code>share/examples/pwm.vic</code>. Here we see the <em>half bridge</em> mode being used and
+uncommenting the other lines will turn on the forward or reverse <em>full bridge</em>
+modes.</p>
+
+<pre><code>PIC P16F690;
+
+Main {
+    digital_output RC0;
+    pwm_halfbridge 1220Hz, 20%, 4us;
+    #pwm_fullbridge 'forward', 1220Hz, 20%;
+    #pwm_fullbridge 'reverse', 1220Hz, 20%;
+    Loop {
+        write RC0, CCP1;
+    }
+}
+
+Simulator {
+    attach_led CCP1;
+    attach_led RC0;
+    stop_after 20s;
+    logfile &quot;pwm.lxt&quot;;
+    log CCP1;
+    scope CCP1, RC0;
+    autorun;
+}
+</code></pre>
 
 <p>This brings us to the end of the list of examples.</p>
     <hr>
@@ -571,7 +615,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-30 15:17:05 -0400.
+        This page was last updated on 2014-10-30 15:18:10 -0400.
     </p>
     </div>
     </section>
