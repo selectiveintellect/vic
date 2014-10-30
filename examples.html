@@ -344,6 +344,214 @@ Main {
 
 <h2 id="debouncingaswitch">Debouncing a Switch</h2>
 
+<p>This example shows how to debounce a pin input <code>RA3</code> connected to a switch and
+simulate the pressing of the switch using the <a href="simulator.html#wavesimulations"><code>stimulate</code>
+statement</a>. The example can be found in
+<code>share/examples/debouncer.vic</code>.</p>
+
+<pre><code>PIC P16F690;
+
+pragma debounce count = 5;
+pragma debounce delay = 1ms;
+
+Main {
+    digital_output PORTC;
+    digital_input RA3;
+    $display = 0;
+    Loop {
+        debounce RA3,
+        Action {
+            ++$display;
+            write PORTC, $display;
+        };
+    }
+}
+
+Simulator {
+    attach_led PORTC, 4, 'red';
+    logfile &quot;debouncer.lxt&quot;;
+    log RA3;
+    scope RA3;
+    # stimulus should reflect the debounce delay to be viable
+    stimulate RA3, every 5s, wave [
+        300, 1, 1300, 0,
+        1400, 1, 2400, 0,
+        2500, 1, 3500, 0,
+        3600, 1, 4600, 0,
+        4700, 1, 5700, 0,
+        5800, 1, 6800, 0,
+        6900, 1, 8000, 0
+    ];
+    stop_after 30s;
+    autorun;
+}
+</code></pre>
+
+<h2 id="analog-to-digitalconverteradctest">Analog-to-Digital Converter (ADC) Test</h2>
+
+<p>This example demonstrates how to use the ADC of the MCU to read analog
+information into a digital variable. We also use that variable to adjust the
+delays to modify the speed of the blinking of an LED connected to the pin <code>RC0</code>.
+In our case, we tested this on physical hardware where the pin <code>AN0</code> was
+connected to a potentiometer switch (variable rotation) and the pin <code>RC0</code> was
+connected to an LED. The code can be found in <code>share/examples/adctest.vic</code>.</p>
+
+<pre><code>PIC P16F690;
+
+pragma adc right_justify = 0;
+Main {
+    digital_output RC0;
+    analog_input AN0;
+    adc_enable 500kHz, AN0;
+    Loop {
+        adc_read $display;
+        delay_ms $display;
+        write RC0, 1;
+        delay_ms $display;
+        write RC0, 0;
+        delay 100us;
+    }
+}
+</code></pre>
+
+<h2 id="variablerotationofleds">Variable Rotation of LEDs</h2>
+
+<p>In this example we use the ADC to change the speed of rotation of 4 LEDs
+connected to the <code>PORTC</code> (pins <code>RC0-RC3</code>) of the MCU. The value is read from the
+ADC on the <code>AN0</code> analog pin connected to a variable potentiometer which changes
+the speed of the lights blinking between the 4 LEDs following the right rotation
+pattern of bits. It is an enhanced version of the <a href="#rotatingoverleds">rotating over
+LEDs</a> example. This example can be found in <code>share/examples/varrotate.vic</code>.</p>
+
+<pre><code>PIC P16F690;
+
+pragma adc right_justify = 0;
+
+Main {
+    digital_output PORTC; # all pins
+    analog_input RA3;
+    adc_enable 500kHz, AN0;
+    $display = 0x08; # create a 8-bit register
+    Loop {
+        write PORTC, $display;
+        adc_read $userval;
+        $userval += 100;
+        delay_ms $userval;
+        ror $display, 1;
+    }
+}
+</code></pre>
+
+<h2 id="reversingledsonswitchpress">Reversing LEDs on Switch Press</h2>
+
+<p>This is a combination of the <a href="#debouncingaswitch">debouncing a switch</a> example and the <a href="#variablerotationofleds">variable
+rotation</a> example. In this we assume that a push button switch has been connected
+to the <code>RA3</code> pin, 4 LEDs have been connected to each pin on <code>PORTC</code> (pins <code>RC0-RC3</code>)
+and that the analog channel/pin <code>AN0</code> is connected to a variable potentiometer.</p>
+
+<p>When the user presses a switch the direction of lighting up the 4 LEDs changes
+from left to right and back. When the user rotates the potentiometer, the speed
+of blinking of the 4 LEDs changes accordingly. This example can be found in
+<code>share/examples/reversible.vic</code>.</p>
+
+<pre><code>PIC P16F690;
+
+pragma debounce count = 2;
+pragma debounce delay = 1ms;
+pragma adc right_justify = 0;
+
+Main {
+    digital_output PORTC;
+    digital_input RA3;
+    analog_input AN0;
+    adc_enable 500kHz, AN0;
+    $display = 0x08; # create a 8-bit register
+    $dirxn = FALSE;
+    Loop {
+        write PORTC, $display;
+        adc_read $userval;
+        $userval += 100;
+        delay_ms $userval;
+        debounce RA3, Action {
+            $dirxn = !$dirxn;
+        };
+        if $dirxn == TRUE {
+            rol $display, 1;
+        } else {
+            ror $display, 1;
+        };
+    }
+}
+</code></pre>
+
+<h2 id="timerusage">Timer Usage</h2>
+
+<p>This example demonstrates how to use the <a href="functions.html#timerandinterruptfunctions">synchronous timer
+functions</a> to perform the same task
+as the <a href="functions.html#timemanagementfunctions"><code>delay</code> functions</a>. This is very
+similar to the <a href="#rotatingoverleds">Rotating over LEDs example</a>, except that
+instead of rotating the blinking of the LEDs, it displays the binary values
+ranging from <code>0-15</code> on the LEDs connected to <code>PORTC</code> (pins <code>RC0-RC3</code>). This can be
+found in the <code>share/examples/timer.vic</code> file.</p>
+
+<pre><code>PIC P16F690;
+
+Main {
+    digital_output PORTC;
+    $display = 0;
+    timer_enable TMR0, 4kHz;
+    Loop {
+        timer Action {
+            ++$display;
+            write PORTC, $display;
+        };
+    }
+}
+</code></pre>
+
+<h2 id="interruptserviceroutineusage">Interrupt Service Routine Usage</h2>
+
+<p>This example demonstrates how to use the <a href="functions.html#timerandinterruptfunctions">interrupt service
+routines</a> to accomplish the same task
+as in the <a href="#reversingledsonswitchpress">Reversing LEDs on Switch Press</a> example.
+This is available in the <code>share/examples/interrupt.vic</code> file. As you can see,
+the ADC is beign read using the interrupt. This is more efficiently implemented
+as checking the ADC is now done on an event-based timer instead of using a synchronous MCU loop.</p>
+
+<pre><code>PIC P16F690;
+
+pragma debounce count = 2;
+pragma debounce delay = 1ms;
+pragma adc right_justify = 0;
+
+Main {
+    digital_output PORTC;
+    analog_input AN0;
+    digital_input RA3;
+    adc_enable 500kHz, AN0;
+    $display = 0x08; # create a 8-bit register
+    $dirxn = FALSE;
+    timer_enable TMR0, 4kHz, ISR { #set the interrupt service routine
+        adc_read $userval;
+        $userval += 100;
+    };
+    Loop {
+        write PORTC, $display;
+        delay_ms $userval;
+        debounce RA3, Action {
+            $dirxn = !$dirxn;
+        };
+        if ($dirxn == TRUE) {
+            rol $display, 1;
+        } else {
+            ror $display, 1;
+        };
+    }
+}
+</code></pre>
+
+<h2 id="pulsewidthmodulationpwm">Pulse Width Modulation (PWM)</h2>
+
 <p>This brings us to the end of the list of examples.</p>
     <hr>
     <div id="title">
@@ -361,7 +569,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-26 15:11:42 -0400.
+        This page was last updated on 2014-10-30 14:52:41 -0400.
     </p>
     </div>
     </section>
