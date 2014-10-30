@@ -283,3 +283,4 @@ to simulate a debouncing switch in `gpsim`.
         }
 
 @@NEXT@@ examples.md @@PREV@@ functions.md
+@@HIGHLIGHT@@

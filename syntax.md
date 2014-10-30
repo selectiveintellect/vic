@@ -192,10 +192,20 @@ There are **no** such things as variable declarations. The type of the variable
 is automatically inferred by the `vic compiler. The first time a particular
 variable is used is where it gets _declared_. Currently, as of version 0.12, all
 variables are global. There is no scoping implemented. However, to have a
-variable be accessed by a simulator, they have to be exported using the pragma.
+variable be accessed by a simulator, they have to be exported using the
+appropriate [pragma](#pragmas). Once a variable type has been inferred, it
+**cannot** be changed.
+
+There are many types of constants:
+
+- string or numeric literals
+- array constants
+- pin constants
+
+### String and Numeric Literals
 
 String and numeric literals are supported as in any language. Strings can be
-enclosed within single or double quotes. Numeric literals supported are
+enclosed within single `''` or double quotes `""`. Numeric literals supported are
 integers, hexadecimal numbers and booleans. The boolean keywords are `true` and
 `false` and they are case insensitive.
 
@@ -207,9 +217,32 @@ milliseconds, `us` for microseconds, `Hz` for Hertz, `kHz` for kilo Hertz,
     $frequency = 4MHz;
     $pwmcycle = 20%;
 
-The language keywords are: `if`, `else` and `while`. They are case _sensitive_.
+### Array Constants
 
-Constants are validated keywords that are not the language keywords but
+In some situations, the user may want to use an array or a look up table (LUT)
+for a particular task. VIC&trade; allows the user to dedicate a variable to a
+constant array or an LUT and access it using array indexing notation. The LUT
+has no special index key, except for the numeric index.
+
+To declare an array the user does this:
+
+    $my_array = array [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ];
+
+To declare an LUT the user does this:
+
+    $my_lut = table [ 0xAB, 0x20, 0xFE, 0xDA, 0xBC, 0x55, 0xAA ];
+
+To access an array or LUT element the user can do any of the following:
+
+    $my_var = $my_array[$index]; # $index is a variable with an index
+    $my_var = $my_lut[$index];
+
+Overflow and underflow are automatically handled by VIC&trade; by making the
+array or LUT a circular buffer.
+
+### Pin Constants
+
+Pin constants are validated keywords that are not the language keywords but
 represent some aspect of the MCU being targeted. Generally they are the pin
 names, such as those shown in the [pin diagram](gettingstarted.html#savingcodeashelloworld.vic) of the MCU.
 Many other standard names are also accepted such as:
@@ -226,9 +259,14 @@ It depends on the MCU being handled and the user may need to refer to the pin li
 the `vic` compiler's [commandline](commandline.html) options to list the valid
 pin constants. Some sample constants look like `RC0`, `PORTA`, `TMR0`, `USART`.
 
+
+### General Identifiers
+
 Other general identifiers are standard alphanumeric strings which start with an
 alphabet in the range `[A-Za-z]` followed by any number of alphanumeric
 characters. These identifiers are used for block names and function names. 
+
+Some of the language keywords not described above are: `if`, `else` and `while`. They are case _sensitive_.
 
 ## Blocks
 
