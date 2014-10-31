@@ -278,7 +278,15 @@ $ sudo cpan -i Pegex App::Prove
                     LED.
                     </p>
                     </section>
-                    <section>
+                    <section data-autoslide="3000">
+                    <h2>PIC&reg; P16F690</h2>
+                    <a href="../images/pinout_P16F690.png" target="_blank" class="image"><img
+                        width="500" height="300"
+                        src="../images/pinout_P16F690.png" alt="P16F690 Pin Diagram"/></a>
+                    <br/>
+                    <em><small>Click to enlarge the picture</small></em>
+                    </section>
+                    <section data-autoslide="7000">
                     <h2>Looking at the code</h2>
 					<pre><code data-trim contenteditable style="font-size: 22px; margin-top: 20px;">
 PIC P16F690;
@@ -288,6 +296,56 @@ Main {
     write RC0, 0x1; # write the value 1 to RC0
 }
                     </code></pre>
+                    </section>
+                    <section>
+                    <h3>Assembly Code You May Have Written</h3>
+					<pre><code data-trim contenteditable style="font-size: 22px; margin-top: 20px;">
+#include <p16f690.inc>
+
+__config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _BOR_OFF & _IESO_OFF & _FCMEN_OFF)
+
+org 0
+
+_start:
+    ;; turn on pin RC0 as output
+     banksel   TRISC
+     bcf       TRISC, TRISC0
+     banksel   ANSEL
+     bcf       ANSEL, ANS4
+     banksel   PORTC
+     bcf       PORTC, 0
+
+    ;; write 1 to RC0
+     bsf       PORTC, 0
+     goto      $
+     end
+                    </pre></code>
+                    </section>
+                    <section>
+                        <h3>Let's See It Work</h3>
+                        <!-- Video of LED being lit -->
+                    </section>
+                    <section data-autoslide="7000">
+                        <h2>Simulating in Software</h2>
+                        <p>Using <a
+                            href="http://gpsim.sourceforge.net/gpsim.html"><code>gpsim</code></a>
+                        as default simulator</p><br/>
+					<pre><code data-trim contenteditable style="font-size: 22px; margin-top: 20px;">
+PIC P16F690;
+
+Main {
+    digital_output RC0; # mark pin RC0 as output
+    write RC0, 0x1; # write the value 1 to RC0
+}
+Simulator {
+    attach_led RC0; # attach an LED to the pin RC0
+    stop_after 1s; # stop the simulation after 1 second
+}
+                </code></pre>
+                    </section>
+                    <section>
+                        <h3>Let's See It Work</h3>
+                        <!-- Video of LED being lit -->
                     </section>
                 </section>
                 <section>
