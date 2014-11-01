@@ -29,6 +29,17 @@ has stack_size => 8; # 8-level x 13-bit wide
 
 has register_size => 8; # size of register W
 
+has program_memory => 0; # number of flash words
+
+has data_memory => {
+    SRAM => 0,
+    EEPROM => 0,
+};
+
+has pin_counts => {
+    total => 0,
+};
+
 has banks => {
     # general purpose registers
     gpr => undef,
@@ -39,8 +50,6 @@ has banks => {
 };
 
 has register_banks => {};
-
-has pin_count => 0;
 
 has pins => {
     #name  #port  #portbit #pin
@@ -2198,6 +2207,10 @@ $end_label:\n
 
 sub adc_enable {
     my $self = shift;
+    if (!$self->pin_counts->{adc}) {
+        carp $self->type, " has no ADC";
+        return;
+    }
     if (@_) {
         my ($clock, $channel) = @_;
         my $f_osc = $self->frequency;
@@ -2235,6 +2248,10 @@ sub adc_enable {
 
 sub adc_disable {
     my $self = shift;
+    if (!$self->pin_counts->{adc}) {
+        carp $self->type, " has no ADC";
+        return;
+    }
     return << "...";
 \tbanksel ADCON0
 \tbcf ADCON0, ADON
@@ -2244,6 +2261,10 @@ sub adc_disable {
 sub adc_read {
     #TODO: if the variable is 16-bit the varlow should be auto-adjusted
     my ($self, $varhigh, $varlow) = @_;
+    if (!$self->pin_counts->{adc}) {
+        carp $self->type, " has no ADC";
+        return;
+    }
     $varhigh = uc $varhigh;
     $varlow = uc $varlow if defined $varlow;
     my $code = << "...";

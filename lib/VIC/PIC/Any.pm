@@ -12,6 +12,11 @@ use VIC::PIC::Gpsim;
 # allows for the same class to be used for different pics
 use constant PICS => {
     P16F690 => 'P16F690',
+    P16F631 => 'P16F631',
+    P16F677 => 'P16F677',
+    P16F685 => 'P16F685',
+    P16F687 => 'P16F687',
+    P16F689 => 'P16F689',
 };
 
 use constant SIMS => {
