@@ -31,6 +31,25 @@ has stack_size => 8; # 8-level x 13-bit wide
 
 has register_size => 8; # size of register W
 
+has program_memory => 4096; # number of flash words
+
+has data_memory => {
+    SRAM => 256, # bytes
+    EEPROM => 256, # bytes
+};
+
+has pin_counts => {
+    total => 20,
+    io => 18,
+    adc => 12,
+    comparator => 2,
+    timer_8bit => 2,
+    timer_16bit => 1,
+    ssp => 1,
+    eccp => 1,
+    usart => 1,
+};
+
 has banks => {
     # general purpose registers
     gpr => [
@@ -140,14 +159,12 @@ has register_banks => {
     ADRESH => [ 0 ],
     ADRESL => [ 1 ],
     ANSEL => [ 2 ],
-    PSTRCON => [ 3 ],
+    SRCON => [ 3 ],
     # 0x1F
     ADCON0 => [ 0 ],
     ADCON1 => [ 1 ],
     ANSELH => [ 2 ],
 };
-
-has pin_count => 20;
 
 has pins => {
     #name  #port  #portbit #pin
