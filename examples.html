@@ -149,7 +149,7 @@ Main {
 }
 
 Simulator {
-    attach_led PORTC, 4; # attach 4 LEDs to PORTC on RC0-RC3;
+    attach_led PORTC, 4; # attach 4 LEDs to PORTC on RC0-RC7;
     stop_after 60s;
     logfile &quot;rotater.lxt&quot;;
     log PORTC;
@@ -417,7 +417,7 @@ Main {
 <h2 id="variablerotationofleds">Variable Rotation of LEDs</h2>
 
 <p>In this example we use the ADC to change the speed of rotation of 4 LEDs
-connected to the <code>PORTC</code> (pins <code>RC0-RC3</code>) of the MCU. The value is read from the
+connected to the <code>PORTC</code> (pins <code>RC0-RC7</code>) of the MCU. The value is read from the
 ADC on the <code>AN0</code> analog pin connected to a variable potentiometer which changes
 the speed of the lights blinking between the 4 LEDs following the right rotation
 pattern of bits. It is an enhanced version of the <a href="#rotatingoverleds">rotating over
@@ -446,7 +446,7 @@ Main {
 
 <p>This is a combination of the <a href="#debouncingaswitch">debouncing a switch</a> example and the <a href="#variablerotationofleds">variable
 rotation</a> example. In this we assume that a push button switch has been connected
-to the <code>RA3</code> pin, 4 LEDs have been connected to each pin on <code>PORTC</code> (pins <code>RC0-RC3</code>)
+to the <code>RA3</code> pin, 4 LEDs have been connected to each pin on <code>PORTC</code> (pins <code>RC0-RC7</code>)
 and that the analog channel/pin <code>AN0</code> is connected to a variable potentiometer.</p>
 
 <p>When the user presses a switch the direction of lighting up the 4 LEDs changes
@@ -491,7 +491,7 @@ functions</a> to perform the same task
 as the <a href="functions.html#timemanagementfunctions"><code>delay</code> functions</a>. This is very
 similar to the <a href="#rotatingoverleds">Rotating over LEDs example</a>, except that
 instead of rotating the blinking of the LEDs, it displays the binary values
-ranging from <code>0-15</code> on the LEDs connected to <code>PORTC</code> (pins <code>RC0-RC3</code>). This can be
+ranging from <code>0-15</code> on the LEDs connected to <code>PORTC</code> (pins <code>RC0-RC7</code>). This can be
 found in the <code>share/examples/timer.vic</code> file.</p>
 
 <pre><code>PIC P16F690;
@@ -615,7 +615,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-30 15:18:10 -0400.
+        This page was last updated on 2014-10-30 15:46:24 -0400.
     </p>
     </div>
     </section>

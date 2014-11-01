@@ -104,7 +104,7 @@ to 4 LEDs. It can be found in the file `share/examples/rotater.vic`.
     }
 
     Simulator {
-        attach_led PORTC, 4; # attach 4 LEDs to PORTC on RC0-RC3;
+        attach_led PORTC, 4; # attach 4 LEDs to PORTC on RC0-RC7;
         stop_after 60s;
         logfile "rotater.lxt";
         log PORTC;
@@ -365,7 +365,7 @@ connected to an LED. The code can be found in `share/examples/adctest.vic`.
 ## Variable Rotation of LEDs
 
 In this example we use the ADC to change the speed of rotation of 4 LEDs
-connected to the `PORTC` (pins `RC0-RC3`) of the MCU. The value is read from the
+connected to the `PORTC` (pins `RC0-RC7`) of the MCU. The value is read from the
 ADC on the `AN0` analog pin connected to a variable potentiometer which changes
 the speed of the lights blinking between the 4 LEDs following the right rotation
 pattern of bits. It is an enhanced version of the [rotating over
@@ -393,7 +393,7 @@ LEDs](#rotatingoverleds) example. This example can be found in `share/examples/v
 
 This is a combination of the [debouncing a switch](#debouncingaswitch) example and the [variable
 rotation](#variablerotationofleds) example. In this we assume that a push button switch has been connected
-to the `RA3` pin, 4 LEDs have been connected to each pin on `PORTC` (pins `RC0-RC3`)
+to the `RA3` pin, 4 LEDs have been connected to each pin on `PORTC` (pins `RC0-RC7`)
 and that the analog channel/pin `AN0` is connected to a variable potentiometer.
 
 When the user presses a switch the direction of lighting up the 4 LEDs changes
@@ -437,7 +437,7 @@ functions](functions.html#timerandinterruptfunctions) to perform the same task
 as the [`delay` functions](functions.html#timemanagementfunctions). This is very
 similar to the [Rotating over LEDs example](#rotatingoverleds), except that
 instead of rotating the blinking of the LEDs, it displays the binary values
-ranging from `0-15` on the LEDs connected to `PORTC` (pins `RC0-RC3`). This can be
+ranging from `0-15` on the LEDs connected to `PORTC` (pins `RC0-RC7`). This can be
 found in the `share/examples/timer.vic` file.
 
     PIC P16F690;
