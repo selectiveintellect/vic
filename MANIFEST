@@ -7,6 +7,11 @@ lib/VIC/Parser.pm
 lib/VIC/PIC/Any.pm
 lib/VIC/PIC/Base.pm
 lib/VIC/PIC/Gpsim.pm
+lib/VIC/PIC/P16F631.pm
+lib/VIC/PIC/P16F677.pm
+lib/VIC/PIC/P16F685.pm
+lib/VIC/PIC/P16F687.pm
+lib/VIC/PIC/P16F689.pm
 lib/VIC/PIC/P16F690.pm
 lib/VIC/Receiver.pm
 LICENSE
@@ -14,6 +19,7 @@ MANIFEST			This list of files
 MANIFEST.SKIP
 META.json
 META.yml
+README
 README.md
 share/examples/adctest.vic
 share/examples/blinker.vic
