@@ -270,11 +270,13 @@ has power_pins => {
     Vpp => 4,
     ULPWU => 19,
     MCLR => 4,
+    Vref => 18,
     1 => 'Vdd',
     20 => 'Vss',
     4 => 'Vpp',
     19 => 'ULPWU',
     4 => 'MCLR',
+    18 => 'Vref',
 };
 
 has adcon1_scale  => {
@@ -373,9 +375,34 @@ has timer_pins => {
     3 => 'T1G',
 };
 
-has interrupt_pins => {
+has eint_pins => {
     INT => 17,
     17 => 'INT',
+    RA2 => 17,
+};
+
+has ioc_pins => {
+    RA0 => 19,
+    RA1 => 18,
+    RA2 => 17,
+    RA3 => 4,
+    RA4 => 3,
+    RA5 => 2,
+    RB4 => 13,
+    RB5 => 12,
+    RB6 => 11,
+    RB7 => 10,
+    19 => 'RA0',
+    18 => 'RA1',
+    17 => 'RA2',
+    4 => 'RA3',
+    3 => 'RA4',
+    2 => 'RA5',
+    13 => 'RB4',
+    12 => 'RB5',
+    11 => 'RB6',
+    10 => 'RB7',
+
 };
 
 has usart_pins => {

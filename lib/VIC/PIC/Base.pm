@@ -76,7 +76,11 @@ has wdt_prescaler => {};
 
 has timer_pins => {};
 
-has interrupt_pins => {};
+# external interrupt pins
+has eint_pins => {};
+
+# interrupt-on-change pins
+has ioc_pins => {};
 
 has usart_pins => {};
 
@@ -156,7 +160,8 @@ sub convert_to_valid_pin {
     $pin_no = $self->analog_pins->{$var}->[0] if exists $self->analog_pins->{$var};
     $pin_no = $self->power_pins->{$var} if exists $self->power_pins->{$var};
     $pin_no = $self->comparator_pins->{$var} if exists $self->comparator_pins->{$var};
-    $pin_no = $self->interrupt_pins->{$var} if exists $self->interrupt_pins->{$var};
+    $pin_no = $self->eint_pins->{$var} if exists $self->eint_pins->{$var};
+    $pin_no = $self->ioc_pins->{$var} if exists $self->ioc_pins->{$var};
     $pin_no = $self->timer_pins->{$var} if exists $self->timer_pins->{$var};
     $pin_no = $self->spi_pins->{$var} if exists $self->spi_pins->{$var};
     $pin_no = $self->usart_pins->{$var} if exists $self->usart_pins->{$var};
@@ -181,7 +186,8 @@ sub validate {
     return 1 if exists $self->register_banks->{$var};
     return 1 if exists $self->power_pins->{$var};
     return 1 if exists $self->comparator_pins->{$var};
-    return 1 if exists $self->interrupt_pins->{$var};
+    return 1 if exists $self->eint_pins->{$var};
+    return 1 if exists $self->ioc_pins->{$var};
     return 1 if exists $self->timer_pins->{$var};
     return 1 if exists $self->spi_pins->{$var};
     return 1 if exists $self->usart_pins->{$var};
@@ -2650,6 +2656,10 @@ $details{TRISC_BCF}
 
 sub pwm_single {
     my ($self, $pwm_frequency, $duty, @pins) = @_;
+    if ($self->pin_counts->{eccp} < 1) {
+        carp $self->type, " has no PWM capabilities";
+        return;
+    }
     my %details = $self->pwm_details($pwm_frequency, $duty, 'single', @pins);
     # pulse steering automatically taken care of
     return $self->pwm_code(%details);
@@ -2657,6 +2667,10 @@ sub pwm_single {
 
 sub pwm_halfbridge {
     my ($self, $pwm_frequency, $duty, $deadband, @pins) = @_;
+    if ($self->pin_counts->{eccp} < 1) {
+        carp $self->type, " has no PWM capabilities";
+        return;
+    }
     # we ignore the @pins that comes in
     @pins = qw(P1A P1B);
     my %details = $self->pwm_details($pwm_frequency, $duty, 'half', @pins);
@@ -2673,6 +2687,10 @@ sub pwm_halfbridge {
 
 sub pwm_fullbridge {
     my ($self, $direction, $pwm_frequency, $duty, @pins) = @_;
+    if ($self->pin_counts->{eccp} < 1) {
+        carp $self->type, " has no PWM capabilities";
+        return;
+    }
     my $type = 'full_forward';
     $type = 'full_reverse' if $direction =~ /reverse|backward|no?|0/i;
     # we ignore the @pins that comes in
@@ -2683,6 +2701,10 @@ sub pwm_fullbridge {
 
 sub pwm_update {
     my ($self, $pwm_frequency, $duty) = @_;
+    if ($self->pin_counts->{eccp} < 1) {
+        carp $self->type, " has no PWM capabilities";
+        return;
+    }
     # hack into the existing functions to update only what we need
     my @pins = qw(P1A P1B P1C P1D);
     my %details = $self->pwm_details($pwm_frequency, $duty, 'single', @pins);

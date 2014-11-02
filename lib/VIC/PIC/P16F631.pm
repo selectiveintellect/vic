@@ -319,9 +319,33 @@ has timer_pins => {
     3 => 'T1G',
 };
 
-has interrupt_pins => {
+has eint_pins => {
     INT => 17,
     17 => 'INT',
+    RA2 => 17,
+};
+
+has ioc_pins => {
+    RA0 => 19,
+    RA1 => 18,
+    RA2 => 17,
+    RA3 => 4,
+    RA4 => 3,
+    RA5 => 2,
+    RB4 => 13,
+    RB5 => 12,
+    RB6 => 11,
+    RB7 => 10,
+    19 => 'RA0',
+    18 => 'RA1',
+    17 => 'RA2',
+    4 => 'RA3',
+    3 => 'RA4',
+    2 => 'RA5',
+    13 => 'RB4',
+    12 => 'RB5',
+    11 => 'RB6',
+    10 => 'RB7',
 };
 
 # no USART in this PIC
@@ -354,17 +378,8 @@ has spi_pins => {};
 
 has i2c_pins => {};
 
-has pwm_pins => {
-    P1D => 14,
-    P1C => 7,
-    P1B => 6,
-    P1A => 5,
-    CCP1 => 5,
-    14 => 'P1D',
-    7 => 'P1C',
-    6 => 'P1B',
-    5 => 'P1A',
-};
+# no PWM
+has pwm_pins => {};
 
 has chip_config => <<"...";
 \t__config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _BOR_OFF & _IESO_OFF & _FCMEN_OFF)

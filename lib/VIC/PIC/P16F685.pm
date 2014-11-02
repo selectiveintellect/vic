@@ -31,6 +31,25 @@ has stack_size => 8; # 8-level x 13-bit wide
 
 has register_size => 8; # size of register W
 
+has program_memory => 4096; # number of flash words
+
+has data_memory => {
+    SRAM => 256, # bytes
+    EEPROM => 256, # bytes
+};
+
+has pin_counts => {
+    total => 20,
+    io => 18,
+    adc => 12,
+    comparator => 2,
+    timer_8bit => 2,
+    timer_16bit => 1,
+    ssp => 0,
+    eccp => 1,
+    usart => 0,
+};
+
 has banks => {
     # general purpose registers
     gpr => [
@@ -253,11 +272,13 @@ has power_pins => {
     Vpp => 4,
     ULPWU => 19,
     MCLR => 4,
+    Vref => 18,
     1 => 'Vdd',
     20 => 'Vss',
     4 => 'Vpp',
     19 => 'ULPWU',
     4 => 'MCLR',
+    18 => 'Vref',
 };
 
 has adcon1_scale  => {
@@ -356,21 +377,36 @@ has timer_pins => {
     3 => 'T1G',
 };
 
-has interrupt_pins => {
+has eint_pins => {
     INT => 17,
     17 => 'INT',
+    RA2 => 17,
 };
 
-has usart_pins => {
-    RX => 12,
-    TX => 10,
-    CK => 10,
-    DT => 12,
-    12 => 'RX',
-    10 => 'TX',
-    10 => 'CK',
-    12 => 'DT',
+has ioc_pins => {
+    RA0 => 19,
+    RA1 => 18,
+    RA2 => 17,
+    RA3 => 4,
+    RA4 => 3,
+    RA5 => 2,
+    RB4 => 13,
+    RB5 => 12,
+    RB6 => 11,
+    RB7 => 10,
+    19 => 'RA0',
+    18 => 'RA1',
+    17 => 'RA2',
+    4 => 'RA3',
+    3 => 'RA4',
+    2 => 'RA5',
+    13 => 'RB4',
+    12 => 'RB5',
+    11 => 'RB6',
+    10 => 'RB7',
 };
+
+has usart_pins => {};
 
 has clock_pins => {
     CLKOUT => 3,
@@ -393,26 +429,11 @@ has icsp_pins => {
     19 => 'ICSPDAT',
 };
 
-has selector_pins => {
-    SS => 8, # SPI or I2C
-    8 => 'SS',
-};
+has selector_pins => {};
 
-has spi_pins => {
-    SDI => 13, # SPI
-    SCK => 11, # SPI
-    SDO => 9, # SPI
-    13 => 'SDI',
-    11 => 'SCK',
-    9 => 'SDO',
-};
+has spi_pins => {};
 
-has i2c_pins => {
-    SDA => 13, # I2C
-    SCL => 11, # I2C
-    13 => 'SDA',
-    11 => 'SCL',
-};
+has i2c_pins => {};
 
 has pwm_pins => {
     P1D => 14,
