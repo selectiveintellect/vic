@@ -19,7 +19,7 @@ has org => 0;
 
 has frequency => 4e6; # 4MHz
 
-has address_range => [ 0x0000, 0x0FFF ]; # 4K
+has address_range => [ 0x0000, 0x07FF ]; # 2K
 
 has reset_address => 0x0000;
 
@@ -54,8 +54,8 @@ has banks => {
     # general purpose registers
     gpr => [
         [ 0x20, 0x7F ],
-        [ 0xA0, 0xEF ],
-        [ 0x120, 0x16F ],
+        [ 0xA0, 0xBF ],
+        [ ], # no GPRs in bank 3
         [ ], # no GPRs in bank 4
     ],
     # special function registers
@@ -105,19 +105,12 @@ has register_banks => {
     # 0x0E
     TMR1L => [ 0 ],
     PCON => [ 1 ],
-    EEDATH => [ 2 ],
     # 0x0F
     TMR1H => [ 0 ],
     OSCCON => [ 1 ],
-    EEADRH => [ 2 ],
     # 0x10
     T1CON => [ 0 ],
     OSCTUNE => [ 1 ],
-    # 0x11
-    TMR2 => [ 0 ],
-    # 0x12
-    T2CON => [ 0 ],
-    PR2 => [ 1 ],
     # 0x13
     SSPBUF => [ 0 ],
     SSPADD => [ 1 ],
@@ -125,15 +118,12 @@ has register_banks => {
     SSPCON => [ 0 ],
     SSPSTAT => [ 1 ],
     # 0x15
-    CCPR1L => [ 0 ],
     WPUA => [ 1 ],
     WPUB => [ 2 ],
     # 0x16
-    CCPR1H => [ 0 ],
     IOCA => [ 1 ],
     IOCB => [ 2 ],
     # 0x17
-    CCP1CON => [ 0 ],
     WDTCON => [ 1 ],
     # 0x18
     RCSTA => [ 0 ],
@@ -150,16 +140,11 @@ has register_banks => {
     # 0x1B
     BAUDCTL => [ 1 ],
     CM2CON1 => [ 2 ],
-    # 0x1C
-    PWM1CON => [ 0 ],
-    # 0x1D
-    ECCPAS => [ 0 ],
-    PSTRCON => [ 3 ],
     # 0x1E
     ADRESH => [ 0 ],
     ADRESL => [ 1 ],
     ANSEL => [ 2 ],
-    PSTRCON => [ 3 ],
+    SRCON => [ 3 ],
     # 0x1F
     ADCON0 => [ 0 ],
     ADCON1 => [ 1 ],

@@ -63,7 +63,7 @@ has banks => {
         [ 0x00, 0x1F ],
         [ 0x80, 0x9F ],
         [ 0x100, 0x11F ],
-        [ 0x180, 0x19F ],
+        [ 0x180, 0x19E ],
     ],
     bank_size => 0x80,
     common_bank => [ 0x70, 0x7F ],
@@ -113,11 +113,6 @@ has register_banks => {
     # 0x10
     T1CON => [ 0 ],
     OSCTUNE => [ 1 ],
-    # 0x11
-    TMR2 => [ 0 ],
-    # 0x12
-    T2CON => [ 0 ],
-    PR2 => [ 1 ],
     # 0x13
     SSPBUF => [ 0 ],
     SSPADD => [ 1 ],
@@ -125,15 +120,12 @@ has register_banks => {
     SSPCON => [ 0 ],
     SSPSTAT => [ 1 ],
     # 0x15
-    CCPR1L => [ 0 ],
     WPUA => [ 1 ],
     WPUB => [ 2 ],
     # 0x16
-    CCPR1H => [ 0 ],
     IOCA => [ 1 ],
     IOCB => [ 2 ],
     # 0x17
-    CCP1CON => [ 0 ],
     WDTCON => [ 1 ],
     # 0x18
     RCSTA => [ 0 ],
@@ -150,16 +142,11 @@ has register_banks => {
     # 0x1B
     BAUDCTL => [ 1 ],
     CM2CON1 => [ 2 ],
-    # 0x1C
-    PWM1CON => [ 0 ],
-    # 0x1D
-    ECCPAS => [ 0 ],
-    PSTRCON => [ 3 ],
     # 0x1E
     ADRESH => [ 0 ],
     ADRESL => [ 1 ],
     ANSEL => [ 2 ],
-    PSTRCON => [ 3 ],
+    SRCON => [ 3 ],
     # 0x1F
     ADCON0 => [ 0 ],
     ADCON1 => [ 1 ],
