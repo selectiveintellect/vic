@@ -38,6 +38,14 @@ has data_memory => {
 
 has pin_counts => {
     total => 0,
+    io => 0,
+    adc => 0,
+    comparator => 0,
+    timer_8bit => 0,
+    timer_16bit => 0,
+    ssp => 0, # SPI/I2C capability
+    eccp => 0, # PWM capability
+    usart => 0, # UART capability
 };
 
 has banks => {
@@ -246,11 +254,13 @@ sub digital_output {
             $an_code .= "\tmovlw $flags\n";
             $an_code .= "\tandwf ANSEL, F\n";
         }
-        if ($flagsH != 0) {
-            $flagsH = sprintf "0x%02X", $flagsH;
-            $an_code .= "\tbanksel ANSELH\n";
-            $an_code .= "\tmovlw $flagsH\n";
-            $an_code .= "\tandwf ANSELH, F\n";
+        if (exists $self->register_banks->{ANSELH}) {
+            if ($flagsH != 0) {
+                $flagsH = sprintf "0x%02X", $flagsH;
+                $an_code .= "\tbanksel ANSELH\n";
+                $an_code .= "\tmovlw $flagsH\n";
+                $an_code .= "\tandwf ANSELH, F\n";
+            }
         }
         $code = << "...";
 \tbanksel TRIS$port
@@ -266,7 +276,10 @@ $an_code
             my $apinname = $self->analog_pins->{$pin_no} if defined $pin_no;
             if (defined $apinname) {
                 my ($apin, $abit) = @{$self->analog_pins->{$apinname}};
-                my $ansel = ($abit >= 8) ? 'ANSELH' : 'ANSEL';
+                my $ansel = 'ANSEL';
+                if (exists $self->register_banks->{ANSELH}) {
+                    $ansel = ($abit >= 8) ? 'ANSELH' : 'ANSEL';
+                }
                 $an_code = "\tbanksel $ansel\n\tbcf $ansel, ANS$abit";
             }
             $code = << "...";
@@ -365,11 +378,13 @@ sub analog_input {
             $an_code .= "\tmovlw $flags\n";
             $an_code .= "\tiorwf ANSEL, F\n";
         }
-        if ($flagsH != 0) {
-            $flagsH = sprintf "0x%02X", $flagsH;
-            $an_code .= "\tbanksel ANSELH\n";
-            $an_code .= "\tmovlw $flagsH\n";
-            $an_code .= "\tiorwf ANSELH, F\n";
+        if (exists $self->register_banks->{ANSELH}) {
+            if ($flagsH != 0) {
+                $flagsH = sprintf "0x%02X", $flagsH;
+                $an_code .= "\tbanksel ANSELH\n";
+                $an_code .= "\tmovlw $flagsH\n";
+                $an_code .= "\tiorwf ANSELH, F\n";
+            }
         }
         $code = << "...";
 \tbanksel TRIS$port
@@ -385,7 +400,10 @@ $an_code
             if (exists $self->analog_pins->{$pin}) {
                 my $pinname = $self->analog_pins->{$pin};
                 my ($apin, $abit) = @{$self->analog_pins->{$pinname}};
-                my $ansel = ($abit >= 8) ? 'ANSELH' : 'ANSEL';
+                my $ansel = 'ANSEL';
+                if (exists $self->register_banks->{ANSELH}) {
+                    $ansel = ($abit >= 8) ? 'ANSELH' : 'ANSEL';
+                }
                 $an_code = "\tbanksel $ansel\n\tbsf $ansel, ANS$abit";
             }
             $code = << "...";
@@ -433,11 +451,13 @@ sub digital_input {
             $an_code .= "\tmovlw $flags\n";
             $an_code .= "\tandwf ANSEL, F\n";
         }
-        if ($flagsH != 0) {
-            $flagsH = sprintf "0x%02X", $flagsH;
-            $an_code .= "\tbanksel ANSELH\n";
-            $an_code .= "\tmovlw $flagsH\n";
-            $an_code .= "\tandwf ANSELH, F\n";
+        if (exists $self->register_banks->{ANSELH}) {
+            if ($flagsH != 0) {
+                $flagsH = sprintf "0x%02X", $flagsH;
+                $an_code .= "\tbanksel ANSELH\n";
+                $an_code .= "\tmovlw $flagsH\n";
+                $an_code .= "\tandwf ANSELH, F\n";
+            }
         }
         $code = << "...";
 \tbanksel TRIS$port
@@ -452,7 +472,10 @@ $an_code
             my $apinname = $self->analog_pins->{$pin};
             if (defined $apinname) {
                 my ($apin, $abit) = @{$self->analog_pins->{$apinname}};
-                my $ansel = ($abit >= 8) ? 'ANSELH' : 'ANSEL';
+                my $ansel = 'ANSEL';
+                if (exists $self->register_banks->{ANSELH}) {
+                    $ansel = ($abit >= 8) ? 'ANSELH' : 'ANSEL';
+                }
                 $an_code = "\tbanksel $ansel\n\tbcf $ansel, ANS$abit";
             }
             $code = << "...";
@@ -2509,6 +2532,7 @@ sub op_STRIDX {
     XXX { string => $string, index => $idx, %extra };
 }
 
+#FIXME: C2OUT and P1B may be conflicting. check datasheet
 sub pwm_details {
     my ($self, $pwm_frequency, $duty, $type, @pins) = @_;
     no bigint;
