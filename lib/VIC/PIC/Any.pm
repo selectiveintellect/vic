@@ -25,6 +25,10 @@ use constant SIMS => {
 
 sub new {
     my ($class, $type) = @_;
+    if (uc $type eq 'ANY') {
+        die "You need to specify the type of the chip on the commandline to use 'Any'\n";
+        return;
+    }
     my $utype = PICS->{uc $type};
     return unless defined $utype;
     $class =~ s/::Any/::$utype/g;
@@ -43,6 +47,16 @@ sub new_simulator {
     $class =~ s/::Any/::$stype/g;
     $hh{type} = lc $stype;
     return $class->new(%hh);
+}
+
+sub supported_chips {
+    my @chips = keys %{+PICS};
+    return wantarray ? @chips : \@chips;
+}
+
+sub supported_simulators {
+    my @sims = keys %{+SIMS};
+    return wantarray ? @sims : \@sims;
 }
 
 1;

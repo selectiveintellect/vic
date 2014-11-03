@@ -33,6 +33,10 @@ has global_collections => {};
 
 sub stack { reverse @{shift->parser->stack}; }
 
+sub supported_chips { return VIC::PIC::Any->supported_chips(); }
+
+sub supported_simulators { return VIC::PIC::Any->supported_simulators(); }
+
 sub got_mcu_select {
     my ($self, $type) = @_;
     # override the PIC in code if defined
@@ -40,7 +44,10 @@ sub got_mcu_select {
     $type = lc $type;
     # assume supported type else return
     $self->pic(VIC::PIC::Any->new($type));
-    die "$type is not a supported chip" unless $self->pic->type eq $type;
+    unless (defined $self->pic and
+        $self->pic->type eq $type) {
+        $self->parser->throw_error("$type is not a supported chip");
+    }
     $self->ast->{include} = $self->pic->include;
     # set the defaults in case the headers are not provided by the user
     $self->ast->{org} = $self->pic->org;

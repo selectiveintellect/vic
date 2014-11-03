@@ -28,6 +28,10 @@ sub compile {
     $parser->parse($input);
 }
 
+sub supported_chips { return VIC::Receiver->supported_chips(); }
+
+sub supported_simulators { return VIC::Receiver->supported_simulators(); }
+
 1;
 
 =encoding utf8

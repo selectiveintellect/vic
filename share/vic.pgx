@@ -3,10 +3,10 @@
 #COPYRIGHT: 2014 Vikas N Kumar <vikas@cpan.org>. All Rights Reserved
 
 # mcu-select is necessary.
-program: mcu-select header* statement* EOS
+program: comment* mcu-select header* statement* EOS
 
 header: pragmas | comment
-mcu-select: /'PIC' BLANK+ ( mcu-types ) line-ending/
+mcu-select: /'PIC' BLANK+ ( mcu-types | 'Any' ) line-ending/
 mcu-types: / ALPHA DIGIT+ ALPHA DIGIT+ / # the uc names are like P16F690 or P16F84 etc.
 pragmas: 'pragma' + (variable | name) (pragma-expression | name)? line-ending
 pragma-expression: name / EQUAL -/ (number-units | number | string) -

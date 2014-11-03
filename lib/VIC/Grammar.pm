@@ -538,7 +538,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.57)
       '.rgx' => qr/\G([\+\-\*\/%])/
     },
     'mcu_select' => {
-      '.rgx' => qr/\GPIC[\ \t]+([a-zA-Z][0-9]+[a-zA-Z][0-9]+)[\ \t]*\r?\n?;[\ \t]*\r?\n?\r?\n?/
+      '.rgx' => qr/\GPIC[\ \t]+([a-zA-Z][0-9]+[a-zA-Z][0-9]+|Any)[\ \t]*\r?\n?;[\ \t]*\r?\n?\r?\n?/
     },
     'modifier_constant' => {
       '.all' => [
@@ -713,6 +713,10 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.57)
     },
     'program' => {
       '.all' => [
+        {
+          '+min' => 0,
+          '.ref' => 'comment'
+        },
         {
           '.ref' => 'mcu_select'
         },
