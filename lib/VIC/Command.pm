@@ -18,6 +18,8 @@ sub usage {
         -o, --output <file>   Writes the compiled syntax to the given output file
         -d, --debug           Dump the compile tree for debugging
         -i, --intermediate    Inline the intermediate code with the output
+        --list-chips          List the supported microcontroller chips
+        --list-simulators     List the supported simulators
 ...
     die $usage;
 }
@@ -27,6 +29,28 @@ sub version {
 VIC version $VERSION
 ...
     die $txt;
+}
+
+sub print_chips {
+    my @chips = VIC::supported_chips();
+    my $ctxt = join("\n", @chips);
+    my $txt = << "...";
+VIC supports the following microcontroller chips:
+$ctxt
+
+...
+    print $txt;
+}
+
+sub print_sims {
+    my @sims = VIC::supported_simulators();
+    my $stxt = join("\n", @sims);
+    my $txt = << "...";
+VIC supports the following simulators:
+$stxt
+
+...
+    print $txt;
 }
 
 sub run {
@@ -39,6 +63,8 @@ sub run {
     my $pic = undef;
     my $intermediate = undef;
     my $version = 0;
+    my $list_chips = 0;
+    my $list_sims = 0;
 
     GetOptions(
         "output=s" => \$output,
@@ -47,9 +73,13 @@ sub run {
         "pic=s" => \$pic,
         "intermediate" => \$intermediate,
         "version" => \$version,
+        "list-chips" => \$list_chips,
+        "list-simulators" => \$list_sims,
     ) or usage();
     usage() if $help;
     version() if $version;
+    print_chips() if $list_chips;
+    print_sims() if $list_sims;
 
     $VIC::Debug = $debug;
     $VIC::Intermediate = $intermediate;
@@ -59,7 +89,7 @@ sub run {
         open $fh, ">$output" or die "Unable to open $output: $!";
         open STDOUT, ">&", $fh or die "$!";
     }
-
+    return unless scalar @ARGV;
     print VIC::compile(do {local $/; <>}, $pic);
 }
 

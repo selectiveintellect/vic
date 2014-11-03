@@ -50,12 +50,12 @@ sub new_simulator {
 }
 
 sub supported_chips {
-    my @chips = keys %{+PICS};
+    my @chips = sort(keys %{+PICS});
     return wantarray ? @chips : \@chips;
 }
 
 sub supported_simulators {
-    my @sims = keys %{+SIMS};
+    my @sims = sort(keys %{+SIMS});
     return wantarray ? @sims : \@sims;
 }
 
