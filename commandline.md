@@ -13,6 +13,12 @@ long form:
 - `-V`, `--version`:
     This option displays the version number of the compiler.
 
+- `--list-chips`:
+    This option lists the microcontroller chips supported by the compiler.
+
+- `--list-simulators`:
+    This option lists the simulators supported by the compiler.
+
 - `-d`, `--debug`:
     This option turns on internal debugging of the compiler's parser. The user
 should not have to use this option unless filing a bug report. It is mainly for
@@ -45,6 +51,8 @@ Based on these options here are some sample examples on how to use them:
     $ vic -h
     $ vic -V
     $ vic -i -o helloworld.asm helloworld.vic
+    $ vic --list-chips
+    $ vic --list-simulators
 
 Now that we have learned enough about using the `vic` compiler, let us move on
 to studying the various available in-built functions for VIC&trade;.
