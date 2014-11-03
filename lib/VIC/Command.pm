@@ -80,6 +80,7 @@ sub run {
     version() if $version;
     print_chips() if $list_chips;
     print_sims() if $list_sims;
+    return if ($list_chips or $list_sims);
 
     $VIC::Debug = $debug;
     $VIC::Intermediate = $intermediate;
