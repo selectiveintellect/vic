@@ -28,9 +28,11 @@ sub compile {
     $parser->parse($input);
 }
 
-sub supported_chips { return VIC::Receiver->supported_chips(); }
+sub supported_chips { return VIC::Receiver::supported_chips(); }
 
-sub supported_simulators { return VIC::Receiver->supported_simulators(); }
+sub supported_simulators { return VIC::Receiver::supported_simulators(); }
+
+sub is_chip_supported { return VIC::Receiver::is_chip_supported(@_) };
 
 1;
 

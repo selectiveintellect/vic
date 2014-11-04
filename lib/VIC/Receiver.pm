@@ -33,9 +33,11 @@ has global_collections => {};
 
 sub stack { reverse @{shift->parser->stack}; }
 
-sub supported_chips { return VIC::PIC::Any->supported_chips(); }
+sub supported_chips { return VIC::PIC::Any::supported_chips(); }
 
-sub supported_simulators { return VIC::PIC::Any->supported_simulators(); }
+sub supported_simulators { return VIC::PIC::Any::supported_simulators(); }
+
+sub is_chip_supported { return VIC::PIC::Any::is_chip_supported(@_); }
 
 sub got_mcu_select {
     my ($self, $type) = @_;

@@ -11,17 +11,44 @@ use VIC::PIC::Gpsim;
 # use this to map various PICs to their classes
 # allows for the same class to be used for different pics
 use constant PICS => {
+    # PIC12
+    P12F683 => 'P12F683',
+    # PIC16
     P16F690 => 'P16F690',
     P16F631 => 'P16F631',
     P16F677 => 'P16F677',
     P16F685 => 'P16F685',
     P16F687 => 'P16F687',
     P16F689 => 'P16F689',
+    P16F627A => 'P16F627A',
+    P16F628A => 'P16F628A',
+    P16F648A => 'P16F648A',
+};
+
+use constant PICREGEX => {
+    # PIC18
+    qr/P18F\d\d2/i => 'P18FXX2',
+    qr/P18F1\dK50/i => 'P18F1XK50',
+    qr/P18LF1\dK50/i => 'P18LF1XK50',
 };
 
 use constant SIMS => {
     gpsim => 'Gpsim',
 };
+
+sub _get_pic_type {
+    my $type = shift;
+    my $ctype = PICS->{uc $type};
+    unless (defined $ctype) {
+        foreach my $regex (keys %{+PICREGEX}) {
+            if ($type =~ $regex) {
+                $ctype = PICREGEX->{$regex};
+                last;
+            }
+        }
+    }
+    return $ctype;
+}
 
 sub new {
     my ($class, $type) = @_;
@@ -29,11 +56,11 @@ sub new {
         die "You need to specify the type of the chip on the commandline to use 'Any'\n";
         return;
     }
-    my $utype = PICS->{uc $type};
-    return unless defined $utype;
-    $class =~ s/::Any/::$utype/g;
+    my $ctype = &_get_pic_type($type);
+    return unless defined $ctype;
+    $class =~ s/::Any/::$ctype/g;
     eval "require $class;" or croak "Unable to load $class: $@";
-    return $class->new(type => lc $utype);
+    return $class->new(type => lc $ctype);
 }
 
 sub new_simulator {
@@ -51,12 +78,19 @@ sub new_simulator {
 
 sub supported_chips {
     my @chips = sort(keys %{+PICS});
+    push @chips, sort(values %{+PICREGEX});
     return wantarray ? @chips : \@chips;
 }
 
 sub supported_simulators {
     my @sims = sort(keys %{+SIMS});
     return wantarray ? @sims : \@sims;
+}
+
+sub is_chip_supported {
+    my $chip = shift;
+    my $ret = &_get_pic_type(uc $chip);
+    return (defined $ret) ? 1 : 0;
 }
 
 1;
