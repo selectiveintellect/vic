@@ -80,6 +80,11 @@ enables the user to achieve the following goals:</p>
 <li>verify if a piece of code can work on another Microchip&#8217;s PIC&reg; MCU without reading that MCU&#8217;s data sheet</li>
 <li>find out the parts of the code which will <em>not</em> work on another MCU</li>
 </ol></li>
+<li><p><code>--check-support &lt;MCU Target&gt;</code>:
+This is similar to the <code>-p</code> option above except that it does <em>not</em> compile any
+code. It can be used by the user or any other external program to verify if a
+certain MCU target is supported by <code>vic</code>. If it is not supported, the code
+cannot be compiled to that target.</p></li>
 </ul>
 
 <p>Based on these options here are some sample examples on how to use them:</p>
@@ -91,6 +96,7 @@ $ vic -V
 $ vic -i -o helloworld.asm helloworld.vic
 $ vic --list-chips
 $ vic --list-simulators
+$ vic --check-support P18F452
 </code></pre>
 
 <p>Now that we have learned enough about using the <code>vic</code> compiler, let us move on
@@ -111,7 +117,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-28 15:36:06 -0400.
+        This page was last updated on 2014-11-04 17:02:37 -0500.
     </p>
     </div>
     </section>
