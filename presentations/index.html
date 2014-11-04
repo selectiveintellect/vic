@@ -299,13 +299,11 @@ Main {
                     </section>
                     <section>
                     <h3>Assembly Code You May Have Written</h3>
-					<pre><code data-trim contenteditable style="font-size: 22px; margin-top: 20px;">
-#include <p16f690.inc>
-
-__config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _BOR_OFF & _IESO_OFF & _FCMEN_OFF)
-
+					<pre><code data-trim contenteditable style="font-size: 20px; margin-top: 20px;">
+#include &lt;p16f690.inc&gt;
+__config (_INTRC_OSC_NOCLKOUT &amp; _WDT_OFF &amp; _PWRTE_OFF &amp; _MCLRE_OFF
+            &amp; _CP_OFF &amp; _BOR_OFF &amp; _IESO_OFF &amp; _FCMEN_OFF)
 org 0
-
 _start:
     ;; turn on pin RC0 as output
      banksel   TRISC
@@ -314,7 +312,6 @@ _start:
      bcf       ANSEL, ANS4
      banksel   PORTC
      bcf       PORTC, 0
-
     ;; write 1 to RC0
      bsf       PORTC, 0
      goto      $
