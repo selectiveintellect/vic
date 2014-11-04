@@ -41,7 +41,7 @@ cat > $HTMLFILE << HEADER_1
     <![endif]-->
 HEADER_1
 HIGHLIGHT=$(grep @@HIGHLIGHT@@ $FILE | wc -l)
-if [[ $HIGHLIGHT -ne 0 ]]; then
+if test $HIGHLIGHT -ne 0; then
     cat >> $HTMLFILE <<HIGHLIGHTER
     <link rel="stylesheet" href="stylesheets/zenburn.css">
     <script src="javascripts/highlight.pack.js"></script>
