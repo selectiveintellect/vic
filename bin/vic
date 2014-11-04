@@ -21,7 +21,7 @@ The command-line tool for compiling VIC files.
 To view all the options run 
     $ vic -h
 
-For more details refer L<VIC::Command>.
+For more details refer L<http://selectiveintellect.github.io/vic/>.
 
 =head1 AUTHOR
 

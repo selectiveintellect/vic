@@ -44,9 +44,11 @@ VIC - A Viciously Simple Syntax for PIC Microcontrollers
 
     $ vic program.vic -o program.asm
 
+    $ vic -h
+
 =head1 DESCRIPTION
 
-TODO
+Refer documentation at L<http://selectiveintellect.github.io/vic/>.
 
 =head1 AUTHOR
 
