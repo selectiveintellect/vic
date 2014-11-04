@@ -20,9 +20,9 @@ This module depends on the following which need to be installed using CPAN.
 For more details on installation refer:
 <http://selectiveintellect.github.io/vic/install.html>
 
-- `Module::Build` (this is needed for building)
+- `Module::Build`
 - `Pegex`
-- `Getopt::Long` (for handling command line options. Comes with perl itself)
+- `Getopt::Long`
 - `XXX` (only required for debugging)
 
 ##Testing the Module
@@ -76,9 +76,9 @@ The `helloworld.vic` test is for the Low Pin Count Demo board from Microchip and
 uses the PICKit2 programmer to write to the microcontroller P16F690 on the
 board.
 
-You will need to have `gputils` installed on Linux or Mac OS X. (Have not
-experimented on Windows.) For Mac OS X, you may need to use MacPorts to easily
-install the `gputils` and `gpsim` packages.
+You will need to have `gputils` installed on Linux or Mac OS X.
+
+For Mac OS X, you may need to use MacPorts to easily install the `gputils` and `gpsim` packages.
 
     $ cd share/examples/
     $ gpasm -pP16F690 -M -c helloworld.asm -o helloworld.o
