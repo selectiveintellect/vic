@@ -1,5 +1,5 @@
 %grammar vic
-%version 0.2.1
+%version 0.2.2
 #COPYRIGHT: 2014 Vikas N Kumar <vikas@cpan.org>. All Rights Reserved
 
 # mcu-select is necessary.

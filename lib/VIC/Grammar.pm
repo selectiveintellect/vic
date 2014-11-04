@@ -14,7 +14,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.57)
   {
     '+grammar' => 'vic',
     '+toprule' => 'program',
-    '+version' => '0.2.1',
+    '+version' => '0.2.2',
     'COMMA' => {
       '.rgx' => qr/\G,/
     },
