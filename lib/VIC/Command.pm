@@ -20,6 +20,7 @@ sub usage {
         -i, --intermediate    Inline the intermediate code with the output
         --list-chips          List the supported microcontroller chips
         --list-simulators     List the supported simulators
+        --check-support <PIC> Checks if the given PIC is supported
 ...
     die $usage;
 }
@@ -53,6 +54,16 @@ $stxt
     print $txt;
 }
 
+sub check_support {
+    my $chip = shift;
+    my $yes = "does not";
+    $yes = "does" if VIC::is_chip_supported($chip);
+    my $txt = << "...";
+VIC $yes support $chip
+...
+    print $txt;
+}
+
 sub run {
     my ($class, @args) = @_;
     local @ARGV = @args;
@@ -65,6 +76,7 @@ sub run {
     my $version = 0;
     my $list_chips = 0;
     my $list_sims = 0;
+    my $check_support = undef;
 
     GetOptions(
         "output=s" => \$output,
@@ -75,12 +87,14 @@ sub run {
         "version" => \$version,
         "list-chips" => \$list_chips,
         "list-simulators" => \$list_sims,
+        "check-support=s" => \$check_support,
     ) or usage();
     usage() if $help;
     version() if $version;
     print_chips() if $list_chips;
     print_sims() if $list_sims;
-    return if ($list_chips or $list_sims);
+    check_support($check_support) if $check_support;
+    return if ($list_chips or $list_sims or $check_support);
 
     $VIC::Debug = $debug;
     $VIC::Intermediate = $intermediate;
