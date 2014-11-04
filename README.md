@@ -3,7 +3,12 @@
 VIC&trade; is a nice syntax that compiles to PIC assembly. For detailed up-to-date documentation
 read <http://selectiveintellect.github.io/vic>.
 
-##Building as a user
+##Building as a user from source
+
+For more details on installation refer:
+<http://selectiveintellect.github.io/vic/install.html>
+
+To quickly build something from source:
 
     $ perl ./Build.PL --install_base=/usr/local/
     $ ./Build test
@@ -11,16 +16,18 @@ read <http://selectiveintellect.github.io/vic>.
 
 ##Dependencies
 
-This module depends on the following:
+This module depends on the following which need to be installed using CPAN.
+For more details on installation refer:
+<http://selectiveintellect.github.io/vic/install.html>
 
 - `Module::Build` (this is needed for building)
-- `Pegex` (this is included as a subrepo `ext/pegex-pm`)
+- `Pegex`
 - `Getopt::Long` (for handling command line options. Comes with perl itself)
 - `XXX` (only required for debugging)
 
 ##Testing the Module
 
-To test you will need to have `App::Prove` installed if you're developing
+If you're a developer, to test you will need to have `App::Prove` installed:
 
     $ prove -lv t
 
@@ -36,8 +43,8 @@ systems.
 
 ##How to write VIC&trade; programs
 
-Documentation coming soon...
-
+Refer <http://selectiveintellect.github.io/vic/gettingstarted.html> for learning
+how to write VIC&trade; programs.
 
 ##Compiling examples
 
@@ -47,6 +54,9 @@ example you can do the following:
     $ ./bin/vic ./share/examples/helloworld.vic -o ./share/examples/helloworld.asm
 
 This will generate the PIC assembly for the VIC&trade; file.
+
+Details on the examples can be found at
+<http://selectiveintellect.github.io/vic/examples.html>.
 
 ##Placing `vic` in your `$PATH` for Makefiles
 
@@ -115,10 +125,11 @@ To erase the code from the microcontroller,
 
 For Windows, we currently recommend using the Microchip provided IDE. You can
 use VIC&trade; to generate the assembly files which you can then load into the IDE as
-part of your project and use.
+part of your project and use. For more details refer
+<http://selectiveintellect.github.io/vic/install.html>.
 
 If you want to use Cygwin to perform builds using `gpasm` and `pk2cmd` you may
-do that and let us know if you succeed so we can write instructions for other
+choose to do that and let us know if you succeed so we can write instructions for other
 users.
 
 
@@ -151,7 +162,7 @@ All of the above do the same thing.
 
 ##Copyright
 
-Copyright: 2014. Vikas N Kumar. All Rights Reserved.
+Copyright: 2014. Vikas N Kumar, Selective Intellect LLC. All Rights Reserved.
 
 ## License
 
