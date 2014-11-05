@@ -80,6 +80,8 @@ has comparator_pins => {};
 
 has analog_comparator_pins => {};
 
+has adcs_bits => {};
+
 has timer_prescaler => {};
 
 has wdt_prescaler => {};
@@ -2260,8 +2262,8 @@ sub adc_enable {
         my $scale = POSIX::ceil(($f_osc / 4) / $clock) if $clock > 0;
         $scale = 2 unless $clock;
         $scale = 2 if $scale < 2;
-        my $adcs = $self->adcon1_scale->{$scale};
-        $adcs = $self->adcon1_scale->{internal} if $self->code_config->{adc}->{internal};
+        my $adcs = $self->adcs_bits->{$scale};
+        $adcs = $self->adcs_bits->{internal} if $self->code_config->{adc}->{internal};
         my $adcon1 = "0$adcs" . '0000';
         my $code = << "...";
 \tbanksel ADCON1

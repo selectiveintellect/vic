@@ -230,7 +230,7 @@ has input_pins => {
     4 => 'RA3',
 };
 
-has adcon1_scale  => {};
+has adcs_bits  => {};
 
 has power_pins => {
     Vdd => 1,

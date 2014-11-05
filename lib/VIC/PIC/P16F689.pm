@@ -266,7 +266,7 @@ has power_pins => {
     4 => 'MCLR',
 };
 
-has adcon1_scale  => {
+has adcs_bits  => {
     2 => '000',
     4 => '100',
     8 => '001',

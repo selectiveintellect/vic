@@ -232,7 +232,7 @@ has power_pins => {
     1 => 'Vref',
 };
 
-has adcon1_scale  => {};
+has adcs_bits  => {};
 
 has analog_pins => {};
 
