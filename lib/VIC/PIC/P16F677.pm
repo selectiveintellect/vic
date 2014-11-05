@@ -46,7 +46,7 @@ has pin_counts => {
     timer_8bit => 1,
     timer_16bit => 1,
     ssp => 1, # I2C/SPI
-    eccp => 0, # PWM
+    pwm => 0, # PWM
     usart => 0, # UART
 };
 

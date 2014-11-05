@@ -46,7 +46,7 @@ has pin_counts => {
     timer_8bit => 2,
     timer_16bit => 1,
     ssp => 0,
-    eccp => 1,
+    pwm => 1,
     usart => 0,
 };
 

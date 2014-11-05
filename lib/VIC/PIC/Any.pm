@@ -23,13 +23,19 @@ use constant PICS => {
     P16F627A => 'P16F627A',
     P16F628A => 'P16F628A',
     P16F648A => 'P16F648A',
+    # PIC18
+    P18F242 => 'P18F242',
+    P18F252 => 'P18F252',
+    P18F442 => 'P18F442',
+    P18F452 => 'P18F452',
+    P18F13K50 => 'P18F13K50',
+    P18F14K50 => 'P18F14K50',
+    P18LF13K50 => 'P18LF13K50',
+    P18LF14K50 => 'P18LF14K50',
 };
 
 use constant PICREGEX => {
     # PIC18
-    qr/P18F\d\d2/i => 'P18FXX2',
-    qr/P18F1\dK50/i => 'P18F1XK50',
-    qr/P18LF1\dK50/i => 'P18LF1XK50',
 };
 
 use constant SIMS => {

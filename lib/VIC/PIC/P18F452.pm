@@ -1,4 +1,4 @@
-package VIC::PIC::P16F648A;
+package VIC::PIC::P18F452;
 use strict;
 use warnings;
 use bigint;
@@ -11,9 +11,9 @@ use POSIX ();
 use Pegex::Base; # use this instead of Mo
 extends 'VIC::PIC::Base';
 
-has type => 'p16f648A';
+has type => 'p18f452';
 
-has include => 'p16f648a.inc';
+has include => 'p18f452.inc';
 
 has org => 0;
 
@@ -39,13 +39,13 @@ has data_memory => {
 };
 
 has pin_counts => {
-    total => 18,
-    io => 16,
-    adc => 0,
+    total => 20,
+    io => 18,
+    adc => 12,
     comparator => 2,
     timer_8bit => 2,
     timer_16bit => 1,
-    ssp => 0,
+    ssp => 1,
     pwm => 1,
     usart => 1,
 };
@@ -497,7 +497,7 @@ has code_config => {
 
 =head1 NAME
 
-VIC::PIC::P16F648A
+VIC::PIC::P18F452
 
 =head1 SYNOPSIS
 

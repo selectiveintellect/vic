@@ -1,4 +1,4 @@
-package VIC::PIC::P16F690;
+package VIC::PIC::P18LF14K50;
 use strict;
 use warnings;
 use bigint;
@@ -11,9 +11,9 @@ use POSIX ();
 use Pegex::Base; # use this instead of Mo
 extends 'VIC::PIC::Base';
 
-has type => 'p16f690';
+has type => 'p18lf14k50';
 
-has include => 'p16f690.inc';
+has include => 'p18lf14k50.inc';
 
 has org => 0;
 
@@ -46,7 +46,7 @@ has pin_counts => {
     timer_8bit => 2,
     timer_16bit => 1,
     ssp => 1,
-    eccp => 1,
+    pwm => 1,
     usart => 1,
 };
 
@@ -497,7 +497,7 @@ has code_config => {
 
 =head1 NAME
 
-VIC::PIC::P16F690
+VIC::PIC::P18LF14K50
 
 =head1 SYNOPSIS
 

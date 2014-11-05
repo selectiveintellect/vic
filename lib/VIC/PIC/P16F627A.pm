@@ -1,4 +1,4 @@
-package VIC::PIC::P16F690;
+package VIC::PIC::P16F627A;
 use strict;
 use warnings;
 use bigint;
@@ -11,9 +11,9 @@ use POSIX ();
 use Pegex::Base; # use this instead of Mo
 extends 'VIC::PIC::Base';
 
-has type => 'p16f690';
+has type => 'p16f627a';
 
-has include => 'p16f690.inc';
+has include => 'p16f627a.inc';
 
 has org => 0;
 
@@ -31,22 +31,22 @@ has stack_size => 8; # 8-level x 13-bit wide
 
 has register_size => 8; # size of register W
 
-has program_memory => 4096; # number of flash words
+has program_memory => 1024; # number of flash words
 
 has data_memory => {
-    SRAM => 256, # bytes
-    EEPROM => 256, # bytes
+    SRAM => 224, # bytes
+    EEPROM => 128, # bytes
 };
 
 has pin_counts => {
-    total => 20,
-    io => 18,
-    adc => 12,
+    total => 18,
+    io => 16,
+    adc => 0,
     comparator => 2,
     timer_8bit => 2,
     timer_16bit => 1,
-    ssp => 1,
-    eccp => 1,
+    ssp => 0,
+    pwm => 1,
     usart => 1,
 };
 
@@ -497,7 +497,7 @@ has code_config => {
 
 =head1 NAME
 
-VIC::PIC::P16F690
+VIC::PIC::P16F627A
 
 =head1 SYNOPSIS
 

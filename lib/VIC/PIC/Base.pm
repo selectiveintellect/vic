@@ -44,7 +44,7 @@ has pin_counts => {
     timer_8bit => 0,
     timer_16bit => 0,
     ssp => 0, # SPI/I2C capability
-    eccp => 0, # PWM capability
+    pwm => 0, # PWM capability
     usart => 0, # UART capability
 };
 
@@ -2680,7 +2680,7 @@ $details{TRISC_BCF}
 
 sub pwm_single {
     my ($self, $pwm_frequency, $duty, @pins) = @_;
-    if ($self->pin_counts->{eccp} < 1) {
+    if ($self->pin_counts->{pwm} < 1) {
         carp $self->type, " has no PWM capabilities";
         return;
     }
@@ -2691,7 +2691,7 @@ sub pwm_single {
 
 sub pwm_halfbridge {
     my ($self, $pwm_frequency, $duty, $deadband, @pins) = @_;
-    if ($self->pin_counts->{eccp} < 1) {
+    if ($self->pin_counts->{pwm} < 1) {
         carp $self->type, " has no PWM capabilities";
         return;
     }
@@ -2711,7 +2711,7 @@ sub pwm_halfbridge {
 
 sub pwm_fullbridge {
     my ($self, $direction, $pwm_frequency, $duty, @pins) = @_;
-    if ($self->pin_counts->{eccp} < 1) {
+    if ($self->pin_counts->{pwm} < 1) {
         carp $self->type, " has no PWM capabilities";
         return;
     }
@@ -2725,7 +2725,7 @@ sub pwm_fullbridge {
 
 sub pwm_update {
     my ($self, $pwm_frequency, $duty) = @_;
-    if ($self->pin_counts->{eccp} < 1) {
+    if ($self->pin_counts->{pwm} < 1) {
         carp $self->type, " has no PWM capabilities";
         return;
     }
