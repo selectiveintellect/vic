@@ -234,28 +234,25 @@ has power_pins => {
 
 has adcon1_scale  => {};
 
-has analog_pins => {
-    ### FIXME: check ANSEL values in chsbits
-    # use ANSEL for pins AN0-AN7 and ANSELH for AN8-AN11
-    #name   #pin    #portbit, #chsbits
-    AN0  => [17, 0, '0000'],
-    AN1  => [18, 1, '0001'],
-    AN2  => [1, 2, '0010'],
-    AN3  => [2,  3, '0011'],
-    #CVref => [undef, undef, '1100'],
-    #'0.6V' => [undef, undef, '1101'],
-    #pin #name
-    17 => 'AN0',
-    18 => 'AN1',
-    1 => 'AN2',
-    2 => 'AN3',
-};
+has analog_pins => {};
 
 has comparator_pins => {
     CMP1 => 2,
     CMP2 => 3,
     2 => 'CMP1',
     3 => 'CMP2'
+};
+
+has analog_comparator_pins => {
+    # analog comparator pins
+    AN0  => 17,
+    AN1  => 18,
+    AN2  => 1,
+    AN3  => 2,
+    17 => 'AN0',
+    18 => 'AN1',
+    1 => 'AN2',
+    2 => 'AN3',
 };
 
 has timer_prescaler => {

@@ -78,6 +78,8 @@ has analog_pins => {};
 
 has comparator_pins => {};
 
+has analog_comparator_pins => {};
+
 has timer_prescaler => {};
 
 has wdt_prescaler => {};
@@ -248,11 +250,13 @@ sub digital_output {
             }
         }
         my $an_code = '';
-        if ($flags != 0) {
-            $flags = sprintf "0x%02X", $flags;
-            $an_code .= "\tbanksel ANSEL\n";
-            $an_code .= "\tmovlw $flags\n";
-            $an_code .= "\tandwf ANSEL, F\n";
+        if (exists $self->register_banks->{ANSEL}) {
+            if ($flags != 0) {
+                $flags = sprintf "0x%02X", $flags;
+                $an_code .= "\tbanksel ANSEL\n";
+                $an_code .= "\tmovlw $flags\n";
+                $an_code .= "\tandwf ANSEL, F\n";
+            }
         }
         if (exists $self->register_banks->{ANSELH}) {
             if ($flagsH != 0) {
@@ -276,11 +280,13 @@ $an_code
             my $apinname = $self->analog_pins->{$pin_no} if defined $pin_no;
             if (defined $apinname) {
                 my ($apin, $abit) = @{$self->analog_pins->{$apinname}};
-                my $ansel = 'ANSEL';
-                if (exists $self->register_banks->{ANSELH}) {
-                    $ansel = ($abit >= 8) ? 'ANSELH' : 'ANSEL';
+                if (exists $self->register_banks->{ANSEL}) {
+                    my $ansel = 'ANSEL';
+                    if (exists $self->register_banks->{ANSELH}) {
+                        $ansel = ($abit >= 8) ? 'ANSELH' : 'ANSEL';
+                    }
+                    $an_code = "\tbanksel $ansel\n\tbcf $ansel, ANS$abit";
                 }
-                $an_code = "\tbanksel $ansel\n\tbcf $ansel, ANS$abit";
             }
             $code = << "...";
 \tbanksel TRIS$port
@@ -372,11 +378,13 @@ sub analog_input {
             }
         }
         my $an_code = '';
-        if ($flags != 0) {
-            $flags = sprintf "0x%02X", $flags;
-            $an_code .= "\tbanksel ANSEL\n";
-            $an_code .= "\tmovlw $flags\n";
-            $an_code .= "\tiorwf ANSEL, F\n";
+        if (exists $self->register_banks->{ANSEL}) {
+            if ($flags != 0) {
+                $flags = sprintf "0x%02X", $flags;
+                $an_code .= "\tbanksel ANSEL\n";
+                $an_code .= "\tmovlw $flags\n";
+                $an_code .= "\tiorwf ANSEL, F\n";
+            }
         }
         if (exists $self->register_banks->{ANSELH}) {
             if ($flagsH != 0) {
@@ -400,11 +408,13 @@ $an_code
             if (exists $self->analog_pins->{$pin}) {
                 my $pinname = $self->analog_pins->{$pin};
                 my ($apin, $abit) = @{$self->analog_pins->{$pinname}};
-                my $ansel = 'ANSEL';
-                if (exists $self->register_banks->{ANSELH}) {
-                    $ansel = ($abit >= 8) ? 'ANSELH' : 'ANSEL';
+                if (exists $self->register_banks->{ANSEL}) {
+                    my $ansel = 'ANSEL';
+                    if (exists $self->register_banks->{ANSELH}) {
+                        $ansel = ($abit >= 8) ? 'ANSELH' : 'ANSEL';
+                    }
+                    $an_code = "\tbanksel $ansel\n\tbsf $ansel, ANS$abit";
                 }
-                $an_code = "\tbanksel $ansel\n\tbsf $ansel, ANS$abit";
             }
             $code = << "...";
 \tbanksel TRIS$port
@@ -445,11 +455,13 @@ sub digital_input {
                 $flagsH ^= 1 << ($abit - 8) if $abit >= 8;
             }
         }
-        if ($flags != 0) {
-            $flags = sprintf "0x%02X", $flags;
-            $an_code .= "\tbanksel ANSEL\n";
-            $an_code .= "\tmovlw $flags\n";
-            $an_code .= "\tandwf ANSEL, F\n";
+        if (exists $self->register_banks->{ANSEL}) {
+            if ($flags != 0) {
+                $flags = sprintf "0x%02X", $flags;
+                $an_code .= "\tbanksel ANSEL\n";
+                $an_code .= "\tmovlw $flags\n";
+                $an_code .= "\tandwf ANSEL, F\n";
+            }
         }
         if (exists $self->register_banks->{ANSELH}) {
             if ($flagsH != 0) {
@@ -472,11 +484,13 @@ $an_code
             my $apinname = $self->analog_pins->{$pin};
             if (defined $apinname) {
                 my ($apin, $abit) = @{$self->analog_pins->{$apinname}};
-                my $ansel = 'ANSEL';
-                if (exists $self->register_banks->{ANSELH}) {
-                    $ansel = ($abit >= 8) ? 'ANSELH' : 'ANSEL';
+                if (exists $self->register_banks->{ANSEL}) {
+                    my $ansel = 'ANSEL';
+                    if (exists $self->register_banks->{ANSELH}) {
+                        $ansel = ($abit >= 8) ? 'ANSELH' : 'ANSEL';
+                    }
+                    $an_code = "\tbanksel $ansel\n\tbcf $ansel, ANS$abit";
                 }
-                $an_code = "\tbanksel $ansel\n\tbcf $ansel, ANS$abit";
             }
             $code = << "...";
 \tbanksel TRIS$port
