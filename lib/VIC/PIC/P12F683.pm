@@ -19,7 +19,7 @@ has org => 0;
 
 has frequency => 4e6; # 4MHz
 
-has address_range => [ 0x0000, 0x0FFF ]; # 4K
+has address_range => [ 0x0000, 0x07FF ]; # 2K
 
 has reset_address => 0x0000;
 
@@ -31,39 +31,35 @@ has stack_size => 8; # 8-level x 13-bit wide
 
 has register_size => 8; # size of register W
 
-has program_memory => 4096; # number of flash words
+has program_memory => 2048; # number of flash words
 
 has data_memory => {
-    SRAM => 256, # bytes
+    SRAM => 128, # bytes
     EEPROM => 256, # bytes
 };
 
 has pin_counts => {
-    total => 20,
-    io => 18,
-    adc => 12,
-    comparator => 2,
+    total => 8,
+    io => 6,
+    adc => 4,
+    comparator => 1,
     timer_8bit => 2,
     timer_16bit => 1,
-    ssp => 1,
+    ssp => 0,
     pwm => 1,
-    usart => 1,
+    usart => 0,
 };
 
 has banks => {
     # general purpose registers
     gpr => [
         [ 0x20, 0x7F ],
-        [ 0xA0, 0xEF ],
-        [ 0x120, 0x16F ],
-        [ ], # no GPRs in bank 4
+        [ 0xA0, 0xBF ],
     ],
     # special function registers
     sfr => [
         [ 0x00, 0x1F ],
         [ 0x80, 0x9F ],
-        [ 0x100, 0x11F ],
-        [ 0x180, 0x19E ],
     ],
     bank_size => 0x80,
     common_bank => [ 0x70, 0x7F ],
@@ -71,45 +67,30 @@ has banks => {
 
 has register_banks => {
     # 0x01
-    TMR0 => [ 0, 2 ],
-    OPTION_REG => [ 1, 3 ],
+    TMR0 => [ 0 ],
+    OPTION_REG => [ 1 ],
     # 0x02
-    PCL => [ 0 .. 3 ],
+    PCL => [ 0, 1 ],
     # 0x03
-    STATUS => [ 0 .. 3 ],
+    STATUS => [ 0, 1 ],
     # 0x04
-    FSR => [ 0 .. 3 ],
-    # 0.06
-    PORTA => [ 0, 2 ],
-    TRISA => [ 1, 3 ],
-    # 0x06
-    PORTB => [ 0, 2 ],
-    TRISB => [ 1, 3 ],
-    # 0x07
-    PORTC => [ 0, 2 ],
-    TRISC => [ 1, 3 ],
+    FSR => [ 0, 1 ],
+    # 0x05
+    GPIO => [ 0 ],
+    TRISIO => [ 1 ],
     # 0x0A
-    PCLATH => [ 0 .. 3 ],
+    PCLATH => [ 0, 1],
     # 0x0B
-    INTCON => [ 0 .. 3 ],
+    INTCON => [ 0, 1 ],
     # 0x0C
     PIR1 => [ 0 ],
     PIE1 => [ 1 ],
-    EEDAT => [ 2 ],
-    EECON1 => [ 3 ],
-    # 0x0D
-    PIR2 => [ 0 ],
-    PIE2 => [ 1 ],
-    EEADR => [ 2 ],
-    EECON2 => [ 3 ],
     # 0x0E
     TMR1L => [ 0 ],
     PCON => [ 1 ],
-    EEDATH => [ 2 ],
     # 0x0F
     TMR1H => [ 0 ],
     OSCCON => [ 1 ],
-    EEADRH => [ 2 ],
     # 0x10
     T1CON => [ 0 ],
     OSCTUNE => [ 1 ],
@@ -119,167 +100,106 @@ has register_banks => {
     T2CON => [ 0 ],
     PR2 => [ 1 ],
     # 0x13
-    SSPBUF => [ 0 ],
-    SSPADD => [ 1 ],
-    # 0x14
-    SSPCON => [ 0 ],
-    SSPSTAT => [ 1 ],
-    # 0x15
     CCPR1L => [ 0 ],
-    WPUA => [ 1 ],
-    WPUB => [ 2 ],
-    # 0x16
+    # 0x14
     CCPR1H => [ 0 ],
-    IOCA => [ 1 ],
-    IOCB => [ 2 ],
-    # 0x17
+    # 0x15
     CCP1CON => [ 0 ],
-    WDTCON => [ 1 ],
+    WPU => [ 1 ],
+    # 0x16
+    IOC => [ 1 ],
     # 0x18
-    RCSTA => [ 0 ],
-    TXSTA => [ 1 ],
-    VRCON => [ 2 ],
+    WDTCON => [ 0 ],
     # 0x19
-    TXREG => [ 0 ],
-    SPBRG => [ 1 ],
-    CM1CON0 => [ 2 ],
+    CMCON0 => [ 0 ],
+    VRCON => [ 1 ],
     # 0x1A
-    RCREG => [ 0 ],
-    SPBRGH => [ 1 ],
-    CM2CON0 => [ 2 ],
+    CMCON1 => [ 0 ],
+    EEDAT => [ 1 ],
     # 0x1B
-    BAUDCTL => [ 1 ],
-    CM2CON1 => [ 2 ],
+    EEADR => [ 1 ],
     # 0x1C
-    PWM1CON => [ 0 ],
+    EECON1 => [ 1 ],
     # 0x1D
-    ECCPAS => [ 0 ],
-    PSTRCON => [ 3 ],
+    EECON2 => [ 1 ],
     # 0x1E
     ADRESH => [ 0 ],
     ADRESL => [ 1 ],
-    ANSEL => [ 2 ],
-    SRCON => [ 3 ],
     # 0x1F
     ADCON0 => [ 0 ],
-    ADCON1 => [ 1 ],
-    ANSELH => [ 2 ],
+    ANSEL => [ 1 ],
 };
 
 has pins => {
     #name  #port  #portbit #pin
 	Vdd => [undef, undef, 1],
+    GP5 => ['', 5, 2],
 	RA5 => ['A', 5, 2],
+    GP4 => ['', 4, 3],
 	RA4 => ['A', 4, 3],
+	GP3 => ['', 3, 4],
 	RA3 => ['A', 3, 4],
-	RC5 => ['C', 5, 5],
-	RC4 => ['C', 4, 6],
-	RC3 => ['C', 3, 7],
-	RC6 => ['C', 6, 8],
-	RC7 => ['C', 7, 9],
-	RB7 => ['B', 7, 10],
-	RB6 => ['B', 6, 11],
-	RB5 => ['B', 5, 12],
-	RB4 => ['B', 4, 13],
-	RC2 => ['C', 2, 14],
-	RC1 => ['C', 1, 15],
-	RC0 => ['C', 0, 16],
-	RA2 => ['A', 2, 17],
-	RA1 => ['A', 1, 18],
-	RA0 => ['A', 0, 19],
-	Vss => [undef, undef, 20],
+	GP2 => ['', 2, 5],
+	RA2 => ['A', 2, 5],
+	GP1 => ['', 1, 6],
+	RA1 => ['A', 1, 6],
+	GP0 => ['', 0, 7],
+	RA0 => ['A', 0, 7],
+	Vss => [undef, undef, 8],
 };
 
+# FIXME: PORTA == GPIO. have that switched as needed
 has ports => {
     PORTA => 'A',
-    PORTB => 'B',
-    PORTC => 'C',
     A => 'PORTA',
-    B => 'PORTB',
-    C => 'PORTC',
+    GPIO => 'PORTA',
 };
 
 has visible_pins => {
     1 => 'Vdd',
-    2 => 'RA5',
-    3 => 'RA4',
-    4 => 'RA3',
-    5 => 'RC5',
-    6 => 'RC4',
-    7 => 'RC3',
-    8 => 'RC6',
-    9 => 'RC7',
-    10 => 'RB7',
-    11 => 'RB6',
-    12 => 'RB5',
-    13 => 'RB4',
-    14 => 'RC2',
-    15 => 'RC1',
-    16 => 'RC0',
-    17 => 'RA2',
-    18 => 'RA1',
-    19 => 'RA0',
-    20 => 'Vss',
+    2 => 'GP5',
+    3 => 'GP4',
+    4 => 'GP3',
+    5 => 'GP2',
+    6 => 'GP1',
+    7 => 'GP0',
+    8 => 'Vss',
 };
 
 has gpio_pins => {
-    RA0 => 19,
-    RA1 => 18,
-    RA2 => 17,
-    RA4 => 3,
-    RA5 => 2,
-    RC0 => 16,
-    RC1 => 15,
-    RC2 => 14,
-    RC3 => 7,
-    RC4 => 6,
-    RC5 => 5,
-    RC6 => 8,
-    RC7 => 9,
-    RB4 => 13,
-    RB5 => 12,
-    RB6 => 11,
-    RB7 => 10,
-    19 => 'RA0',
-    18 => 'RA1',
-    17 => 'RA2',
-    3 => 'RA4',
-    2 => 'RA5',
-    16 => 'RC0',
-    15 => 'RC1',
-    14 => 'RC2',
-    7 => 'RC3',
-    6 => 'RC4',
-    5 => 'RC5',
-    8 => 'RC6',
-    9 => 'RC7',
-    13 => 'RB4',
-    12 => 'RB5',
-    11 => 'RB6',
-    10 => 'RB7',
+    2 => 'GP5',
+    3 => 'GP4',
+    5 => 'GP2',
+    6 => 'GP1',
+    7 => 'GP0',
+    GP0 => 7,
+    GP1 => 6,
+    GP2 => 5,
+    GP4 => 3,
+    GP5 => 2,
 };
 
 has input_pins => {
-    RA3 => 4,
-    4 => 'RA3',
+    GP3 => 4,
+    4 => 'GP3',
 };
 
 has power_pins => {
     Vdd => 1,
-    Vss => 20,
+    Vss => 8,
     Vpp => 4,
-    ULPWU => 19,
+    ULPWU => 7,
     MCLR => 4,
-    Vref => 18,
+    Vref => 6,
     1 => 'Vdd',
-    20 => 'Vss',
+    8 => 'Vss',
     4 => 'Vpp',
-    19 => 'ULPWU',
+    7 => 'ULPWU',
     4 => 'MCLR',
-    18 => 'Vref',
+    6 => 'Vref',
 };
 
-has adcon1_scale  => {
+has adcs_bits => {
     2 => '000',
     4 => '100',
     8 => '001',
@@ -290,54 +210,26 @@ has adcon1_scale  => {
 };
 
 has analog_pins => {
-    # use ANSEL for pins AN0-AN7 and ANSELH for AN8-AN11
+    # use ANSEL for pins AN0-AN3
     #name   #pin    #portbit, #chsbits
-    AN0  => [19, 0, '0000'],
-    AN1  => [18, 1, '0001'],
-    AN2  => [17, 2, '0010'],
-    AN3  => [3,  3, '0011'],
-    AN4  => [16, 4, '0100'],
-    AN5  => [15, 5, '0101'],
-    AN6  => [14, 6, '0110'],
-    AN7  => [ 7, 7, '0111'],
-    AN8  => [ 8, 8, '1000'],
-    AN9  => [ 9, 9, '1001'],
-    AN10 => [13, 10, '1010'],
-    AN11 => [12, 12, '1011'],
-    CVref => [undef, undef, '1100'],
-    '0.6V' => [undef, undef, '1101'],
+    AN0  => [7, 0, '00'],
+    AN1  => [6, 1, '01'],
+    AN2  => [5, 2, '10'],
+    AN3  => [3, 3, '11'],
     #pin #name
-    19 => 'AN0',
-    18 => 'AN1',
-    17 => 'AN2',
+    7 => 'AN0',
+    6 => 'AN1',
+    5 => 'AN2',
     3 => 'AN3',
-    16 => 'AN4',
-    15 => 'AN5',
-    14 => 'AN6',
-    7 => 'AN7',
-    8 => 'AN8',
-    9 => 'AN9',
-    13 => 'AN10',
-    12 => 'AN11',
 };
 
 has comparator_pins => {
-    C1IN => 19,
-    C12IN0 => 18,
-    C1OUT => 17,
-    C2IN => 16,
-    C12IN1 => 15,
-    C12IN2 => 14,
-    C12IN3 => 7,
-    C2OUT => 6,
-    19 => 'C1IN',
-    18 => 'C12IN0',
-    17 => 'C1OUT',
-    16 => 'C2IN',
-    15 => 'C12IN1',
-    14 => 'C12IN2',
-    7 => 'C12IN3',
-    6 => 'C2OUT',
+    'CIN+' => 7, #FIXME: does grammar support this ? what about other PICs
+    'CIN-' => 6,
+    COUT => 5,
+    7 => 'CIN+',
+    6 => 'CIN-',
+    5 => 'COUT',
 };
 
 has timer_prescaler => {
@@ -363,57 +255,37 @@ has wdt_prescaler => {
 };
 
 has timer_pins => {
-    TMR0 => 17,
+    TMR0 => 5,
     TMR1 => 2,
-    T0CKI => 17,
+    T0CKI => 5,
     T1CKI => 2,
     T1G => 3,
-    17 => 'TMR0',
+    5 => 'TMR0',
     2 => 'TMR1',
-    17 => 'T0CKI',
+    5 => 'T0CKI',
     2 => 'T1CKI',
     3 => 'T1G',
 };
 
 has eint_pins => {
-    INT => 17,
-    17 => 'INT',
-    RA2 => 17,
+    INT => 5,
+    5 => 'INT',
+    GP2 => 5,
 };
 
 has ioc_pins => {
-    RA0 => 19,
-    RA1 => 18,
-    RA2 => 17,
-    RA3 => 4,
-    RA4 => 3,
-    RA5 => 2,
-    RB4 => 13,
-    RB5 => 12,
-    RB6 => 11,
-    RB7 => 10,
-    19 => 'RA0',
-    18 => 'RA1',
-    17 => 'RA2',
-    4 => 'RA3',
-    3 => 'RA4',
-    2 => 'RA5',
-    13 => 'RB4',
-    12 => 'RB5',
-    11 => 'RB6',
-    10 => 'RB7',
-
-};
-
-has usart_pins => {
-    RX => 12,
-    TX => 10,
-    CK => 10,
-    DT => 12,
-    12 => 'RX',
-    10 => 'TX',
-    10 => 'CK',
-    12 => 'DT',
+    GP0 => 7,
+    GP1 => 6,
+    GP2 => 5,
+    GP3 => 4,
+    GP4 => 3,
+    GP5 => 2,
+    7 => 'GP0',
+    6 => 'GP1',
+    5 => 'GP2',
+    4 => 'GP3',
+    3 => 'GP4',
+    2 => 'GP5',
 };
 
 has clock_pins => {
@@ -431,43 +303,16 @@ has oscillator_pins => {
 };
 
 has icsp_pins => {
-    ICSPCLK => 18,
-    ICSPDAT => 19,
-    18 => 'ICSPCLK',
-    19 => 'ICSPDAT',
+    ICSPCLK => 6,
+    ICSPDAT => 7,
+    6 => 'ICSPCLK',
+    7 => 'ICSPDAT',
 };
 
-has selector_pins => {
-    SS => 8, # SPI or I2C
-    8 => 'SS',
-};
-
-has spi_pins => {
-    SDI => 13, # SPI
-    SCK => 11, # SPI
-    SDO => 9, # SPI
-    13 => 'SDI',
-    11 => 'SCK',
-    9 => 'SDO',
-};
-
-has i2c_pins => {
-    SDA => 13, # I2C
-    SCL => 11, # I2C
-    13 => 'SDA',
-    11 => 'SCL',
-};
-
+#FIXME: handle PWM functionality
 has pwm_pins => {
-    P1D => 14,
-    P1C => 7,
-    P1B => 6,
-    P1A => 5,
     CCP1 => 5,
-    14 => 'P1D',
-    7 => 'P1C',
-    6 => 'P1B',
-    5 => 'P1A',
+    5 => 'CCP1',
 };
 
 has chip_config => <<"...";
