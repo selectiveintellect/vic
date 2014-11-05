@@ -242,6 +242,10 @@ the `helloworld.stc` file. This can avoid the manual `run` invocation in
     load s helloworld.cod
     run
 
+This file can then be loaded in `gpsim` using the command:
+
+    $ gpsim helloworld.stc
+
 Depending on the task being simulated, you may or may not want an auto-started
 simulation.
 
