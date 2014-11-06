@@ -309,6 +309,11 @@ has icsp_pins => {
     7 => 'ICSPDAT',
 };
 
+has selector_pins => {};
+has spi_pins => {};
+has i2c_pins => {};
+has usart_pins => {};
+
 #FIXME: handle PWM functionality
 has pwm_pins => {
     CCP1 => 5,

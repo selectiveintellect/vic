@@ -2700,6 +2700,12 @@ sub pwm_single {
         carp $self->type, " has no PWM capabilities";
         return;
     }
+    unless (exists $self->pwm_pins->{P1A}) {
+        if (exists $self->pwm_pins->{CCP1}) {
+            # override the pins to CCP1
+            @pins = qw(CCP1);
+        }
+    }
     my %details = $self->pwm_details($pwm_frequency, $duty, 'single', @pins);
     # pulse steering automatically taken care of
     return $self->pwm_code(%details);
@@ -2711,8 +2717,13 @@ sub pwm_halfbridge {
         carp $self->type, " has no PWM capabilities";
         return;
     }
-    # we ignore the @pins that comes in
-    @pins = qw(P1A P1B);
+    if (exists $self->pwm_pins->{P1A} and exists $self->pwm_pins->{P1B}) {
+        # we ignore the @pins that comes in
+        @pins = qw(P1A P1B);
+    } else {
+        carp $self->type, " has no Enhanced PWM capabilities";
+        return;
+    }
     my %details = $self->pwm_details($pwm_frequency, $duty, 'half', @pins);
     # override PWM1CON
     if (defined $deadband and $deadband > 0) {
@@ -2733,8 +2744,14 @@ sub pwm_fullbridge {
     }
     my $type = 'full_forward';
     $type = 'full_reverse' if $direction =~ /reverse|backward|no?|0/i;
-    # we ignore the @pins that comes in
-    @pins = qw(P1A P1B P1C P1D);
+    if (exists $self->pwm_pins->{P1A} and exists $self->pwm_pins->{P1B} and
+        exists $self->pwm_pins->{P1C} and exists $self->pwm_pins->{P1D}) {
+        # we ignore the @pins that comes in
+        @pins = qw(P1A P1B P1C P1D);
+    } else {
+        carp $self->type, " has no Enhanced PWM capabilities";
+        return;
+    }
     my %details = $self->pwm_details($pwm_frequency, $duty, $type, @pins);
     return $self->pwm_code(%details);
 }
@@ -2746,7 +2763,12 @@ sub pwm_update {
         return;
     }
     # hack into the existing functions to update only what we need
-    my @pins = qw(P1A P1B P1C P1D);
+    my @pins = qw(CCP1);
+    if (exists $self->pwm_pins->{P1A} and exists $self->pwm_pins->{P1B} and
+        exists $self->pwm_pins->{P1C} and exists $self->pwm_pins->{P1D}) {
+        # we ignore the @pins that comes in
+        @pins = qw(P1A P1B P1C P1D);
+    }
     my %details = $self->pwm_details($pwm_frequency, $duty, 'single', @pins);
     my ($ccp1con5, $ccp1con4);
     $ccp1con4 = $details{CCPR1L_CCP1CON54} & 0x0001;
