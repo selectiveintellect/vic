@@ -21,173 +21,178 @@ has frequency => 4e6; # 4MHz
 
 has address_range => [ 0x0000, 0x0FFF ]; # 4K
 
-has reset_address => 0x0000;
+has reset_address => 0x00000;
 
-has isr_address => 0x0004;
+has isr_address => {
+    high => 0x0008,
+    low => 0x0018
+}; #TODO: handle multiple
 
-has program_counter_size => 13; # PCL and PCLATH<4:0>
+has program_counter_size => 21; # PC<20:0>
 
-has stack_size => 8; # 8-level x 13-bit wide
+has stack_size => 31; # 31-level x 21-bit wide
 
 has register_size => 8; # size of register W
 
-has program_memory => 4096; # number of flash words
+has program_memory => 8192; # number of flash words
 
 has data_memory => {
-    SRAM => 256, # bytes
+    SRAM => 768, # bytes
     EEPROM => 256, # bytes
 };
 
 has pin_counts => {
-    total => 20,
-    io => 18,
-    adc => 12,
-    comparator => 2,
-    timer_8bit => 2,
-    timer_16bit => 1,
+    total => 28, # DIP/SOIC only
+    io => 22,
+    adc => 5,
+    comparator => 0,
+    timer_8bit => 1,
+    timer_16bit => 3,
     ssp => 1,
-    pwm => 1,
+    pwm => 2,
     usart => 1,
+    psp => 0, # parallel slave port
 };
 
 has banks => {
     # general purpose registers
     gpr => [
-        [ 0x20, 0x7F ],
-        [ 0xA0, 0xEF ],
-        [ 0x120, 0x16F ],
-        [ ], # no GPRs in bank 4
     ],
     # special function registers
     sfr => [
-        [ 0x00, 0x1F ],
-        [ 0x80, 0x9F ],
-        [ 0x100, 0x11F ],
-        [ 0x180, 0x19E ],
     ],
-    bank_size => 0x80,
-    common_bank => [ 0x70, 0x7F ],
+    bank_size => 0,
+    common_bank => [],
 };
 
-has register_banks => {
-    # 0x01
-    TMR0 => [ 0, 2 ],
-    OPTION_REG => [ 1, 3 ],
-    # 0x02
-    PCL => [ 0 .. 3 ],
-    # 0x03
-    STATUS => [ 0 .. 3 ],
-    # 0x04
-    FSR => [ 0 .. 3 ],
-    # 0.06
-    PORTA => [ 0, 2 ],
-    TRISA => [ 1, 3 ],
-    # 0x06
-    PORTB => [ 0, 2 ],
-    TRISB => [ 1, 3 ],
-    # 0x07
-    PORTC => [ 0, 2 ],
-    TRISC => [ 1, 3 ],
-    # 0x0A
-    PCLATH => [ 0 .. 3 ],
-    # 0x0B
-    INTCON => [ 0 .. 3 ],
-    # 0x0C
-    PIR1 => [ 0 ],
-    PIE1 => [ 1 ],
-    EEDAT => [ 2 ],
-    EECON1 => [ 3 ],
-    # 0x0D
-    PIR2 => [ 0 ],
-    PIE2 => [ 1 ],
-    EEADR => [ 2 ],
-    EECON2 => [ 3 ],
-    # 0x0E
-    TMR1L => [ 0 ],
-    PCON => [ 1 ],
-    EEDATH => [ 2 ],
-    # 0x0F
-    TMR1H => [ 0 ],
-    OSCCON => [ 1 ],
-    EEADRH => [ 2 ],
-    # 0x10
-    T1CON => [ 0 ],
-    OSCTUNE => [ 1 ],
-    # 0x11
-    TMR2 => [ 0 ],
-    # 0x12
-    T2CON => [ 0 ],
-    PR2 => [ 1 ],
-    # 0x13
-    SSPBUF => [ 0 ],
-    SSPADD => [ 1 ],
-    # 0x14
-    SSPCON => [ 0 ],
-    SSPSTAT => [ 1 ],
-    # 0x15
-    CCPR1L => [ 0 ],
-    WPUA => [ 1 ],
-    WPUB => [ 2 ],
-    # 0x16
-    CCPR1H => [ 0 ],
-    IOCA => [ 1 ],
-    IOCB => [ 2 ],
-    # 0x17
-    CCP1CON => [ 0 ],
-    WDTCON => [ 1 ],
-    # 0x18
-    RCSTA => [ 0 ],
-    TXSTA => [ 1 ],
-    VRCON => [ 2 ],
-    # 0x19
-    TXREG => [ 0 ],
-    SPBRG => [ 1 ],
-    CM1CON0 => [ 2 ],
-    # 0x1A
-    RCREG => [ 0 ],
-    SPBRGH => [ 1 ],
-    CM2CON0 => [ 2 ],
-    # 0x1B
-    BAUDCTL => [ 1 ],
-    CM2CON1 => [ 2 ],
-    # 0x1C
-    PWM1CON => [ 0 ],
-    # 0x1D
-    ECCPAS => [ 0 ],
-    PSTRCON => [ 3 ],
-    # 0x1E
-    ADRESH => [ 0 ],
-    ADRESL => [ 1 ],
-    ANSEL => [ 2 ],
-    SRCON => [ 3 ],
-    # 0x1F
-    ADCON0 => [ 0 ],
-    ADCON1 => [ 1 ],
-    ANSELH => [ 2 ],
+has register_address => {
+    TOSU => 0xFFF,
+    TOSH => 0xFFE,
+    TOSL => 0xFFD,
+    STKPTR => 0xFFC,
+    PCLATU => 0xFFB,
+    PCLATH => 0xFFA,
+    PCL => 0xFF9,
+    TBLPTRU => 0xFF8,
+    TBLPTRH => 0xFF7,
+    TBLPTRL => 0xFF6,
+    TABLAT => 0xFF5,
+    PRODH => 0xFF4,
+    PRODL => 0xFF3,
+    INTCON => 0xFF2,
+    INTCON2 => 0xFF1,
+    INTCON3 => 0xFF1,
+    INDF0 => 0xFEF,
+    POSTINC0 => 0xFEE,
+    POSTDEC0 => 0xFED,
+    PREINC0 => 0xFEC,
+    PLUSW0 => 0xFEB,
+    FSR0H => 0xFEA,
+    FSR0L => 0xFE9,
+    WREG => 0xFE8,
+    INDF1 => 0xFE7,
+    POSTINC1 => 0xFE6,
+    POSTDEC1 => 0xFE5,
+    PREINC1 => 0xFE4,
+    PLUSW1 => 0xFE3,
+    FSR1H => 0xFE2,
+    FSR1L => 0xFE1,
+    BSR => 0xFE0,
+    INDF2 => 0xFDF,
+    POSTINC2 => 0xFDE,
+    POSTDEC2 => 0xFDD,
+    PREINC2 => 0xFDC,
+    PLUSW2 => 0xFDB,
+    FSR2H => 0xFDA,
+    FSR2L => 0xFD9,
+    STATUS => 0xFD8,
+    TMR0H => 0xFD7,
+    TMR0L => 0xFD6,
+    T0CON => 0xFD5,
+    OSCCON => 0xFD3,
+    LVDCON => 0xFD2,
+    WDTCON => 0xFD1,
+    RCON => 0xFD0,
+    TMR1H => 0xFCF,
+    TMR1L => 0xFCE,
+    T1CON => 0xFCD,
+    TMR2 => 0xFCC,
+    PR2 => 0xFCB,
+    T2CON => 0xFCA,
+    SSPBUF => 0xFC9,
+    SSPADD => 0xFC8,
+    SSPSTAT => 0xFC7,
+    SSPCON1 => 0xFC6,
+    SSPCON2 => 0xFC5,
+    ADRESH => 0xFC4,
+    ADRESL => 0xFC3,
+    ADCON0 => 0xFC2,
+    ADCON1 => 0xFC1,
+    CCPR1H => 0xFBF,
+    CCPR1L => 0xFBE,
+    CCP1CON => 0xFBD,
+    CCPR2H => 0xFBC,
+    CCPR2L => 0xFBB,
+    CCP2CON => 0xFBA,
+    TMR3H => 0xFB3,
+    TMR3L => 0xFB2,
+    T3CON => 0xFB1,
+    SPBRG => 0xFAF,
+    RCREG => 0xFAE,
+    TXREG => 0xFAD,
+    TXSTA => 0xFAC,
+    RCSTA => 0xFAB,
+    EEADR => 0xFA9,
+    EEDATA => 0xFA8,
+    EECON2 => 0xFA7,
+    EECON1 => 0xFA6,
+    IPR2 => 0xFA2,
+    PIR2 => 0xFA1,
+    PIE2 => 0xFA0,
+    IPR1 => 0xF9F,
+    PIR1 => 0xF9E,
+    PIE1 => 0xF9D,
+    TRISC => 0xF94,
+    TRISB => 0xF93,
+    TRISA => 0xF92,
+    LATC => 0xF8B,
+    LATB => 0xF8A,
+    LATA => 0xF89,
+    PORTC => 0xF82,
+    PORTB => 0xF81,
+    PORTA => 0xF80,
 };
+
+has register_banks => {};
 
 has pins => {
     #name  #port  #portbit #pin
-	Vdd => [undef, undef, 1],
-	RA5 => ['A', 5, 2],
-	RA4 => ['A', 4, 3],
-	RA3 => ['A', 3, 4],
-	RC5 => ['C', 5, 5],
-	RC4 => ['C', 4, 6],
-	RC3 => ['C', 3, 7],
-	RC6 => ['C', 6, 8],
-	RC7 => ['C', 7, 9],
-	RB7 => ['B', 7, 10],
-	RB6 => ['B', 6, 11],
-	RB5 => ['B', 5, 12],
-	RB4 => ['B', 4, 13],
-	RC2 => ['C', 2, 14],
-	RC1 => ['C', 1, 15],
-	RC0 => ['C', 0, 16],
-	RA2 => ['A', 2, 17],
-	RA1 => ['A', 1, 18],
-	RA0 => ['A', 0, 19],
-	Vss => [undef, undef, 20],
+	Vdd => [undef, undef, 20],
+    RA0 => ['A', 0, 2],
+    RA1 => ['A', 1, 3],
+    RA2 => ['A', 2, 4],
+    RA3 => ['A', 3, 5],
+    RA4 => ['A', 4, 6],
+    RA5 => ['A', 5, 7],
+    RA6 => ['A', 6, 10],
+    RB0 => ['B', 0, 21], 
+    RB1 => ['B', 1, 22], 
+    RB2 => ['B', 2, 23], 
+    RB3 => ['B', 3, 24], 
+    RB4 => ['B', 4, 25], 
+    RB5 => ['B', 5, 26], 
+    RB6 => ['B', 6, 27], 
+    RB7 => ['B', 7, 28], 
+    RC0 => ['C', 0, 11],
+    RC1 => ['C', 1, 12],
+    RC2 => ['C', 2, 13],
+    RC3 => ['C', 3, 14],
+    RC4 => ['C', 4, 15],
+    RC5 => ['C', 5, 16],
+    RC6 => ['C', 6, 17],
+    RC7 => ['C', 7, 18],
+    #TODO: handle duplicate values of pins in code
+	Vss => [undef, undef, [19, 8]],
 };
 
 has ports => {
@@ -200,83 +205,103 @@ has ports => {
 };
 
 has visible_pins => {
-    1 => 'Vdd',
-    2 => 'RA5',
-    3 => 'RA4',
-    4 => 'RA3',
-    5 => 'RC5',
-    6 => 'RC4',
-    7 => 'RC3',
-    8 => 'RC6',
-    9 => 'RC7',
-    10 => 'RB7',
-    11 => 'RB6',
-    12 => 'RB5',
-    13 => 'RB4',
-    14 => 'RC2',
-    15 => 'RC1',
-    16 => 'RC0',
-    17 => 'RA2',
-    18 => 'RA1',
-    19 => 'RA0',
-    20 => 'Vss',
+    1 => 'MCLR',
+    2 => 'RA0',
+    3 => 'RA1',
+    4 => 'RA2',
+    5 => 'RA3',
+    6 => 'RA4',
+    7 => 'RA5',
+    8 => 'Vss',
+    9 => 'OSC1',
+    10 => 'RA6',
+    11 => 'RC0',
+    12 => 'RC1',
+    13 => 'RC2',
+    14 => 'RC3',
+    15 => 'RC4',
+    16 => 'RC5',
+    17 => 'RC6',
+    18 => 'RC7',
+    19 => 'Vss',
+    20 => 'Vdd',
+    21 => 'RB0',
+    22 => 'RB1',
+    23 => 'RB2',
+    24 => 'RB3',
+    25 => 'RB4',
+    26 => 'RB5',
+    27 => 'RB6',
+    28 => 'RB7',
 };
 
 has gpio_pins => {
-    RA0 => 19,
-    RA1 => 18,
-    RA2 => 17,
-    RA4 => 3,
-    RA5 => 2,
-    RC0 => 16,
-    RC1 => 15,
-    RC2 => 14,
-    RC3 => 7,
-    RC4 => 6,
-    RC5 => 5,
-    RC6 => 8,
-    RC7 => 9,
-    RB4 => 13,
-    RB5 => 12,
-    RB6 => 11,
-    RB7 => 10,
-    19 => 'RA0',
-    18 => 'RA1',
-    17 => 'RA2',
-    3 => 'RA4',
-    2 => 'RA5',
-    16 => 'RC0',
-    15 => 'RC1',
-    14 => 'RC2',
-    7 => 'RC3',
-    6 => 'RC4',
-    5 => 'RC5',
-    8 => 'RC6',
-    9 => 'RC7',
-    13 => 'RB4',
-    12 => 'RB5',
-    11 => 'RB6',
-    10 => 'RB7',
+    RA0 => 2,
+    RA1 => 3,
+    RA2 => 4,
+    RA3 => 5,
+    RA4 => 6,
+    RA5 => 7,
+    RA6 => 10,
+    RC0 => 11,
+    RC1 => 12,
+    RC2 => 13,
+    RC3 => 14,
+    RC4 => 15,
+    RC5 => 16,
+    RC6 => 17,
+    RC7 => 18,
+    RB0 => 21,
+    RB1 => 22,
+    RB2 => 23,
+    RB3 => 24,
+    RB4 => 25,
+    RB5 => 26,
+    RB6 => 27,
+    RB8 => 28,
+    2 => 'RA0',
+    3 => 'RA1',
+    4 => 'RA2',
+    5 => 'RA3',
+    6 => 'RA4',
+    7 => 'RA5',
+    10 => 'RA6',
+    11 => 'RC0',
+    12 => 'RC1',
+    13 => 'RC2',
+    14 => 'RC3',
+    15 => 'RC4',
+    16 => 'RC5',
+    17 => 'RC6',
+    18 => 'RC7',
+    21 => 'RB0',
+    22 => 'RB1',
+    23 => 'RB2',
+    24 => 'RB3',
+    25 => 'RB4',
+    26 => 'RB5',
+    27 => 'RB6',
+    28 => 'RB7',
 };
 
-has input_pins => {
-    RA3 => 4,
-    4 => 'RA3',
-};
+has input_pins => {};
 
 has power_pins => {
-    Vdd => 1,
-    Vss => 20,
-    Vpp => 4,
-    ULPWU => 19,
-    MCLR => 4,
-    Vref => 18,
-    1 => 'Vdd',
-    20 => 'Vss',
-    4 => 'Vpp',
-    19 => 'ULPWU',
-    4 => 'MCLR',
-    18 => 'Vref',
+    Vdd => 20,
+    Vss => [19, 8], #TODO: handle multiple ?
+    Vpp => 1,
+    LVDIN => 7,
+    MCLR => 1,
+    'Vref+' => 5,
+    'Vref-' => 4,
+    20 => 'Vdd',
+    19 => 'Vss',
+    8 => 'Vss',
+    1 => 'Vpp',
+    7 => 'LVDIN',
+    1 => 'MCLR',
+    5 => 'Vref+',
+    4 => 'Vref-',
 };
 
 has adcs_bits  => {
@@ -292,53 +317,22 @@ has adcs_bits  => {
 has analog_pins => {
     # use ANSEL for pins AN0-AN7 and ANSELH for AN8-AN11
     #name   #pin    #portbit, #chsbits
-    AN0  => [19, 0, '0000'],
-    AN1  => [18, 1, '0001'],
-    AN2  => [17, 2, '0010'],
-    AN3  => [3,  3, '0011'],
-    AN4  => [16, 4, '0100'],
-    AN5  => [15, 5, '0101'],
-    AN6  => [14, 6, '0110'],
-    AN7  => [ 7, 7, '0111'],
-    AN8  => [ 8, 8, '1000'],
-    AN9  => [ 9, 9, '1001'],
-    AN10 => [13, 10, '1010'],
-    AN11 => [12, 12, '1011'],
-    CVref => [undef, undef, '1100'],
-    '0.6V' => [undef, undef, '1101'],
+    AN0  => [2, 0, '0000'],
+    AN1  => [3, 1, '0001'],
+    AN2  => [4, 2, '0010'],
+    AN3  => [5, 3, '0011'],
+    AN4  => [7, 4, '0100'],
+#    CVref => [undef, undef, '1100'],
+#    '0.6V' => [undef, undef, '1101'],
     #pin #name
-    19 => 'AN0',
-    18 => 'AN1',
-    17 => 'AN2',
-    3 => 'AN3',
-    16 => 'AN4',
-    15 => 'AN5',
-    14 => 'AN6',
-    7 => 'AN7',
-    8 => 'AN8',
-    9 => 'AN9',
-    13 => 'AN10',
-    12 => 'AN11',
+    2 => 'AN0',
+    3 => 'AN1',
+    4 => 'AN2',
+    5 => 'AN3',
+    7 => 'AN4',
 };
 
-has comparator_pins => {
-    C1IN => 19,
-    C12IN0 => 18,
-    C1OUT => 17,
-    C2IN => 16,
-    C12IN1 => 15,
-    C12IN2 => 14,
-    C12IN3 => 7,
-    C2OUT => 6,
-    19 => 'C1IN',
-    18 => 'C12IN0',
-    17 => 'C1OUT',
-    16 => 'C2IN',
-    15 => 'C12IN1',
-    14 => 'C12IN2',
-    7 => 'C12IN3',
-    6 => 'C2OUT',
-};
+has comparator_pins => {};
 
 has timer_prescaler => {
     2 => '000',
@@ -363,111 +357,105 @@ has wdt_prescaler => {
 };
 
 has timer_pins => {
-    TMR0 => 17,
-    TMR1 => 2,
-    T0CKI => 17,
-    T1CKI => 2,
-    T1G => 3,
-    17 => 'TMR0',
-    2 => 'TMR1',
-    17 => 'T0CKI',
-    2 => 'T1CKI',
-    3 => 'T1G',
+    T1OSO => 11,
+    T1CKI => 11,
+    11 => 'T1CKI',
+    T1OSI => 12,
+    12 => 'T1OSI',
+    TMR1 => 11,
+    T0CKI => 6,
+    6 => 'T0CKI',
+    TMR0 => 6,
 };
 
 has eint_pins => {
-    INT => 17,
-    17 => 'INT',
-    RA2 => 17,
+    INT0 => 21,
+    21 => 'INT0',
+    INT1 => 22,
+    22 => 'INT1',
+    INT2 => 23,
+    23 => 'INT2',
+    RB0 => 21,
+    RB1 => 22,
+    RB2 => 23,
 };
 
 has ioc_pins => {
-    RA0 => 19,
-    RA1 => 18,
-    RA2 => 17,
-    RA3 => 4,
-    RA4 => 3,
-    RA5 => 2,
-    RB4 => 13,
-    RB5 => 12,
-    RB6 => 11,
-    RB7 => 10,
-    19 => 'RA0',
-    18 => 'RA1',
-    17 => 'RA2',
-    4 => 'RA3',
-    3 => 'RA4',
-    2 => 'RA5',
-    13 => 'RB4',
-    12 => 'RB5',
-    11 => 'RB6',
-    10 => 'RB7',
-
+    RB4 => 25,
+    25 => 'RB4',
+    RB5 => 26,
+    26 => 'RB5',
+    RB6 => 27,
+    27 => 'RB6',
+    RB7 => 28,
+    28 => 'RB7',
 };
 
 has usart_pins => {
-    RX => 12,
-    TX => 10,
-    CK => 10,
-    DT => 12,
-    12 => 'RX',
-    10 => 'TX',
-    10 => 'CK',
-    12 => 'DT',
+    RX => 18,
+    TX => 17,
+    CK => 17,
+    DT => 18,
+    18 => 'RX',
+    17 => 'TX',
 };
 
 has clock_pins => {
-    CLKOUT => 3,
-    CLKIN => 2,
-    3 => 'CLKOUT',
-    2 => 'CLKIN',
+    CLKOUT => 10,
+    CLKIN => 9,
+    10 => 'CLKOUT',
+    9 => 'CLKIN',
+    # alias
+    CLKI => 'CLKIN',
+    CLKOUT => 'CLKO',
 };
 
 has oscillator_pins => {
-    OSC1 => 2,
-    OSC2 => 3,
-    2 => 'OSC1',
-    3 => 'OSC2',
+    OSC1 => 9,
+    OSC2 => 10,
+    9 => 'OSC1',
+    10 => 'OSC2',
 };
 
 has icsp_pins => {
-    ICSPCLK => 18,
-    ICSPDAT => 19,
-    18 => 'ICSPCLK',
-    19 => 'ICSPDAT',
+    PGM => 26,
+    26 => 'PGM', # programming enable
+    ICSPEN => 'PGM',
+    PGC => 27,
+    27 => 'PGC', # programming clock
+    ICSPCLK => 'PGC',
+    PGD => 28,
+    28 => 'PGD', # programming data
+    ICSPDAT => 'PGD',
 };
 
 has selector_pins => {
-    SS => 8, # SPI or I2C
-    8 => 'SS',
+    SS => 7, # SPI or I2C
+    7 => 'SS',
 };
 
 has spi_pins => {
-    SDI => 13, # SPI
-    SCK => 11, # SPI
-    SDO => 9, # SPI
-    13 => 'SDI',
-    11 => 'SCK',
-    9 => 'SDO',
+    SDI => 15, # SPI
+    SCK => 14, # SPI
+    SDO => 16, # SPI
+    15 => 'SDI',
+    14 => 'SCK',
+    16 => 'SDO',
 };
 
 has i2c_pins => {
-    SDA => 13, # I2C
-    SCL => 11, # I2C
-    13 => 'SDA',
-    11 => 'SCL',
+    SDA => 15, # I2C
+    SCL => 14, # I2C
+    15 => 'SDA',
+    14 => 'SCL',
 };
 
 has pwm_pins => {
-    P1D => 14,
-    P1C => 7,
-    P1B => 6,
-    P1A => 5,
-    CCP1 => 5,
-    14 => 'P1D',
-    7 => 'P1C',
-    6 => 'P1B',
-    5 => 'P1A',
+    CCP2 => [12, 24], # multiple pins multiplexed
+    24 => 'CCP2',
+    12 => 'CCP2',
+    CCP1 => 13,
+    13 => 'CCP1',
 };
 
 has chip_config => <<"...";

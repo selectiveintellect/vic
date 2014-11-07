@@ -31,23 +31,24 @@ has stack_size => 8; # 8-level x 13-bit wide
 
 has register_size => 8; # size of register W
 
-has program_memory => 4096; # number of flash words
+has program_memory => 8192; # number of flash words
 
 has data_memory => {
-    SRAM => 256, # bytes
+    SRAM => 768, # bytes
     EEPROM => 256, # bytes
 };
 
 has pin_counts => {
-    total => 20,
+    total => 40, # DIP/SOIC
     io => 18,
-    adc => 12,
-    comparator => 2,
+    adc => 8,
+    comparator => 0,
     timer_8bit => 2,
-    timer_16bit => 1,
+    timer_16bit => 2,
     ssp => 1,
-    pwm => 1,
+    pwm => 2,
     usart => 1,
+    psp => 1, # parallel slave port
 };
 
 has banks => {
