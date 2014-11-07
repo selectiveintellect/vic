@@ -3,7 +3,7 @@
 As of version 0.12, VIC&trade; supports the following Microchip PIC&reg;
 microcontrollers:
 
-PIC12 family:
+PIC12 family: **In Development**
 
 - P12F683
 
@@ -16,7 +16,7 @@ PIC16 family:
 - P16F689
 - P16F690
 
-PIC18 family:
+PIC18 family: **In Development**
 
 - P18F242
 - P18F252
