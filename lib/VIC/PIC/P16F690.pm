@@ -91,7 +91,7 @@ has registers => (is => 'ro', default => sub {
         PORTB => [0x006, 0x106],
         TRISB => [0x086, 0x186],
         PORTC => [0x007, 0x107],
-        TRIS => [0x087, 0x187],
+        TRISC => [0x087, 0x187],
         PCLATH => [0x00A, 0x08A, 0x10A, 0x18A],
         INTCON => [0x00B, 0x08B, 0x10B, 0x18B],
         PIR1 => [0x00C],
@@ -244,6 +244,9 @@ has pins => (is => 'ro', default => sub {
     }
 });
 
+has gpio_ports => (is => 'ro', default => sub {
+    [qw(PORTA PORTB PORTC)]
+});
 # bidirectional
 has gpio_pins => (is => 'ro', default => sub {
     {
