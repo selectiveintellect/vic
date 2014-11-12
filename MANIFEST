@@ -6,6 +6,7 @@ lib/VIC/Grammar.pm
 lib/VIC/Parser.pm
 lib/VIC/PIC/Any.pm
 lib/VIC/PIC/Base.pm
+lib/VIC/PIC/Functions.pm
 lib/VIC/PIC/Gpsim.pm
 lib/VIC/PIC/P12F683.pm
 lib/VIC/PIC/P16F627A.pm
@@ -25,6 +26,7 @@ lib/VIC/PIC/P18F442.pm
 lib/VIC/PIC/P18F452.pm
 lib/VIC/PIC/P18LF13K50.pm
 lib/VIC/PIC/P18LF14K50.pm
+lib/VIC/PIC/Roles.pm
 lib/VIC/Receiver.pm
 LICENSE
 MANIFEST			This list of files

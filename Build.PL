@@ -26,6 +26,8 @@ my $build = Module::Build->new(
         'Pegex' => 0.55, # needed for PL_files to work
         'List::Util' => 0,
         'List::MoreUtils' => 0,
+        'Moo' => 0,
+        'namespace::clean' => 0,
     },
     recommends => {
         'XXX' => 0,
