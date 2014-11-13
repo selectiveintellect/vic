@@ -229,6 +229,10 @@ sub write {
                     "Only a pin can be written to a pin.\n";
                 return;
             }
+        } else {
+            carp "$val is a port or unknown pin and cannot be written to a pin $outp. ".
+            "Only a pin can be written to a pin.\n";
+            return;
         }
         return $self->op_assign($port, $val);
     } elsif (exists $self->registers->{$outp}) { # write a value to a register
