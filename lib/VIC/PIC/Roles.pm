@@ -32,7 +32,7 @@ package VIC::PIC::Roles::GPIO;
     # output pins is output only. analog_pins are a list of analog_pins
     # mapped to gpio pins
     requires qw(gpio_pins input_pins output_pins gpio_ports
-        analog_pins);
+        analog_pins get_gpio_pin);
     requires qw(digital_output digital_input analog_input write);
 }
 package VIC::PIC::Roles::Timer;

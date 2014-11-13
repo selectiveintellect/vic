@@ -6,7 +6,7 @@ use Carp;
 use POSIX ();
 use Moo::Role;
 
-sub _get_gpio_pin {
+sub get_gpio_pin {
     my ($self, $ipin) = @_;
     return $ipin if exists $self->gpio_pins->{$ipin};
     # find the correct GPIO pin then matching this pin
@@ -88,7 +88,7 @@ sub _gpio_select {
             $port_code = "\tbanksel $outp";
         }
     } elsif (exists $self->pins->{$outp}) {
-        my $gpio_pin = $self->_get_gpio_pin($outp);
+        my $gpio_pin = $self->get_gpio_pin($outp);
         unless (defined $gpio_pin) {
             carp "Cannot find $outp in the list of registers or pins supporting GPIO";
             return;
@@ -171,7 +171,7 @@ sub write {
         }
         return $self->op_assign($outp, $val);
     } elsif (exists $self->pins->{$outp}) {
-        my $gpio_pin = $self->_get_gpio_pin($outp);
+        my $gpio_pin = $self->get_gpio_pin($outp);
         unless (defined $gpio_pin) {
             carp "Cannot find $outp in the list of ports, register or pins to write to";
             return;
@@ -185,7 +185,7 @@ sub write {
         } elsif (exists $self->pins->{$val}) {
             # ok we want to short two pins, and this is not bit-banging
             # although seems like it
-            my $vpin = $self->_get_gpio_pin($val);
+            my $vpin = $self->get_gpio_pin($val);
             if ($vpin) {
                 my ($vport, $vtris, $vpinbit) = @{$self->gpio_pins->{$vpin}};
                 return << "...";
