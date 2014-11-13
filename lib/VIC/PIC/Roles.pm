@@ -8,6 +8,12 @@ package VIC::PIC::Roles::CodeGen;
     requires qw(update_code_config);
 }
 
+package VIC::PIC::Roles::Operations;
+{
+    use Moo::Role;
+    requires qw(op_assign op_assign_wreg);
+}
+
 package VIC::PIC::Roles::Chip;
 {
     use Moo::Role;

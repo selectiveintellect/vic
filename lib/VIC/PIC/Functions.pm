@@ -4,21 +4,8 @@ use warnings;
 use bigint;
 use Carp;
 use POSIX ();
-use VIC::PIC::Roles; # load all the roles
 use Moo;
-use namespace::clean;
-
-sub doesrole {
-    return $_[0]->does('VIC::PIC::Roles::' . $_[1]);
-}
-
-sub doesroles {
-    my $self = shift;
-    foreach (@_) {
-        return unless $self->doesrole($_);
-    }
-    return 1;
-}
+extends 'VIC::PIC::Operations';
 
 sub validate {
     my ($self, $var) = @_;
@@ -39,7 +26,7 @@ sub validate_operator {
             ASSIGN | INC | DEC | NOT | COMP |
             TBLIDX | ARRIDX | STRIDX
         /x;
-    return $vop;
+    return lc $vop;
 }
 
 sub validate_modifier_operator {
@@ -226,7 +213,7 @@ sub analog_input {
 
 sub write {
     my ($self, $outp, $val) = @_;
-    return unless $self->doesroles(qw(CodeGen Chip GPIO));
+    return unless $self->doesroles(qw(CodeGen Operations Chip GPIO));
     return unless defined $outp;
     if (exists $self->gpio_ports->{$outp} and
         exists $self->registers->{$outp}) {
@@ -246,7 +233,7 @@ sub write {
                 return;
             }
         }
-        return $self->op_ASSIGN($outp, $val);
+        return $self->op_assign($outp, $val);
     } elsif (exists $self->pins->{$outp}) {
         my $gpio_pin = $self->_get_gpio_pin($outp);
         unless (defined $gpio_pin) {
@@ -277,10 +264,10 @@ sub write {
                 return;
             }
         }
-        return $self->op_ASSIGN($port, $val);
+        return $self->op_assign($port, $val);
     } elsif (exists $self->registers->{$outp}) { # write a value to a register
         my $code = "\tbanksel $outp\n";
-        $code .= $self->op_ASSIGN($outp, $val);
+        $code .= $self->op_assign($outp, $val);
         return $code;
     } else {
         carp "Cannot find $outp in the list of ports, register or pins to write to";

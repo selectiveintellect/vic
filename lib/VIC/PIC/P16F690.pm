@@ -306,7 +306,7 @@ has analog_pins => (is => 'ro', default => sub {
             '0.6V' => [undef, undef, '1101'],
         }
 });
-my @roles = map ("VIC::PIC::Roles::$_", qw(CodeGen Chip GPIO));
+my @roles = map ("VIC::PIC::Roles::$_", qw(CodeGen Operations Chip GPIO));
 with @roles;
 
 1;
