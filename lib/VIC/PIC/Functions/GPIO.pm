@@ -153,7 +153,7 @@ sub write {
     return unless defined $outp;
     if (exists $self->gpio_ports->{$outp} and
         exists $self->registers->{$outp}) {
-        my $port = $self->ports->{$outp};
+        my $port = $self->gpio_ports->{$outp};
         unless (defined $val) {
             return << "...";
 \tclrf $outp

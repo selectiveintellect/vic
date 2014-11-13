@@ -362,6 +362,48 @@ sub delay_us {
     return $self->_delay_w(us => uc($t));
 }
 
+sub rol {
+    my ($self, $var, $bits) = @_;
+    return unless $self->doesroles(qw(Operations Chip));
+    unless (exists $self->registers->{STATUS}) {
+        carp "The STATUS register does not exist for the chip ", $self->type;
+        return;
+    }
+    $var = uc $var;
+    my $code = <<"...";
+\tbcf STATUS, C
+...
+    for (1 .. $bits) {
+        $code .= << "...";
+\trlf $var, 1
+\tbtfsc STATUS, C
+\tbsf $var, 0
+...
+    }
+    return $code;
+}
+
+sub ror {
+    my ($self, $var, $bits) = @_;
+    return unless $self->doesroles(qw(Operations Chip));
+    unless (exists $self->registers->{STATUS}) {
+        carp "The STATUS register does not exist for the chip ", $self->type;
+        return;
+    }
+    $var = uc $var;
+    my $code = <<"...";
+\tbcf STATUS, C
+...
+    for (1 .. $bits) {
+        $code .= << "...";
+\trrf $var, 1
+\tbtfsc STATUS, C
+\tbsf $var, 7
+...
+    }
+    return $code;
+}
+
 1;
 __END__
 
