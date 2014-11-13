@@ -61,6 +61,7 @@ has banks => (is => 'ro', default => sub {
             3 => [ 0x1A0, 0x1EF],
         },
         # remapping of these addresses automatically done by chip
+        common => [0x070, 0x07F],
         remap => {
             [0x070, 0x07F] => [
                 [0x0F0, 0x0FF],
@@ -344,8 +345,44 @@ has adc_chs_bits => (is => 'ro', default => sub {
         }
 });
 
+has timer_prescaler => (is => 'ro', default => sub {
+    {
+        2 => '000',
+        4 => '001',
+        8 => '010',
+        16 => '011',
+        32 => '100',
+        64 => '101',
+        128 => '110',
+        256 => '111',
+    }
+});
+
+has wdt_prescaler => (is => 'ro', default => sub {
+    {
+        1 => '000',
+        2 => '001',
+        4 => '010',
+        8 => '011',
+        16 => '100',
+        32 => '101',
+        64 => '110',
+        128 => '111',
+    }
+});
+
+has timer_pins => (is => 'ro', default => sub {
+    {
+        TMR0 => 17,
+        TMR1 => 2,
+        T0CKI => 17,
+        T1CKI => 2,
+        T1G => 3,
+    }
+});
+
 my @roles = map (("VIC::PIC::Roles::$_", "VIC::PIC::Functions::$_"), qw(CodeGen
-    Operators Chip GPIO ADC Timer Operations));
+    Operators Chip GPIO ADC ISR Timer Operations));
 with @roles;
 
 1;

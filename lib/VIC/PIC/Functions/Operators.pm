@@ -1479,6 +1479,9 @@ sub op_sqrt {
     return wantarray ? ($code, {}, $macros) : $code;
 }
 
+sub break { return 'BREAK'; }
+sub continue { return 'CONTINUE'; }
+
 1;
 __END__
 
