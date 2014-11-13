@@ -6,9 +6,9 @@ use Carp;
 use POSIX ();
 use Moo::Role;
 
-sub get_gpio_pin {
+sub get_output_pin {
     my ($self, $ipin) = @_;
-    return $ipin if exists $self->gpio_pins->{$ipin};
+    return $ipin if exists $self->output_pins->{$ipin};
     # find the correct GPIO pin then matching this pin
     my $pin_no = $self->pins->{$ipin};
     my $allpins = $self->pins->{$pin_no};
@@ -17,10 +17,30 @@ sub get_gpio_pin {
         return;
     }
     my $opin;
-    foreach my $gpio_pin (@$allpins) {
-        next unless exists $self->gpio_pins->{$gpio_pin};
-        # we have now found the correct gpio_pin for the analog_pin
-        $opin = $gpio_pin;
+    foreach my $iopin (@$allpins) {
+        next unless exists $self->output_pins->{$iopin};
+        # we have now found the correct iopin for the analog_pin
+        $opin = $iopin;
+        last;
+    }
+    return $opin;
+}
+
+sub get_input_pin {
+    my ($self, $ipin) = @_;
+    return $ipin if exists $self->input_pins->{$ipin};
+    # find the correct GPIO pin then matching this pin
+    my $pin_no = $self->pins->{$ipin};
+    my $allpins = $self->pins->{$pin_no};
+    unless (ref $allpins eq 'ARRAY') {
+        carp "Invalid data for pin $pin_no";
+        return;
+    }
+    my $opin;
+    foreach my $iopin (@$allpins) {
+        next unless exists $self->input_pins->{$iopin};
+        # we have now found the correct iopin for the analog_pin
+        $opin = $iopin;
         last;
     }
     return $opin;
@@ -41,16 +61,22 @@ sub _gpio_select {
 
     # is this a register
     my ($trisp_code, $port_code, $an_code) = ('', '', '');
-    if (exists $self->gpio_ports->{$outp} and
+    if (exists $self->io_ports->{$outp} and
         exists $self->registers->{$outp}) {
-        my $trisp = $self->gpio_ports->{$outp};
+        my $trisp = $self->io_ports->{$outp};
         my $flags = ($ad == 0) ? 0xFF : 0;
         my $flagsH = ($ad == 0) ? 0xFF : 0;
         if (exists $self->registers->{ANSEL}) {
             # get the pins that belong to the register
             my @portpins = ();
-            foreach (keys %{$self->gpio_pins}) {
-                push @portpins, $_ if $self->gpio_pins->{$_}->[0] eq $outp;
+            if ($io == 0) {
+                foreach (keys %{$self->output_pins}) {
+                    push @portpins, $_ if $self->output_pins->{$_}->[0] eq $outp;
+                }
+            } else {
+                foreach (keys %{$self->input_pins}) {
+                    push @portpins, $_ if $self->input_pins->{$_}->[0] eq $outp;
+                }
             }
             foreach (@portpins) {
                 my $pin_no = $self->pins->{$_};
@@ -88,14 +114,18 @@ sub _gpio_select {
             $port_code = "\tbanksel $outp";
         }
     } elsif (exists $self->pins->{$outp}) {
-        my $gpio_pin = $self->get_gpio_pin($outp);
-        unless (defined $gpio_pin) {
+        my $iopin = ($io == 0) ? $self->get_output_pin($outp) :
+                                    $self->get_input_pin($outp);
+        unless (defined $iopin) {
             carp "Cannot find $outp in the list of registers or pins supporting GPIO";
             return;
         }
-        my ($port, $trisp, $pinbit) = @{$self->gpio_pins->{$gpio_pin}};
+        my ($port, $trisp, $pinbit) = ($io == 0) ?
+                    @{$self->output_pins->{$iopin}} :
+                    @{$self->input_pins->{$iopin}};
+
         if (exists $self->registers->{ANSEL}) {
-            my $pin_no = $self->pins->{$gpio_pin};
+            my $pin_no = $self->pins->{$iopin};
             my $allpins = $self->pins->{$pin_no};
             unless (ref $allpins eq 'ARRAY') {
                 carp "Invalid data for pin $pin_no";
@@ -151,9 +181,9 @@ sub write {
     my ($self, $outp, $val) = @_;
     return unless $self->doesroles(qw(CodeGen Operations Chip GPIO));
     return unless defined $outp;
-    if (exists $self->gpio_ports->{$outp} and
+    if (exists $self->io_ports->{$outp} and
         exists $self->registers->{$outp}) {
-        my $port = $self->gpio_ports->{$outp};
+        my $port = $self->io_ports->{$outp};
         unless (defined $val) {
             return << "...";
 \tclrf $outp
@@ -171,12 +201,12 @@ sub write {
         }
         return $self->op_assign($outp, $val);
     } elsif (exists $self->pins->{$outp}) {
-        my $gpio_pin = $self->get_gpio_pin($outp);
-        unless (defined $gpio_pin) {
-            carp "Cannot find $outp in the list of ports, register or pins to write to";
+        my $iopin = $self->get_output_pin($outp);
+        unless (defined $iopin) {
+            carp "Cannot find $outp in the list of VALID ports, register or pins to write to";
             return;
         }
-        my ($port, $trisp, $pinbit) = @{$self->gpio_pins->{$gpio_pin}};
+        my ($port, $trisp, $pinbit) = @{$self->output_pins->{$iopin}};
         if ($val =~ /^\d+$/) {
             return "\tbcf $port, $pinbit\n" if "$val" eq '0';
             return "\tbsf $port, $pinbit\n" if "$val" eq '1';
@@ -185,9 +215,9 @@ sub write {
         } elsif (exists $self->pins->{$val}) {
             # ok we want to short two pins, and this is not bit-banging
             # although seems like it
-            my $vpin = $self->get_gpio_pin($val);
+            my $vpin = $self->get_output_pin($val);
             if ($vpin) {
-                my ($vport, $vtris, $vpinbit) = @{$self->gpio_pins->{$vpin}};
+                my ($vport, $vtris, $vpinbit) = @{$self->output_pins->{$vpin}};
                 return << "...";
 \tbtfss $vport, $vpin
 \tbcf $port, $outp

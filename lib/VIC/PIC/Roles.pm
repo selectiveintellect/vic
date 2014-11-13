@@ -23,12 +23,6 @@ package VIC::PIC::Roles::Operators;
     );
 }
 
-package VIC::PIC::Roles::Operations;
-{
-    use Moo::Role;
-    requires qw(delay delay_ms delay_us delay_s)
-}
-
 package VIC::PIC::Roles::Chip;
 {
     use Moo::Role;
@@ -46,11 +40,12 @@ package VIC::PIC::Roles::GPIO;
 {
     use Moo::Role;
 
-    # gpio_pins is bidirectional. input_pins is input-only
-    # output pins is output only. analog_pins are a list of analog_pins
-    # mapped to gpio pins
-    requires qw(gpio_pins input_pins output_pins gpio_ports
-      analog_pins get_gpio_pin);
+    # input_pins is a list of input pins.
+    # output pins is a list of output pins.
+    # Bi-directional pins will be in both lists
+    # analog_pins are a list of analog_pins
+    requires qw(input_pins output_pins io_ports
+      analog_pins get_input_pin get_output_pin);
     requires qw(digital_output digital_input analog_input write);
 }
 
@@ -64,5 +59,12 @@ package VIC::PIC::Roles::CCP;
     use Moo::Role;
     requires qw(ccp_pins);
 }
+
+package VIC::PIC::Roles::Operations;
+{
+    use Moo::Role;
+    requires qw(delay delay_ms delay_us delay_s debounce);
+}
+
 1;
 __END__

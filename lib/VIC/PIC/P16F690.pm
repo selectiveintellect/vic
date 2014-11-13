@@ -237,7 +237,7 @@ has pins => (is => 'ro', default => sub {
     }
 });
 
-has gpio_ports => (is => 'ro', default => sub {
+has io_ports => (is => 'ro', default => sub {
     {
         #port => tristate,
         PORTA => 'TRISA',
@@ -245,8 +245,32 @@ has gpio_ports => (is => 'ro', default => sub {
         PORTC => 'TRISC',
     }
 });
-# bidirectional
-has gpio_pins => (is => 'ro', default => sub {
+
+has input_pins => (is => 'ro', default => sub {
+    {
+        #I/O => [port, tristate, bit]
+        RA0 => ['PORTA', 'TRISA', 0],
+        RA1 => ['PORTA', 'TRISA', 1],
+        RA2 => ['PORTA', 'TRISA', 2],
+        RA3 => ['PORTA', 'TRISA', 3], # input only
+        RA4 => ['PORTA', 'TRISA', 4],
+        RA5 => ['PORTA', 'TRISA', 5],
+        RB4 => ['PORTB', 'TRISB', 4],
+        RB5 => ['PORTB', 'TRISB', 5],
+        RB6 => ['PORTB', 'TRISB', 6],
+        RB7 => ['PORTB', 'TRISB', 7],
+        RC0 => ['PORTC', 'TRISC', 0],
+        RC1 => ['PORTC', 'TRISC', 1],
+        RC2 => ['PORTC', 'TRISC', 2],
+        RC3 => ['PORTC', 'TRISC', 3],
+        RC4 => ['PORTC', 'TRISC', 4],
+        RC5 => ['PORTC', 'TRISC', 5],
+        RC6 => ['PORTC', 'TRISC', 6],
+        RC7 => ['PORTC', 'TRISC', 7],
+    }
+});
+
+has output_pins => (is => 'ro', default => sub {
     {
         #I/O => [port, tristate, bit]
         RA0 => ['PORTA', 'TRISA', 0],
@@ -266,17 +290,8 @@ has gpio_pins => (is => 'ro', default => sub {
         RC5 => ['PORTC', 'TRISC', 5],
         RC6 => ['PORTC', 'TRISC', 6],
         RC7 => ['PORTC', 'TRISC', 7],
-    },
-});
-
-has input_pins => (is => 'ro', default => sub {
-    {
-        #I/O => [port, tristate, bit]
-        RA3 => ['PORTA', 'TRISA', 3],
     }
 });
-
-has output_pins => (is => 'ro', default => undef);
 
 has analog_pins => (is => 'ro', default => sub {
         {
@@ -300,7 +315,7 @@ has analog_pins => (is => 'ro', default => sub {
         }
 });
 my @roles = map (("VIC::PIC::Roles::$_", "VIC::PIC::Functions::$_"), qw(CodeGen
-    Operators Operations Chip GPIO Timer));
+    Operators Chip GPIO Timer Operations));
 with @roles;
 
 1;

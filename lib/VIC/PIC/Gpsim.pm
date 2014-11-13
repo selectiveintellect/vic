@@ -67,6 +67,23 @@ sub _gen_led {
 ...
 }
 
+
+sub _get_gpio_info {
+    my ($self, $port) = @_;
+    my $gpio_pin = $self->pic->get_input_pin($port);
+    if ($gpio_pin) {
+        # this is a pin
+        return @{$self->pic->input_pins->{$gpio_pin}};
+    } else {
+        $gpio_pin = $self->pic->get_output_pin($port);
+        if ($gpio_pin) {
+            # this is a pin
+            return @{$self->pic->output_pins->{$gpio_pin}};
+        }
+    }
+    return;
+}
+
 sub _get_simreg {
     my ($self, $port) = @_;
     my $simreg = lc $port;
@@ -75,11 +92,9 @@ sub _get_simreg {
             # this is a port
             $simreg = lc $port;
         } elsif (exists $self->pic->pins->{$port}) {
-            my $gpio_pin = $self->pic->get_gpio_pin($port);
-            if ($gpio_pin) {
-                # this is a pin
-                my ($p1, $p2, $p3) = @{$self->pic->gpio_pins->{$gpio_pin}};
-                $simreg = lc $p1;
+            my ($io1) = $self->_get_gpio_info($port);
+            if (defined $io1) {
+                $simreg = lc $io1;
             } else {
                 my $pic = $self->pic->type;
                 carp "Cannot find '$port' in PIC $pic. Using '$simreg'";
@@ -101,11 +116,9 @@ sub _get_simport {
             $simport = lc $port;
             $simport .= $pin if defined $pin;
         } elsif (exists $self->pic->pins->{$port}) {
-            my $gpio_pin = $self->pic->get_gpio_pin($port);
-            if ($gpio_pin) {
-                # this is a pin
-                my ($p1, $p2, $p3) = @{$self->pic->gpio_pins->{$gpio_pin}};
-                $simport = lc "$p1$p3";
+            my ($io1, $io2, $io3) = $self->_get_gpio_info($port);
+            if (defined $io1 and defined $io3) {
+                $simport = lc "$io1$io3";
             } else {
                 my $pic = $self->pic->type;
                 carp "Cannot find '$port' in PIC $pic. Using '$simport'";
@@ -127,12 +140,10 @@ sub _get_portpin {
             # this is a port
             $simport = lc $port;
         } elsif (exists $self->pic->pins->{$port}) {
-            my $gpio_pin = $self->pic->get_gpio_pin($port);
-            if ($gpio_pin) {
-                # this is a pin
-                my ($p1, $p2, $p3) = @{$self->pic->gpio_pins->{$gpio_pin}};
-                $simport = lc $p1;
-                $simpin = $p3;
+            my ($io1, $io2, $io3) = $self->_get_gpio_info($port);
+            if (defined $io1) {
+                $simport = lc $io1;
+                $simpin = $io3;
             } else {
                 my $pic = $self->pic->type;
                 carp "Cannot find '$port' in PIC $pic. Using '$simport'";
@@ -184,10 +195,10 @@ sub attach_led7seg {
         if (exists $self->pic->pins->{$p}) {
             push @simpins, $p;
         } elsif (exists $self->pic->registers->{$p}) {
-            # find all the pins for the port
-            foreach (sort(keys %{$self->pic->gpio_pins})) {
-                next unless defined $self->pic->pins->{$_}->[0];
-                push @simpins, $_ if $self->pic->pins->{$_}->[0] eq $p;
+            # find all the output pins for the port
+            foreach (sort(keys %{$self->pic->output_pins})) {
+                next unless defined $self->pic->output_pins->{$_}->[0];
+                push @simpins, $_ if $self->pic->output_pins->{$_}->[0] eq $p;
             }
         } elsif ($p =~ /red|orange|green|yellow|blue/i) {
             $color = $p;

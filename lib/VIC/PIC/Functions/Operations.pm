@@ -273,5 +273,96 @@ sub delay_us {
     return $self->_delay_w(us => uc($t));
 }
 
+sub _macro_debounce_var {
+    return <<'...';
+;;;;;; VIC_VAR_DEBOUNCE VARIABLES ;;;;;;;
+
+VIC_VAR_DEBOUNCE_VAR_IDATA idata
+;; initialize state to 1
+VIC_VAR_DEBOUNCESTATE db 0x01
+;; initialize counter to 0
+VIC_VAR_DEBOUNCECOUNTER db 0x00
+
+...
+}
+
+sub debounce {
+    my ($self, $inp, %action) = @_;
+    return unless $self->doesroles(qw(Operations Chip CodeGen GPIO));
+    unless (exists $self->registers->{STATUS}) {
+        carp $self->pic->type, " does not have the STATUS register";
+        return;
+    }
+    my $action_label = $action{ACTION};
+    my $end_label = $action{END};
+    return unless $action_label;
+    return unless $end_label;
+    my ($port, $portbit);
+    if (exists $self->pins->{$inp}) {
+        my $ipin = $self->get_input_pin($inp);
+        unless (defined $ipin) {
+            carp "Cannot find $inp in the list of GPIO ports or pins";
+            return;
+        } else {
+            my $tris;
+            ($port, $tris, $portbit) = @{$self->input_pins->{$inp}};
+        }
+    } elsif (exists $self->registers->{$inp}) {
+        $port = $inp;
+        $portbit = 0;
+        carp "Port $port has been supplied. Assuming portbit to debounce is $portbit";
+    } else {
+        carp "Cannot find $inp in the list of ports or pins";
+        return;
+    }
+    # incase the user does weird stuff override the count and delay
+    my $debounce_count = $self->code_config->{debounce}->{count} || 1;
+    my $debounce_delay = $self->code_config->{debounce}->{delay} || 1000;
+    my ($deb_code, $funcs, $macros) = $self->delay($debounce_delay);
+    $macros = {} unless defined $macros;
+    $funcs = {} unless defined $funcs;
+    $deb_code = 'nop' unless defined $deb_code;
+    $macros->{m_debounce_var} = $self->_macro_debounce_var;
+    $debounce_count = sprintf "0x%02X", $debounce_count;
+    my $code = <<"...";
+\t;;; generate code for debounce $port<$portbit>
+$deb_code
+\t;; has debounce state changed to down (bit 0 is 0)
+\t;; if yes go to debounce-state-down
+\tbtfsc   VIC_VAR_DEBOUNCESTATE, 0
+\tgoto    _debounce_state_up
+_debounce_state_down:
+\tclrw
+\tbtfss   $port, $portbit
+\t;; increment and move into counter
+\tincf    VIC_VAR_DEBOUNCECOUNTER, 0
+\tmovwf   VIC_VAR_DEBOUNCECOUNTER
+\tgoto    _debounce_state_check
+
+_debounce_state_up:
+\tclrw
+\tbtfsc   $port, $portbit
+\tincf    VIC_VAR_DEBOUNCECOUNTER, 0
+\tmovwf   VIC_VAR_DEBOUNCECOUNTER
+\tgoto    _debounce_state_check
+
+_debounce_state_check:
+\tmovf    VIC_VAR_DEBOUNCECOUNTER, W
+\txorlw   $debounce_count
+\t;; is counter == $debounce_count ?
+\tbtfss   STATUS, Z
+\tgoto    $end_label
+\t;; after $debounce_count straight, flip direction
+\tcomf    VIC_VAR_DEBOUNCESTATE, 1
+\tclrf    VIC_VAR_DEBOUNCECOUNTER
+\t;; was it a key-down
+\tbtfss   VIC_VAR_DEBOUNCESTATE, 0
+\tgoto    $end_label
+\tgoto    $action_label
+$end_label:\n
+...
+    return wantarray ? ($code, $funcs, $macros) : $code;
+}
+
 1;
 __END__
