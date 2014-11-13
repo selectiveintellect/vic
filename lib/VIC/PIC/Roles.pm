@@ -7,13 +7,13 @@ package VIC::PIC::Roles::CodeGen;
     requires qw(validate validate_modifier_operator address_bits);
     requires qw(update_code_config);
 }
-
 package VIC::PIC::Roles::Operations;
 {
     use Moo::Role;
     requires qw(op_assign op_assign_wreg);
+    # these are compute based delays so here
+    requires qw(delay delay_ms delay_us delay_s)
 }
-
 package VIC::PIC::Roles::Chip;
 {
     use Moo::Role;
@@ -35,12 +35,14 @@ package VIC::PIC::Roles::GPIO;
         analog_pins);
     requires qw(digital_output digital_input analog_input write);
 }
-
+package VIC::PIC::Roles::Timer;
+{
+    use Moo::Role;
+}
 package VIC::PIC::Roles::CCP;
 {
     use Moo::Role;
     requires qw(ccp_pins);
 }
-
 1;
 __END__
