@@ -21,8 +21,10 @@ package VIC::PIC::Roles::GPIO;
 {
     use Moo::Role;
     # gpio_pins is bidirectional. input_pins is input-only
-    # output pins is output only
-    requires qw(gpio_pins input_pins output_pins gpio_ports);
+    # output pins is output only. analog_pins are a list of analog_pins
+    # mapped to gpio pins
+    requires qw(gpio_pins input_pins output_pins gpio_ports
+        analog_pins);
 }
 
 package VIC::PIC::Roles::CCP;
