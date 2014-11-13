@@ -296,26 +296,56 @@ has output_pins => (is => 'ro', default => sub {
 has analog_pins => (is => 'ro', default => sub {
         {
             # use ANSEL for pins AN0-AN7 and ANSELH for AN8-AN11
-            #pin => number, bit, chsbits
-            AN0  => [19, 0, '0000'],
-            AN1  => [18, 1, '0001'],
-            AN2  => [17, 2, '0010'],
-            AN3  => [3,  3, '0011'],
-            AN4  => [16, 4, '0100'],
-            AN5  => [15, 5, '0101'],
-            AN6  => [14, 6, '0110'],
-            AN7  => [ 7, 7, '0111'],
-            AN8  => [ 8, 8, '1000'],
-            AN9  => [ 9, 9, '1001'],
-            AN10 => [13, 10, '1010'],
-            AN11 => [12, 12, '1011'],
-            ## remove these or move chsbits out
-            CVref => [undef, undef, '1100'],
-            '0.6V' => [undef, undef, '1101'],
+            #pin => number, bit
+            AN0  => [19, 0],
+            AN1  => [18, 1],
+            AN2  => [17, 2],
+            AN3  => [3,  3],
+            AN4  => [16, 4],
+            AN5  => [15, 5],
+            AN6  => [14, 6],
+            AN7  => [ 7, 7],
+            AN8  => [ 8, 8],
+            AN9  => [ 9, 9],
+            AN10 => [13, 10],
+            AN11 => [12, 12],
         }
 });
+
+has adc_channels => (is => 'ro', default => 12);
+has adcs_bits  => (is => 'ro', default => sub {
+    {
+        2 => '000',
+        4 => '100',
+        8 => '001',
+        16 => '101',
+        32 => '010',
+        64 => '110',
+        internal => '111',
+    }
+});
+has adc_chs_bits => (is => 'ro', default => sub {
+        {
+            #pin => chsbits
+            AN0  => '0000',
+            AN1  => '0001',
+            AN2  => '0010',
+            AN3  => '0011',
+            AN4  => '0100',
+            AN5  => '0101',
+            AN6  => '0110',
+            AN7  => '0111',
+            AN8  => '1000',
+            AN9  => '1001',
+            AN10 => '1010',
+            AN11 => '1011',
+            CVref => '1100',
+            '0.6V' => '1101',
+        }
+});
+
 my @roles = map (("VIC::PIC::Roles::$_", "VIC::PIC::Functions::$_"), qw(CodeGen
-    Operators Chip GPIO Timer Operations));
+    Operators Chip GPIO ADC Timer Operations));
 with @roles;
 
 1;

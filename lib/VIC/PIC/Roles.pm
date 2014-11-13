@@ -49,6 +49,14 @@ package VIC::PIC::Roles::GPIO;
     requires qw(digital_output digital_input analog_input write);
 }
 
+package VIC::PIC::Roles::ADC;
+{
+    use Moo::Role;
+
+    requires qw(adc_enable adc_disable adc_read adc_channels adcs_bits
+    adc_chs_bits);
+}
+
 package VIC::PIC::Roles::Timer;
 {
     use Moo::Role;
