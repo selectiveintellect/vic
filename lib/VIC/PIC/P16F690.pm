@@ -2,7 +2,7 @@ package VIC::PIC::P16F690;
 use strict;
 use warnings;
 use Moo;
-extends 'VIC::PIC::Functions'; # to be renamed
+extends 'VIC::PIC::Base';
 
 # role CodeGen
 has type => (is => 'ro', default => 'p16f690');
@@ -306,7 +306,7 @@ has analog_pins => (is => 'ro', default => sub {
             '0.6V' => [undef, undef, '1101'],
         }
 });
-my @roles = map ("VIC::PIC::Roles::$_", qw(CodeGen Operations Chip GPIO Timer));
+my @roles = map (("VIC::PIC::Roles::$_", "VIC::PIC::Functions::$_"), qw(CodeGen Operations Chip GPIO Timer));
 with @roles;
 
 1;
