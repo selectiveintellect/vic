@@ -299,7 +299,8 @@ has analog_pins => (is => 'ro', default => sub {
             '0.6V' => [undef, undef, '1101'],
         }
 });
-my @roles = map (("VIC::PIC::Roles::$_", "VIC::PIC::Functions::$_"), qw(CodeGen Operations Chip GPIO Timer));
+my @roles = map (("VIC::PIC::Roles::$_", "VIC::PIC::Functions::$_"), qw(CodeGen
+    Operators Operations Chip GPIO Timer));
 with @roles;
 
 1;

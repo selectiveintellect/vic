@@ -33,7 +33,7 @@ sub validate_modifier_operator {
     my $vmod = "op_$mod" if $mod =~ /^
             SQRT | HIGH | LOW
         /x;
-    return $vmod;
+    return lc $vmod;
 }
 
 sub update_code_config {
