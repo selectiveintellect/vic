@@ -8,13 +8,6 @@ extends 'VIC::PIC::Base';
 has type => (is => 'ro', default => 'p16f690');
 has include => (is => 'ro', default => 'p16f690.inc');
 has org => (is => 'ro', default => 0);
-##TODO: allow adjusting of this based on user input. for now fixed to this
-#string
-has chip_config => (is => 'rw', default => sub {
-        return <<"...";
-        __config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _BOR_OFF & _IESO_OFF & _FCMEN_OFF)
-...
-});
 has code_config => (is => 'rw', default => sub {
         {
             debounce => {
