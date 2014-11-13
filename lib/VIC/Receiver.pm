@@ -935,7 +935,7 @@ sub do_i_use_stack {
     my ($self, @deps) = @_;
     return 0 unless @deps;
     my @bits = map { $self->pic->address_bits($_) } @deps;
-    return 0 if max(@bits) == $self->pic->register_size;
+    return 0 if max(@bits) == $self->pic->wreg_size;
     return 1;
 }
 

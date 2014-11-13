@@ -4,6 +4,8 @@ package VIC::PIC::Roles::CodeGen;
 {
     use Moo::Role;
     requires qw(type org include chip_config code_config);
+    requires qw(validate validate_modifier_operator address_bits);
+    requires qw(update_code_config);
 }
 
 package VIC::PIC::Roles::Chip;
@@ -25,6 +27,7 @@ package VIC::PIC::Roles::GPIO;
     # mapped to gpio pins
     requires qw(gpio_pins input_pins output_pins gpio_ports
         analog_pins);
+    requires qw(digital_output digital_input analog_input write);
 }
 
 package VIC::PIC::Roles::CCP;
