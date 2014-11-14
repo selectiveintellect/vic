@@ -10,6 +10,7 @@ lib/VIC/PIC/Functions/ADC.pm
 lib/VIC/PIC/Functions/CCP.pm
 lib/VIC/PIC/Functions/Chip.pm
 lib/VIC/PIC/Functions/CodeGen.pm
+lib/VIC/PIC/Functions/Comparator.pm
 lib/VIC/PIC/Functions/ECCP.pm
 lib/VIC/PIC/Functions/GPIO.pm
 lib/VIC/PIC/Functions/I2C.pm
