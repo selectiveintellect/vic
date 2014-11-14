@@ -1,387 +1,364 @@
 package VIC::PIC::P16F628A;
 use strict;
 use warnings;
-use bigint;
-
-our $VERSION = '0.13';
-$VERSION = eval $VERSION;
-
-use Carp;
-use POSIX ();
-use Pegex::Base; # use this instead of Mo
+use Moo;
 extends 'VIC::PIC::Base';
 
-has type => 'p16f628a';
+# role CodeGen
+has type => (is => 'ro', default => 'p16f627a');
+has include => (is => 'ro', default => 'p16f627a.inc');
+has org => (is => 'ro', default => 0);
+has code_config => (is => 'rw', default => sub {
+        {
+            debounce => {
+                count => 5,
+                delay => 1000, # in microseconds
+            },
+            adc => {
+                right_justify => 1,
+                vref => 0,
+                internal => 0,
+            },
+            variable => {
+                bits => 8, # bits. same as register_size
+                export => 0, # do not export variables
+            },
+        }
+});
 
-has include => 'p16f628a.inc';
+#role Chip
+has f_osc => (is => 'ro', default => 4e6); # 4MHz internal oscillator
+has pcl_size => (is => 'ro', default => 13); # program counter (PCL) size
+has stack_size => (is => 'ro', default => 8); # 8 levels of 13-bit entries
+has wreg_size => (is => 'ro', default => 8); # 8-bit register WREG
+# all memory is in bytes
+has memory => (is => 'ro', default => sub {
+    {
+        flash => 2048, # words
+        SRAM => 224,
+        EEPROM => 128,
+    }
+});
+has address => (is => 'ro', default => sub {
+    {
+        isr => [ 0x0004 ],
+        reset => [ 0x0000 ],
+        range => [ 0x0000, 0x07FF ],
+    }
+});
 
-has org => 0;
-
-has frequency => 4e6; # 4MHz
-
-has address_range => [ 0x0000, 0x07FF ]; # 2K
-
-has reset_address => 0x0000;
-
-has isr_address => 0x0004;
-
-has program_counter_size => 13; # PCL and PCLATH<4:0>
-
-has stack_size => 8; # 8-level x 13-bit wide
-
-has register_size => 8; # size of register W
-
-has program_memory => 2048; # number of flash words
-
-has data_memory => {
-    SRAM => 224, # bytes
-    EEPROM => 128, # bytes
-};
-
-has pin_counts => {
-    total => 18, # 18 for DIP/SOIC, 20 for SSOP and 28 for QFN
+has pin_counts => (is => 'ro', default => sub { {
+    pdip => 18, ## PDIP or DIP ?
+    soic => 20,
+    ssop => 20,
+    qfn => 28,
+    total => 20,
     io => 16,
-    adc => 0,
-    comparator => 2,
-    timer_8bit => 2,
-    timer_16bit => 1,
-    ssp => 0,
-    pwm => 1,
-    usart => 1,
-};
+}});
 
-has banks => {
-    # general purpose registers
-    gpr => [
-        [ 0x20, 0x7F ],
-        [ 0xA0, 0xEF ],
-        [ 0x120, 0x14F ],
-        [ ], # no GPRs in bank 4
-    ],
-    # special function registers
-    sfr => [
-        [ 0x00, 0x1F ],
-        [ 0x80, 0x9F ],
-        [ 0x100, 0x10B ],
-        [ 0x180, 0x18B ],
-    ],
-    bank_size => 0x80,
-    common_bank => [ 0x70, 0x7F ],
-};
+has banks => (is => 'ro', default => sub {
+    {
+        count => 4,
+        size => 0x80,
+        gpr => {
+            0 => [ 0x020, 0x07F],
+            1 => [ 0x0A0, 0x0EF],
+            2 => [ 0x120, 0x14F],
+            3 => [],
+        },
+        # remapping of these addresses automatically done by chip
+        common => [0x070, 0x07F],
+        remap => [
+            [0x0F0, 0x0FF],
+            [0x170, 0x17F],
+            [0x1F0, 0x1FF],
+        ],
+    }
+});
 
-has register_banks => {
-    # 0x01
-    TMR0 => [ 0, 2 ],
-    OPTION_REG => [ 1, 3 ],
-    # 0x02
-    PCL => [ 0 .. 3 ],
-    # 0x03
-    STATUS => [ 0 .. 3 ],
-    # 0x04
-    FSR => [ 0 .. 3 ],
-    # 0.06
-    PORTA => [ 0 ],
-    TRISA => [ 1 ],
-    # 0x06
-    PORTB => [ 0, 2 ],
-    TRISB => [ 1, 3 ],
-    # 0x0A
-    PCLATH => [ 0 .. 3 ],
-    # 0x0B
-    INTCON => [ 0 .. 3 ],
-    # 0x0C
-    PIR1 => [ 0 ],
-    PIE1 => [ 1 ],
-    # 0x0E
-    TMR1L => [ 0 ],
-    PCON => [ 1 ],
-    # 0x0F
-    TMR1H => [ 0 ],
-    # 0x10
-    T1CON => [ 0 ],
-    # 0x11
-    TMR2 => [ 0 ],
-    # 0x12
-    T2CON => [ 0 ],
-    PR2 => [ 1 ],
-    # 0x15
-    CCPR1L => [ 0 ],
-    # 0x16
-    CCPR1H => [ 0 ],
-    # 0x17
-    CCP1CON => [ 0 ],
-    # 0x18
-    RCSTA => [ 0 ],
-    TXSTA => [ 1 ],
-    # 0x19
-    TXREG => [ 0 ],
-    SPBRG => [ 1 ],
-    # 0x1A
-    RCREG => [ 0 ],
-    EEDATA => [ 1 ],
-    # 0x1B
-    EEADR => [ 1 ],
-    # 0x1C
-    EECON1 => [ 1 ],
-    # 0x1D
-    EECON2 => [ 1 ],
-    # 0x1F
-    CMCON => [ 0 ],
-    VRCON => [ 1 ],
-};
+has registers => (is => 'ro', default => sub {
+    {
+        INDF => [0x000, 0x080, 0x100, 0x180], # indirect addressing
+        TMR0 => [0x001, 0x101],
+        OPTION_REG => [0x081, 0x181],
+        PCL => [0x002, 0x082, 0x102, 0x182],
+        STATUS => [0x003, 0x083, 0x103, 0x183],
+        FSR => [0x004, 0x084, 0x104, 0x184],
+        PORTA => [0x005],
+        TRISA => [0x085],
+        PORTB => [0x006, 0x106],
+        TRISB => [0x086, 0x186],
+        PCLATH => [0x00A, 0x08A, 0x10A, 0x18A],
+        INTCON => [0x00B, 0x08B, 0x10B, 0x18B],
+        PIR1 => [0x00C],
+        PIE1 => [0x08C],
+        TMR1L => [0x00E],
+        PCON => [0x08E],
+        TMR1H => [0x00F],
+        T1CON => [0x010],
+        TMR2 => [0x011],
+        T2CON => [0x012],
+        PR2 => [0x092],
+        CCPR1L => [0x015],
+        CCPR1H => [0x016],
+        CCP1CON => [0x017],
+        RCSTA => [0x018],
+        TXSTA => [0x098],
+        TXREG => [0x019],
+        SPBRG => [0x099],
+        RCREG => [0x01A],
+        EEDATA => [0x09A],
+        EEADR => [0x09B],
+        EECON1 => [0x09C],
+        EECON2 => [0x09D], # not addressable apparently
+        CMCON => [0x01F],
+        VRCON => [0x09F],
+    }
+});
 
-has pins => {
-    #name  #port  #portbit #pin
-    RA2 => ['A', 2, 1],
-    RA3 => ['A', 3, 2],
-    RA4 => ['A', 4, 3],
-    RA5 => ['A', 5, 4],
-	Vss => [undef, undef, 5],
-    RB0 => ['B', 0, 6],
-    RB1 => ['B', 1, 7],
-    RB2 => ['B', 2, 8],
-    RB3 => ['B', 3, 9],
-    RB4 => ['B', 4, 10],
-    RB5 => ['B', 5, 11],
-    RB6 => ['B', 6, 12],
-    RB7 => ['B', 7, 13],
-	Vdd => [undef, undef, 14],
-    RA6 => ['A', 6, 15],
-    RA7 => ['A', 7, 16],
-    RA0 => ['A', 0, 17],
-    RA1 => ['A', 1, 18],
-};
+has pins => (is => 'ro', default => sub {
+    {
+        # number to pin name and pin name to number
+        1 => [qw(RA2 AN2 Vref)],
+        RA2 => 1,
+        AN2 => 1,
+        Vref => 1,
+        2 => [qw(RA3 AN3 CMP1)],
+        RA3 => 2,
+        AN3 => 2,
+        CMP1 => 2,
+        3 => [qw(RA4 T0CKI CMP2)],
+        RA4 => 3,
+        T0CKI => 3,
+        CMP2 => 3,
+        4 => [qw(RA5 MCLR Vpp)],
+        RA5 => 4,
+        MCLR => 4,
+        Vpp => 4,
+        5 => [qw(Vss)],
+        Vss => 5,
+        6 => [qw(RB0 INT)],
+        RB0 => 6,
+        INT => 6,
+        7 => [qw(RB1 RX DT)],
+        RB1 => 7,
+        RX => 7,
+        DT => 7,
+        8 => [qw(RB2 TX CK)],
+        RB2 => 8,
+        TX => 8,
+        CK => 8,
+        9 => [qw(RB3 CCP1)],
+        RB3 => 9,
+        CCP1 => 9,
+        10 => [qw(RB4 PGM)],
+        RB4 => 10,
+        PGM => 10,
+        11 => [qw(RB5)],
+        RB5 => 11,
+        12 => [qw(RB6 T1OSO T1CKI PGC)],
+        RB6 => 12,
+        T1OSO => 12,
+        T1CKI => 12,
+        PGC => 12,
+        13 => [qw(RB7 T1OSI PGD)],
+        TB7 => 13,
+        T1OSI => 13,
+        PGD => 13,
+        14 => [qw(Vdd)],
+        Vdd => 14,
+        15 => [qw(RA6 OSC2 CLKOUT)],
+        RA6 => 15,
+        OSC2 => 15,
+        CLKOUT => 15,
+        16 => [qw(RA7 OSC1 CLKIN)],
+        RA7 => 16,
+        OSC1 => 16,
+        CLKIN => 16,
+        17 => [qw(RA0 AN0)],
+        RA0 => 17,
+        AN0 => 17,
+        18 => [qw(RA1 AN1)],
+        RA1 => 18,
+        AN1 => 18,
+    }
+});
 
-has ports => {
-    PORTA => 'A',
-    PORTB => 'B',
-    A => 'PORTA',
-    B => 'PORTB',
-};
+has clock_pins => (is => 'ro', default => sub {
+    {
+        CLKOUT => 3,
+        CLKIN => 2,
+    }
+});
 
-has visible_pins => {
-    1 => 'RA2',
-    2 => 'RA3',
-    3 => 'RA4',
-    4 => 'RA5',
-    5 => 'Vss',
-    6 => 'RB0',
-    7 => 'RB1',
-    8 => 'RB2',
-    9 => 'RB3',
-    10 => 'RB4',
-    11 => 'RB5',
-    12 => 'RB6',
-    13 => 'RB7',
-    14 => 'Vdd',
-    15 => 'RA6',
-    16 => 'RA7',
-    17 => 'RA0',
-    18 => 'RA1',
-};
+has oscillator_pins => (is => 'ro', default => sub {
+    {
+        OSC1 => 2,
+        OSC2 => 3,
+    }
+});
 
-has gpio_pins => {
-    RA0 => 17,
-    RA1 => 18,
-    RA2 => 1,
-    RA3 => 2,
-    RA4 => 3,
-    RA6 => 15,
-    RA7 => 16,
-    RB0 => 6,
-    RB1 => 7,
-    RB2 => 8,
-    RB3 => 9,
-    RB4 => 10,
-    RB5 => 11,
-    RB6 => 12,
-    RB7 => 13,
-    17 => 'RA0',
-    19 => 'RA1',
-    1 => 'RA2',
-    2 => 'RA3',
-    3 => 'RA4',
-    4 => 'RA5',
-    15 => 'RA6',
-    16 => 'RA7',
-    6 => 'RB0',
-    7 => 'RB1',
-    8 => 'RB2',
-    9 => 'RB3',
-    10 => 'RB4',
-    11 => 'RB5',
-    12 => 'RB6',
-    13 => 'RB7',
-};
+has program_pins => (is => 'ro', default => sub {
+    {
+        clock => 'PGC',
+        data => 'PGD',
+        program => 'PGM',
+    }
+});
 
-has input_pins => {
-    RA5 => 4,
-    4 => 'RA5',
-};
+has io_ports => (is => 'ro', default => sub {
+    {
+        #port => tristate,
+        PORTA => 'TRISA',
+        PORTB => 'TRISB',
+    }
+});
 
-has power_pins => {
-    Vdd => 14,
-    Vss => 5,
-    Vpp => 4,
-    MCLR => 4,
-    Vref => 1,
-    14 => 'Vdd',
-    5 => 'Vss',
-    4 => 'Vpp',
-    4 => 'MCLR',
-    1 => 'Vref',
-};
+has input_pins => (is => 'ro', default => sub {
+    {
+        #I/O => [port, tristate, bit]
+        RA0 => ['PORTA', 'TRISA', 0],
+        RA1 => ['PORTA', 'TRISA', 1],
+        RA2 => ['PORTA', 'TRISA', 2],
+        RA3 => ['PORTA', 'TRISA', 3],
+        RA4 => ['PORTA', 'TRISA', 4],
+        RA5 => ['PORTA', 'TRISA', 5], # input only
+        RA6 => ['PORTA', 'TRISA', 6],
+        RA7 => ['PORTA', 'TRISA', 7],
+        RB0 => ['PORTB', 'TRISB', 0],
+        RB1 => ['PORTB', 'TRISB', 1],
+        RB2 => ['PORTB', 'TRISB', 2],
+        RB3 => ['PORTB', 'TRISB', 3],
+        RB4 => ['PORTB', 'TRISB', 4],
+        RB5 => ['PORTB', 'TRISB', 5],
+        RB6 => ['PORTB', 'TRISB', 6],
+        RB7 => ['PORTB', 'TRISB', 7],
+    }
+});
 
-has adcs_bits  => {};
+has output_pins => (is => 'ro', default => sub {
+    {
+        #I/O => [port, tristate, bit]
+        RA0 => ['PORTA', 'TRISA', 0],
+        RA1 => ['PORTA', 'TRISA', 1],
+        RA2 => ['PORTA', 'TRISA', 2],
+        RA3 => ['PORTA', 'TRISA', 3],
+        RA4 => ['PORTA', 'TRISA', 4],
+        RA6 => ['PORTA', 'TRISA', 6],
+        RA7 => ['PORTA', 'TRISA', 7],
+        RB0 => ['PORTB', 'TRISB', 0],
+        RB1 => ['PORTB', 'TRISB', 1],
+        RB2 => ['PORTB', 'TRISB', 2],
+        RB3 => ['PORTB', 'TRISB', 3],
+        RB4 => ['PORTB', 'TRISB', 4],
+        RB5 => ['PORTB', 'TRISB', 5],
+        RB6 => ['PORTB', 'TRISB', 6],
+        RB7 => ['PORTB', 'TRISB', 7],
+    }
+});
 
-has analog_pins => {};
+has analog_pins => (is => 'ro', default => sub { {} });
 
-has comparator_pins => {
-    CMP1 => 2,
-    CMP2 => 3,
-    2 => 'CMP1',
-    3 => 'CMP2'
-};
+has timer_prescaler => (is => 'ro', default => sub {
+    {
+        2 => '000',
+        4 => '001',
+        8 => '010',
+        16 => '011',
+        32 => '100',
+        64 => '101',
+        128 => '110',
+        256 => '111',
+    }
+});
 
-has analog_comparator_pins => {
-    # analog comparator pins
-    AN0  => 17,
-    AN1  => 18,
-    AN2  => 1,
-    AN3  => 2,
-    17 => 'AN0',
-    18 => 'AN1',
-    1 => 'AN2',
-    2 => 'AN3',
-};
+has wdt_prescaler => (is => 'ro', default => sub {
+    {
+        1 => '000',
+        2 => '001',
+        4 => '010',
+        8 => '011',
+        16 => '100',
+        32 => '101',
+        64 => '110',
+        128 => '111',
+    }
+});
 
-has timer_prescaler => {
-    2 => '000',
-    4 => '001',
-    8 => '010',
-    16 => '011',
-    32 => '100',
-    64 => '101',
-    128 => '110',
-    256 => '111',
-};
+has timer_pins => (is => 'ro', default => sub {
+    {
+        TMR0 => 'TMR0',
+        TMR1 => ['TMR1H', 'TMR1L'],
+        TMR2 => 'TMR2',
+        # timer 0 clock input
+        T0CKI => 3,
+        # timer 1 clock input
+        T1CKI => 12,
+        # timer oscillator input
+        T1OSI => 13,
+        # timer oscillator output
+        T1OSO => 12,
+    }
+});
 
-has wdt_prescaler => {
-    1 => '000',
-    2 => '001',
-    4 => '010',
-    8 => '011',
-    16 => '100',
-    32 => '101',
-    64 => '110',
-    128 => '111',
-};
+has ccp_pins => (is => 'ro', default => sub {
+    {
+        CCP1 => 'CCP1',
+    }
+});
 
-has timer_pins => {
-    TMR0 => 3,
-    TMR1 => 12,
-    T0CKI => 3,
-    T1CKI => 12,
-    T1OSI => 13,
-    T1OSO => 12,
-    12 => 'T1OSO', # timer1 oscillator output
-    13 => 'T1OSI', # timer1 oscillator input
-    3 => 'TMR0',
-    12 => 'TMR1',
-    3 => 'T0CKI',
-    12 => 'T1CKI',
-};
+#external interrupt
+has eint_pins => (is => 'ro', default => sub {
+    {
+        INT => 6,
+    }
+});
 
-has eint_pins => {
-    INT => 6,
-    6 => 'INT',
-    RB0 => 6,
-};
+has ioc_pins => (is => 'ro', default => sub {
+    {
+        RB4 => 10,
+        RB5 => 11,
+        RB6 => 12,
+        RB7 => 13,
+    }
+});
 
-has ioc_pins => {
-    RB4 => 10,
-    RB5 => 11,
-    RB6 => 12,
-    RB7 => 13,
-    10 => 'RB4',
-    11 => 'RB5',
-    12 => 'RB6',
-    13 => 'RB7',
-};
+has usart_pins => (is => 'ro', default => sub {
+    {
+        async_in => 'RX',
+        async_out => 'TX',
+        sync_clock => 'CK',
+        sync_data => 'DT',
+    }
+});
 
-has usart_pins => {
-    RX => 7,
-    TX => 8,
-    CK => 8,
-    DT => 12,
-    7 => 'RX',
-    8 => 'TX',
-    8 => 'CK',
-    7 => 'DT',
-};
+has cmp_output_pins => (is => 'ro', default => sub {
+    {
+        CMP1 => 'CMP1',
+        CMP2 => 'CMP2',
+    }
+});
 
-has clock_pins => {
-    CLKOUT => 15,
-    CLKIN => 16,
-    15 => 'CLKOUT',
-    16 => 'CLKIN',
-};
+has cmp_input_pins => (is => 'ro', default => sub {
+    {
+        AN0 => 'AN0',
+        AN1 => 'AN1',
+        AN2 => 'AN2',
+        AN3 => 'AN3',
+    }
+});
 
-has oscillator_pins => {
-    OSC1 => 16,
-    OSC2 => 15,
-    16 => 'OSC1',
-    15 => 'OSC2',
-};
+my @rolenames = qw(CodeGen Operators Chip GPIO ISR Timer Operations CCP USART Comparator);
+my @roles = map (("VIC::PIC::Roles::$_", "VIC::PIC::Functions::$_"), @rolenames);
+with @roles;
 
-has icsp_pins => {
-    PGC => 12,
-    PGD => 13,
-    12 => 'PGC',
-    13 => 'PGD',
-    ICSPCLK => 12,
-    ICSPDAT => 13,
-    12 => 'ICSPCLK',
-    13 => 'ICSPDAT',
-    # low voltage programming pin
-    PGM => 10,
-    10 => 'PGM',
-};
-
-has selector_pins => {};
-
-has spi_pins => {};
-
-has i2c_pins => {};
-
-#FIXME: PWM implementation should have a check for various modes supported
-has pwm_pins => {
-    CCP1 => 9,
-    9 => 'CCP1',
-};
-
-has chip_config => <<"...";
-\t__config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _BOR_OFF & _IESO_OFF & _FCMEN_OFF)
-
-...
-
-has code_config => {
-    debounce => {
-        count => 5,
-        delay => 1000, # in microseconds
-    },
-    adc => {
-        right_justify => 1,
-        vref => 0,
-        internal => 0,
-    },
-    variable => {
-        bits => 8, # bits. same as register_size
-        export => 0, # do not export variables
-    },
-};
+sub list_features {
+    my @arr = grep {!/CodeGen|Oper|Chip|ISR/} @rolenames;
+    return wantarray ? @arr : [@arr];
+}
 
 1;
+__END__
 
 =encoding utf8
 

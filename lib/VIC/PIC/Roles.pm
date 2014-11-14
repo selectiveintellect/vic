@@ -111,5 +111,11 @@ package VIC::PIC::Roles::I2C;
     requires qw(i2c_pins selector_pins);
 }
 
+package VIC::PIC::Roles::Comparator;
+{
+    use Moo::Role;
+    requires qw(cmp_output_pins cmp_input_pins);
+}
+
 1;
 __END__

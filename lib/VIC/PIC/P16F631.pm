@@ -29,7 +29,7 @@ has wreg_size => (is => 'ro', default => 8); # 8-bit register WREG
 # all memory is in bytes
 has memory => (is => 'ro', default => sub {
     {
-        flash => 1024 * 2,
+        flash => 1024, # words
         SRAM => 64,
         EEPROM => 128,
     }
@@ -258,7 +258,7 @@ has output_pins => (is => 'ro', default => sub {
     }
 });
 
-has analog_pins => (is => 'ro', default => undef);
+has analog_pins => (is => 'ro', default => sub { {} });
 
 has timer_prescaler => (is => 'ro', default => sub {
     {

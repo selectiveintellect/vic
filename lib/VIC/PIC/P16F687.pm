@@ -34,7 +34,7 @@ has wreg_size => (is => 'ro', default => 8); # 8-bit register WREG
 # all memory is in bytes
 has memory => (is => 'ro', default => sub {
     {
-        flash => 2048 * 2,
+        flash => 2048, # words
         SRAM => 128,
         EEPROM => 256,
     }
