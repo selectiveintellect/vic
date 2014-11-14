@@ -9,7 +9,7 @@ has type => (is => 'ro', default => 'p18f242');
 has include => (is => 'ro', default => 'p18f242.inc');
 
 #role Chip
-has f_osc => (is => 'ro', default => 40e6); # 40MHz internal oscillator#TODO: verify
+has f_osc => (is => 'ro', default => 4e6); # 4MHz internal oscillator
 has pcl_size => (is => 'ro', default => 21); # program counter (PCL) size
 has stack_size => (is => 'ro', default => 31); # 31 levels of 21-bit entries
 has wreg_size => (is => 'ro', default => 8); # 8-bit register WREG

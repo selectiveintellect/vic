@@ -123,5 +123,17 @@ package VIC::PIC::Roles::PSP;
     requires qw(psp_pins);
 }
 
+package VIC::PIC::Roles::SRLatch;
+{
+    use Moo::Role;
+    requires qw(srlatch);
+}
+
+package VIC::PIC::Roles::USB;
+{
+    use Moo::Role;
+    requires qw(usb_pins);
+}
+
 1;
 __END__
