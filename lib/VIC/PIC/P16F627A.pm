@@ -98,71 +98,34 @@ has registers => (is => 'ro', default => sub {
 });
 
 has pins => (is => 'ro', default => sub {
-    {
+    my $h = {
         # number to pin name and pin name to number
         1 => [qw(RA2 AN2 Vref)],
-        RA2 => 1,
-        AN2 => 1,
-        Vref => 1,
         2 => [qw(RA3 AN3 CMP1)],
-        RA3 => 2,
-        AN3 => 2,
-        CMP1 => 2,
         3 => [qw(RA4 T0CKI CMP2)],
-        RA4 => 3,
-        T0CKI => 3,
-        CMP2 => 3,
         4 => [qw(RA5 MCLR Vpp)],
-        RA5 => 4,
-        MCLR => 4,
-        Vpp => 4,
         5 => [qw(Vss)],
-        Vss => 5,
         6 => [qw(RB0 INT)],
-        RB0 => 6,
-        INT => 6,
         7 => [qw(RB1 RX DT)],
-        RB1 => 7,
-        RX => 7,
-        DT => 7,
         8 => [qw(RB2 TX CK)],
-        RB2 => 8,
-        TX => 8,
-        CK => 8,
         9 => [qw(RB3 CCP1)],
-        RB3 => 9,
-        CCP1 => 9,
         10 => [qw(RB4 PGM)],
-        RB4 => 10,
-        PGM => 10,
         11 => [qw(RB5)],
-        RB5 => 11,
         12 => [qw(RB6 T1OSO T1CKI PGC)],
-        RB6 => 12,
-        T1OSO => 12,
-        T1CKI => 12,
-        PGC => 12,
         13 => [qw(RB7 T1OSI PGD)],
-        TB7 => 13,
-        T1OSI => 13,
-        PGD => 13,
         14 => [qw(Vdd)],
-        Vdd => 14,
         15 => [qw(RA6 OSC2 CLKOUT)],
-        RA6 => 15,
-        OSC2 => 15,
-        CLKOUT => 15,
         16 => [qw(RA7 OSC1 CLKIN)],
-        RA7 => 16,
-        OSC1 => 16,
-        CLKIN => 16,
         17 => [qw(RA0 AN0)],
-        RA0 => 17,
-        AN0 => 17,
         18 => [qw(RA1 AN1)],
-        RA1 => 18,
-        AN1 => 18,
+    };
+    foreach my $k (keys %$h) {
+        my $v = $h->{$k};
+        foreach (@$v) {
+            $h->{$_} = $k;
+        }
     }
+    return $h;
 });
 
 has clock_pins => (is => 'ro', default => sub {
