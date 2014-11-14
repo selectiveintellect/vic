@@ -107,13 +107,14 @@ $ sudo ./Build install
 <p>You may need to install the Perl package dependencies first which are done as
 below:</p>
 
-<pre><code>$ sudo cpan -i Pegex App::Prove
+<pre><code>$ sudo cpan -i Moo Pegex App::Prove
 </code></pre>
 
 <p>or using <code>App::cpanminus</code></p>
 
 <pre><code>$ cpanm App::Prove
 $ cpanm Pegex
+$ cpanm Moo
 </code></pre>
 
 <h2 id="dependencies">Dependencies</h2>
@@ -123,6 +124,8 @@ $ cpanm Pegex
 <ul>
 <li><code>Module::Build</code> (this is needed for building)</li>
 <li><code>Pegex</code> (this is needed for grammar parsing. Needs to be installed from CPAN)</li>
+<li><code>Moo</code> (this is needed for multiple inheritance management. Needs to be
+ installed from CPAN)</li>
 <li><code>Getopt::Long</code> (for handling command line options. Comes with perl itself)</li>
 <li><code>XXX</code> (only required for debugging)</li>
 </ul>
@@ -259,7 +262,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-28 21:06:33 -0400.
+        This page was last updated on 2014-10-30 14:52:41 -0400.
     </p>
     </div>
     </section>

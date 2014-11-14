@@ -60,12 +60,13 @@ Download the software from Github.
 You may need to install the Perl package dependencies first which are done as
 below:
 
-    $ sudo cpan -i Pegex App::Prove
+    $ sudo cpan -i Moo Pegex App::Prove
 
 or using `App::cpanminus`
 
     $ cpanm App::Prove
     $ cpanm Pegex
+    $ cpanm Moo
 
 ##Dependencies
 
@@ -73,6 +74,8 @@ This module depends on the following:
 
 - `Module::Build` (this is needed for building)
 - `Pegex` (this is needed for grammar parsing. Needs to be installed from CPAN)
+- `Moo` (this is needed for multiple inheritance management. Needs to be
+  installed from CPAN)
 - `Getopt::Long` (for handling command line options. Comes with perl itself)
 - `XXX` (only required for debugging)
 
