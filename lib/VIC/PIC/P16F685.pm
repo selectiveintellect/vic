@@ -417,7 +417,26 @@ has ioc_pins => (is => 'ro', default => sub {
     }
 });
 
-my @rolenames = qw(CodeGen Operators Chip GPIO ADC ISR Timer Operations ECCP);
+has cmp_input_pins => (is => 'ro', default => sub {
+    {
+        'C1IN+' => 'C1IN+',
+        'C12IN0-' => 'C12IN0-',
+        'C2IN+' => 'C2IN+',
+        'C12IN1-' => 'C12IN1-',
+        'C12IN2-' => 'C12IN2-',
+        'C12IN3-' => 'C12IN3-',
+    }
+});
+
+has cmp_output_pins => (is => 'ro', default => sub {
+    {
+        C1OUT => 'C1OUT',
+        C2OUT => 'C2OUT',
+    }
+});
+
+my @rolenames = qw(CodeGen Operators Chip GPIO ADC ISR Timer Operations ECCP
+Comparator);
 my @roles = map (("VIC::PIC::Roles::$_", "VIC::PIC::Functions::$_"), @rolenames);
 with @roles;
 
