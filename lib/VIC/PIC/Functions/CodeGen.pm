@@ -25,15 +25,15 @@ sub validate_operator {
             ASSIGN | INC | DEC | NOT | COMP |
             TBLIDX | ARRIDX | STRIDX
         /x;
-    return lc $vop;
+    return lc $vop if defined $vop;
 }
 
 sub validate_modifier_operator {
-    my ($self, $mod, $suffix) = @_;
+    my ($self, $mod) = @_;
     my $vmod = "op_$mod" if $mod =~ /^
             SQRT | HIGH | LOW
         /x;
-    return lc $vmod;
+    return lc $vmod if defined $vmod;
 }
 
 sub update_code_config {
