@@ -56,7 +56,7 @@ package VIC::PIC::Roles::ADC;
     use Moo::Role;
 
     requires qw(adc_enable adc_disable adc_read adc_channels adcs_bits
-    adc_chs_bits);
+    adc_chs_bits analog_pins);
 }
 
 package VIC::PIC::Roles::Timer;

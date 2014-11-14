@@ -32,8 +32,20 @@ has pcl_size => (is => 'ro', default => 13); # program counter (PCL) size
 has stack_size => (is => 'ro', default => 8); # 8 levels of 13-bit entries
 has wreg_size => (is => 'ro', default => 8); # 8-bit register WREG
 # all memory is in bytes
-has memory => (is => 'ro', default => sub { {flash => 4096 * 2, SRAM => 256, EEPROM => 256} });
-has address => (is => 'ro', default => sub { {isr => [ 0x0004 ], reset => [ 0x0000 ], range => [ 0x0000, 0x0FFF ] }});
+has memory => (is => 'ro', default => sub {
+    {
+        flash => 4096 * 2,
+        SRAM => 256,
+        EEPROM => 256,
+    }
+});
+has address => (is => 'ro', default => sub {
+    {
+        isr => [ 0x0004 ],
+        reset => [ 0x0000 ],
+        range => [ 0x0000, 0x0FFF ],
+    }
+});
 
 has pin_counts => (is => 'ro', default => sub { {
     pdip => 20, ## PDIP or DIP ?
@@ -41,13 +53,6 @@ has pin_counts => (is => 'ro', default => sub { {
     ssop => 20,
     total => 20,
     io => 18,
-    adc => 12,
-    comparator => 2,
-    timer_8bit => 2,
-    timer_16bit => 1,
-    ssp => 1,
-    pwm => 1,
-    usart => 1,
 }});
 
 has banks => (is => 'ro', default => sub {
@@ -62,13 +67,11 @@ has banks => (is => 'ro', default => sub {
         },
         # remapping of these addresses automatically done by chip
         common => [0x070, 0x07F],
-        remap => {
-            [0x070, 0x07F] => [
-                [0x0F0, 0x0FF],
-                [0x170, 0x17F],
-                [0x1F0, 0x1FF],
-            ],
-        },
+        remap => [
+            [0x0F0, 0x0FF],
+            [0x170, 0x17F],
+            [0x1F0, 0x1FF],
+        ],
     }
 });
 
@@ -394,8 +397,9 @@ has wdt_prescaler => (is => 'ro', default => sub {
 
 has timer_pins => (is => 'ro', default => sub {
     {
-        TMR0 => 17,
-        TMR1 => 2,
+        TMR0 => 'TMR0',
+        TMR1 => ['TMR1H', 'TMR1L'],
+        TMR2 => 'TMR2',
         T0CKI => 17,
         T1CKI => 2,
         T1G => 3,
