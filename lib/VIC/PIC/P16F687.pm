@@ -7,24 +7,6 @@ extends 'VIC::PIC::Base';
 # role CodeGen
 has type => (is => 'ro', default => 'p16f687');
 has include => (is => 'ro', default => 'p16f687.inc');
-has org => (is => 'ro', default => 0);
-has code_config => (is => 'rw', default => sub {
-        {
-            debounce => {
-                count => 5,
-                delay => 1000, # in microseconds
-            },
-            adc => {
-                right_justify => 1,
-                vref => 0,
-                internal => 0,
-            },
-            variable => {
-                bits => 8, # bits. same as register_size
-                export => 0, # do not export variables
-            },
-        }
-});
 
 #role Chip
 has f_osc => (is => 'ro', default => 4e6); # 4MHz internal oscillator
@@ -145,10 +127,10 @@ has pins => (is => 'ro', default => sub {
         T1CKI => 2,
         OSC1 => 2,
         CLKIN => 2,
-        3 => [qw(RA4 AN3 TIG OSC2 CLKOUT)],
+        3 => [qw(RA4 AN3 T1G OSC2 CLKOUT)],
         RA4 => 3,
         AN3 => 3,
-        TIG => 3,
+        T1G => 3,
         OSC2 => 3,
         CLKOUT => 3,
         4 => [qw(RA3 MCLR Vpp)],
@@ -227,15 +209,15 @@ has pins => (is => 'ro', default => sub {
 
 has clock_pins => (is => 'ro', default => sub {
     {
-        CLKOUT => 3,
-        CLKIN => 2,
+        out => 'CLKOUT',
+        in => 'CLKIN',
     }
 });
 
 has oscillator_pins => (is => 'ro', default => sub {
     {
-        OSC1 => 2,
-        OSC2 => 3,
+        1 => 'OSC1',
+        2 => 'OSC2',
     }
 });
 

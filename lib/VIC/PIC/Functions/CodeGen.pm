@@ -1,10 +1,29 @@
 package VIC::PIC::Functions::CodeGen;
 use strict;
 use warnings;
-use bigint;
 use Carp;
 use POSIX ();
 use Moo::Role;
+
+# default
+has org => (is => 'ro', default => 0);
+has code_config => (is => 'rw', default => sub {
+        {
+            debounce => {
+                count => 5,
+                delay => 1000, # in microseconds
+            },
+            adc => {
+                right_justify => 1,
+                vref => 0,
+                internal => 0,
+            },
+            variable => {
+                bits => 8, # bits. same as register_size
+                export => 0, # do not export variables
+            },
+        }
+});
 
 sub validate {
     my ($self, $var) = @_;
