@@ -22,6 +22,7 @@ For more details on installation refer:
 
 - `Module::Build`
 - `Pegex`
+- `Moo`
 - `Getopt::Long`
 - `XXX` (only required for debugging)
 
