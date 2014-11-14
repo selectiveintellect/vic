@@ -45,7 +45,6 @@ has banks => (is => 'ro', default => sub {
             0 => [ 0x020, 0x07F],
             1 => [ 0x0A0, 0x0EF],
             2 => [ 0x120, 0x16F],
-            3 => [],
         },
         # remapping of these addresses automatically done by chip
         common => [0x070, 0x07F],

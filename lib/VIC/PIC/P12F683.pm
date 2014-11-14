@@ -97,47 +97,24 @@ has registers => (is => 'ro', default => sub {
 });
 
 has pins => (is => 'ro', default => sub {
-    {
+    my $h = {
         # number to pin name and pin name to number
         1 => [qw(Vdd)],
-        Vdd => 1,
         2 => [qw(GP5 T1CKI OSC1 CLKIN)],
-        GP5 => 2,
-        T1CKI => 2,
-        OSC1 => 2,
-        CLKIN => 2,
         3 => [qw(GP4 AN3 T1G OSC2 CLKOUT)],
-        GP4 => 3,
-        AN3 => 3,
-        T1G => 3,
-        OSC2 => 3,
-        CLKOUT => 3,
         4 => [qw(GP3 MCLR Vpp)],
-        GP3 => 4,
-        MCLR => 4,
-        Vpp => 4,
         5 => [qw(GP2 AN2 T0CKI INT COUT CCP1)],
-        GP2 => 5,
-        AN2 => 5,
-        T0CKI => 5,
-        INT => 5,
-        COUT => 5,
-        CCP1 => 5,
         6 => [qw(GP1 AN1 CIN- Vref ICSPCLK)],
-        GP1 => 6,
-        AN1 => 6,
-        'CIN-' => 6,
-        Vref => 6,
-        ICSPCLK => 6,
         7 => [qw(GP0 AN0 CIN+ ICSPDAT ULPWU)],
-        GP0 => 7,
-        AN0 => 7,
-        'CIN+' => 7,
-        ICSPDAT => 7,
-        ULPWU => 7,
         8 => [qw(Vss)],
-        Vss => 8,
+    };
+    foreach my $k (keys %$h) {
+        my $v = $h->{$k};
+        foreach (@$v) {
+            $h->{$_} = $k;
+        }
     }
+    return $h;
 });
 
 has clock_pins => (is => 'ro', default => sub {
@@ -171,23 +148,23 @@ has io_ports => (is => 'ro', default => sub {
 has input_pins => (is => 'ro', default => sub {
     {
         #I/O => [port, tristate, bit]
-        GP0 => ['PORTA', 'TRISA', 0],
-        GP1 => ['PORTA', 'TRISA', 1],
-        GP2 => ['PORTA', 'TRISA', 2],
-        GP3 => ['PORTA', 'TRISA', 3], # input only
-        GP4 => ['PORTA', 'TRISA', 4],
-        GP5 => ['PORTA', 'TRISA', 5],
+        GP0 => ['GPIO', 'TRISIO', 0],
+        GP1 => ['GPIO', 'TRISIO', 1],
+        GP2 => ['GPIO', 'TRISIO', 2],
+        GP3 => ['GPIO', 'TRISIO', 3], # input only
+        GP4 => ['GPIO', 'TRISIO', 4],
+        GP5 => ['GPIO', 'TRISIO', 5],
     }
 });
 
 has output_pins => (is => 'ro', default => sub {
     {
         #I/O => [port, tristate, bit]
-        GP0 => ['PORTA', 'TRISA', 0],
-        GP1 => ['PORTA', 'TRISA', 1],
-        GP2 => ['PORTA', 'TRISA', 2],
-        GP4 => ['PORTA', 'TRISA', 4],
-        GP5 => ['PORTA', 'TRISA', 5],
+        GP0 => ['GPIO', 'TRISIO', 0],
+        GP1 => ['GPIO', 'TRISIO', 1],
+        GP2 => ['GPIO', 'TRISIO', 2],
+        GP4 => ['GPIO', 'TRISIO', 4],
+        GP5 => ['GPIO', 'TRISIO', 5],
     }
 });
 

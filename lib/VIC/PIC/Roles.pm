@@ -117,5 +117,11 @@ package VIC::PIC::Roles::Comparator;
     requires qw(cmp_output_pins cmp_input_pins);
 }
 
+package VIC::PIC::Roles::PSP;
+{
+    use Moo::Role;
+    requires qw(psp_pins);
+}
+
 1;
 __END__
