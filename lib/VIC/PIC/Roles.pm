@@ -30,7 +30,7 @@ package VIC::PIC::Roles::Chip;
 
     requires qw(f_osc pcl_size stack_size wreg_size
       memory address banks registers address_bits
-      pins);
+      pins clock_pins oscillator_pins program_pins);
 
     # useful for checking if a chip is PDIP or SOIC or SSOP or QFN
     # maybe extracted to a separate role defining chip type but not yet
@@ -69,6 +69,8 @@ package VIC::PIC::Roles::Timer;
 package VIC::PIC::Roles::ISR;
 {
     use Moo::Role;
+
+    requires qw(eint_pins ioc_pins);
     requires qw(isr_entry isr_exit isr_var isr_timer);
 }
 
@@ -88,6 +90,24 @@ package VIC::PIC::Roles::Operations;
 {
     use Moo::Role;
     requires qw(delay delay_ms delay_us delay_s debounce);
+}
+
+package VIC::PIC::Roles::USART;
+{
+    use Moo::Role;
+    requires qw(usart_pins);
+}
+
+package VIC::PIC::Roles::SPI;
+{
+    use Moo::Role;
+    requires qw(spi_pins selector_pins);
+}
+
+package VIC::PIC::Roles::I2C;
+{
+    use Moo::Role;
+    requires qw(i2c_pins selector_pins);
 }
 
 1;
