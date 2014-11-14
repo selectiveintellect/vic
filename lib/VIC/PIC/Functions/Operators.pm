@@ -1546,12 +1546,12 @@ $szcode
 
 sub op_arridx {
     my ($self, $array, $idx, %extra) = @_;
-    XXX { array => $array, index => $idx, %extra };
+    #XXX { array => $array, index => $idx, %extra };
 }
 
 sub op_stridx {
     my ($self, $string, $idx, %extra) = @_;
-    XXX { string => $string, index => $idx, %extra };
+    #XXX { string => $string, index => $idx, %extra };
 }
 
 1;

@@ -39,6 +39,8 @@ sub supported_simulators { return VIC::PIC::Any::supported_simulators(); }
 
 sub is_chip_supported { return VIC::PIC::Any::is_chip_supported(@_); }
 
+sub list_chip_features { return VIC::PIC::Any::list_chip_features(@_); }
+
 sub got_mcu_select {
     my ($self, $type) = @_;
     # override the PIC in code if defined

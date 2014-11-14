@@ -6,6 +6,7 @@ package VIC::PIC::Roles::CodeGen;
     use Moo::Role;
     requires qw(type org include chip_config code_config
       validate validate_modifier_operator update_code_config
+      list_features
     );
 }
 

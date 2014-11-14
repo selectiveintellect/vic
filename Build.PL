@@ -19,6 +19,10 @@ my $build = Module::Build->new(
         'Test::More' => 0,
         'File::Spec' => 0,
         'Pegex' => 0.55, # needed for PL_files to work
+        'strictures' => 0,
+        'indirect' => 0,
+        'multidimensional' => 0,
+        'bareword::filehandles' => 0,
     },
     requires => {
         'Getopt::Long' => 0,

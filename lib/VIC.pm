@@ -34,6 +34,8 @@ sub supported_simulators { return VIC::Receiver::supported_simulators(); }
 
 sub is_chip_supported { return VIC::Receiver::is_chip_supported(@_) };
 
+sub list_chip_features { return VIC::Receiver::list_chip_features(@_) };
+
 1;
 
 =encoding utf8

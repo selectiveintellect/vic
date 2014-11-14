@@ -99,6 +99,16 @@ sub is_chip_supported {
     return (defined $ret) ? 1 : 0;
 }
 
+sub list_chip_features {
+    my $chip = shift;
+    my $ctype = &_get_pic_type($chip);
+    unless (defined $ctype) {
+        carp "Chip $chip is not supported\n";
+        return;
+    }
+    return __PACKAGE__->new($chip)->list_features();
+}
+
 1;
 
 =encoding utf8

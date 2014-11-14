@@ -464,9 +464,14 @@ has i2c_pins => (is => 'ro', default => sub {
     }
 });
 
-my @roles = map (("VIC::PIC::Roles::$_", "VIC::PIC::Functions::$_"), qw(CodeGen
-    Operators Chip GPIO ADC ISR Timer Operations ECCP USART SPI I2C));
+my @rolenames = qw(CodeGen Operators Chip GPIO ADC ISR Timer Operations ECCP USART SPI I2C);
+my @roles = map (("VIC::PIC::Roles::$_", "VIC::PIC::Functions::$_"), @rolenames);
 with @roles;
+
+sub list_features {
+    my @arr = qw(GPIO ADC Timer ECCP USART SPI I2C);
+    return wantarray ? @arr : [@arr];
+}
 
 1;
 __END__
