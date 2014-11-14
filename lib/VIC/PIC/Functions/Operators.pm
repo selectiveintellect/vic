@@ -1482,6 +1482,78 @@ sub op_sqrt {
 sub break { return 'BREAK'; }
 sub continue { return 'CONTINUE'; }
 
+sub store_string {
+    my ($self, $str, $strvar, $len, $lenvar) = @_;
+    $len = sprintf "0x%02X", $len;
+    return << "...";
+$strvar data "$str" ; $strvar is a string
+$lenvar equ $len ; $lenvar is length of $strvar
+...
+}
+
+sub store_array {
+    my ($self, $arr, $arrvar, $sz, $szvar) = @_;
+    # use db in 16-bit MCUs for 8-bit values
+    # arrays are read-write objects
+    my $arrstr = join (",", @$arr) if scalar @$arr;
+    $arrstr = '0' unless $arrstr;
+    $sz = sprintf "0x%02X", $sz;
+    return << "..."
+$arrvar db $arr ; array stored as accessible bytes
+$szvar equ $sz   ; length of array $arrvar is a constant
+...
+}
+
+sub store_table {
+    my ($self, $table, $label, $tblsz, $tblszvar) = @_;
+    return unless $self->doesrole('Chip');
+    unless (exists $self->registers->{PCL}) {
+        carp $self->pic->type, " does not have the PCL register";
+        return;
+    }
+    my $code = "$label:\n";
+    $code .= "\taddwf PCL, F\n";
+    if (scalar @$table) {
+        foreach (@$table) {
+            my $d = sprintf "0x%02X", $_;
+            $code .= "\tdt $d\n";
+        }
+    } else {
+        # table is empty
+        $code .= "\tdt 0\n";
+    }
+    $tblsz = sprintf "0x%02X", $tblsz;
+    my $szdecl = "$tblszvar equ $tblsz ; size of table at $label\n";
+    return wantarray ? ($code, $szdecl) : $code;
+}
+
+sub op_tblidx {
+    my ($self, $table, $idx, %extra) = @_;
+    return unless defined $extra{RESULT};
+    my $sz = $extra{SIZE};
+    $idx = uc $idx;
+    $sz = uc $sz if $sz;
+    my $szcode = '';
+    # check bounds
+    $szcode = "\tandlw $sz - 1" if $sz;
+    return << "..."
+\tmovwf $idx
+$szcode
+\tcall $table
+\tmovwf $extra{RESULT}
+...
+}
+
+sub op_arridx {
+    my ($self, $array, $idx, %extra) = @_;
+    XXX { array => $array, index => $idx, %extra };
+}
+
+sub op_stridx {
+    my ($self, $string, $idx, %extra) = @_;
+    XXX { string => $string, index => $idx, %extra };
+}
+
 1;
 __END__
 

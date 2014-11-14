@@ -381,8 +381,18 @@ has timer_pins => (is => 'ro', default => sub {
     }
 });
 
+has eccp_pins => (is => 'ro', default => sub {
+    {   # pin => pin_no, tris, bit
+        P1D => [14, 'TRISC', 2],
+        P1C => [7, 'TRISC', 3],
+        P1B => [6, 'TRISC', 4],
+        P1A => [5, 'TRISC', 5],
+        CCP1 => [5, 'TRISC', 5],
+    }
+});
+
 my @roles = map (("VIC::PIC::Roles::$_", "VIC::PIC::Functions::$_"), qw(CodeGen
-    Operators Chip GPIO ADC ISR Timer Operations));
+    Operators Chip GPIO ADC ISR Timer Operations ECCP));
 with @roles;
 
 1;

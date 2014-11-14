@@ -6,7 +6,16 @@ lib/VIC/Grammar.pm
 lib/VIC/Parser.pm
 lib/VIC/PIC/Any.pm
 lib/VIC/PIC/Base.pm
-lib/VIC/PIC/Functions.pm
+lib/VIC/PIC/Functions/ADC.pm
+lib/VIC/PIC/Functions/CCP.pm
+lib/VIC/PIC/Functions/Chip.pm
+lib/VIC/PIC/Functions/CodeGen.pm
+lib/VIC/PIC/Functions/ECCP.pm
+lib/VIC/PIC/Functions/GPIO.pm
+lib/VIC/PIC/Functions/ISR.pm
+lib/VIC/PIC/Functions/Operations.pm
+lib/VIC/PIC/Functions/Operators.pm
+lib/VIC/PIC/Functions/Timer.pm
 lib/VIC/PIC/Gpsim.pm
 lib/VIC/PIC/P12F683.pm
 lib/VIC/PIC/P16F627A.pm

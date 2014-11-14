@@ -19,7 +19,8 @@ package VIC::PIC::Roles::Operators;
       op_band_assign op_bor_assign op_shl_assign op_shr_assign
       op_inc op_dec op_add op_sub op_mul op_div op_mod op_bxor
       op_band op_bor op_eq op_lt op_ge op_ne op_le op_gt op_and
-      op_or op_sqrt break continue
+      op_or op_sqrt break continue store_array store_string
+      store_table op_tblidx op_stridx op_arridx
     );
 }
 
@@ -75,6 +76,12 @@ package VIC::PIC::Roles::CCP;
 {
     use Moo::Role;
     requires qw(ccp_pins);
+}
+
+package VIC::PIC::Roles::ECCP;
+{
+    use Moo::Role;
+    requires qw(eccp_pins pwm_single pwm_halfbridge pwm_fullbridge);
 }
 
 package VIC::PIC::Roles::Operations;
