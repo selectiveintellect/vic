@@ -323,7 +323,7 @@ my @roles = map (("VIC::PIC::Roles::$_", "VIC::PIC::Functions::$_"), @rolenames)
 with @roles;
 
 sub list_features {
-    my @arr = qw(GPIO Timer);
+    my @arr = grep {!/CodeGen|Oper|Chip|ISR/} @rolenames;
     return wantarray ? @arr : [@arr];
 }
 
