@@ -26,6 +26,7 @@ installer/
 *.hex
 *.d
 *.lst
+*.lxt
 *.stc
 *.asm
 TODO
