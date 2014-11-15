@@ -521,22 +521,16 @@ modes.
     PIC P16F690;
 
     Main {
-        digital_output RC0;
         pwm_halfbridge 1220Hz, 20%, 4us;
         #pwm_fullbridge 'forward', 1220Hz, 20%;
         #pwm_fullbridge 'reverse', 1220Hz, 20%;
-        Loop {
-            write RC0, CCP1;
-        }
     }
 
     Simulator {
         attach_led CCP1;
-        attach_led RC0;
         stop_after 20s;
-        logfile "pwm.lxt";
         log CCP1;
-        scope CCP1, RC0;
+        scope CCP1;
         autorun;
     }
 
