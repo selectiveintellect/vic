@@ -1,7 +1,6 @@
 PIC P16F690;
 
 Main {
-    digital_output RC0;
     # arg1 - pwm frequency
     # arg2 - duty cycle ratio in percentage
     pwm_single 1220Hz, 20%, CCP1;
@@ -9,17 +8,12 @@ Main {
     #pwm_fullbridge 'forward', 1220Hz, 20%;
     #pwm_fullbridge 'reverse', 1220Hz, 20%;
     #pwm_update 1220Hz, 30%; # update duty cycle
-    Loop {
-        write RC0, CCP1;
-    }
 }
 
 Simulator {
     attach_led CCP1;
-    attach_led RC0;
-    stop_after 20s;
-    logfile "pwm.lxt";
+    stop_after 1s;
     log CCP1;
-    scope CCP1, RC0;
+    scope CCP1;
     autorun;
 }
