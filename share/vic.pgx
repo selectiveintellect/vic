@@ -96,7 +96,7 @@ number: /('0'[xX] HEX+ | '-'? DIGIT+)/ | boolean
 units: /([mu]?'s'|[kM]?'Hz' | '%')/
 boolean: /('TRUE'|'FALSE'|'true'|'false'|'0'|'1')/
 
-validated-variable: identifier-without-keyword
+validated-variable: identifier-without-keyword /([+-]?)/
 modifier-variable: identifier-without-keyword - variable
 modifier-constant: identifier-without-keyword - constant
 variable: DOLLAR identifier

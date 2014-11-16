@@ -662,6 +662,8 @@ sub got_validated_variable {
     if (ref $list eq 'ARRAY') {
         $self->flatten($list);
         $varname = shift @$list;
+        my $suffix = shift @$list;
+        $varname .= $suffix if defined $suffix;
     } else {
         $varname = $list;
     }

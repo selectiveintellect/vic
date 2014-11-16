@@ -85,6 +85,7 @@ TODO
 compile_into_module$
 \.d$
 \.lst$
+\.lxt$
 \.map$
 \.hex$
 \.cod$

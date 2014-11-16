@@ -899,7 +899,14 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.57)
       '.rgx' => qr/\G([mu]?s|[kM]?Hz|%)/
     },
     'validated_variable' => {
-      '.ref' => 'identifier_without_keyword'
+      '.all' => [
+        {
+          '.ref' => 'identifier_without_keyword'
+        },
+        {
+          '.rgx' => qr/\G([+-]?)/
+        }
+      ]
     },
     'value' => {
       '.all' => [
