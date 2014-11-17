@@ -129,7 +129,7 @@ sub run {
     }
     return unless scalar @ARGV;
     if (defined $pic) {
-        $pic =~ s/^PIC/P/gi
+        $pic =~ s/^PIC/P/gi;
         $pic = lc $pic;
     }
     print VIC::compile(do {local $/; <>}, $pic);
