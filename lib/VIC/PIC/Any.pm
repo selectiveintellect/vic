@@ -106,7 +106,7 @@ sub list_chip_features {
         carp "Chip $chip is not supported\n";
         return;
     }
-    return __PACKAGE__->new($chip)->list_features();
+    return __PACKAGE__->new($chip)->list_roles();
 }
 
 1;

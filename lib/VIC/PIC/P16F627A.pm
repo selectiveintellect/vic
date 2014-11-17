@@ -296,7 +296,7 @@ my @rolenames = qw(CodeGen Operators Chip GPIO ISR Timer Operations CCP USART Co
 my @roles = map (("VIC::PIC::Roles::$_", "VIC::PIC::Functions::$_"), @rolenames);
 with @roles;
 
-sub list_features {
+sub list_roles {
     my @arr = grep {!/CodeGen|Oper|Chip|ISR/} @rolenames;
     return wantarray ? @arr : [@arr];
 }
