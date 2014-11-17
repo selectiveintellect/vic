@@ -50,7 +50,7 @@ my $build = Module::Build->new(
         keywords => [qw/VIC PIC assembly/],
         no_index => {
             directory => [qw/ t /],
-            no_index => ['VIC::PIC::Roles', 'VIC::PIC::Functions'],
+            namespace => ['VIC::PIC::Roles', 'VIC::PIC::Functions'],
         },
     },
     PL_files => { 'share/rebuild-grammar.PL' => [] },
