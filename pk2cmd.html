@@ -61,6 +61,17 @@ variable as follows before doing the write to the microcontroller:</p>
 <pre><code>$ export PATH=${PATH}:/usr/local/bin:/usr/share/pk2
 </code></pre>
 
+<p>You may also want to add the following to your <code>udev</code> rules directory as the
+file <code>99_pickit2.rules</code>:</p>
+
+<pre><code>$ cat &gt; /etc/udev/rules.d/99_pickit2.rules 
+SUBSYSTEM==&quot;usb&quot;, ENV{DEVTYPE}==&quot;usb_device&quot;, ATTR{idVendor}==&quot;04d8&quot;,
+ATTR{idProduct}==&quot;0033&quot;, MODE=&quot;0664&quot;, GROUP=&quot;plugdev&quot; SYMLINK+=&quot;pickit2&quot;
+</code></pre>
+
+<p>This will create a <code>/dev/pickit2</code> symlink to your programmer as well. It is a
+good way to test if your programmer was loaded correctly or not.</p>
+
 <p>Before you run <code>pk2cmd</code> on Mac OS X, you will need to set the <code>lsusb</code> command
 which is available on Linux but not on the Mac but is used by <code>pk2cmd</code>
 internally.</p>
@@ -86,7 +97,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-20 00:47:48 -0400.
+        This page was last updated on 2014-11-17 11:49:30 -0500.
     </p>
     </div>
     </section>
