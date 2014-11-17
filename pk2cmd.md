@@ -17,6 +17,16 @@ variable as follows before doing the write to the microcontroller:
 
     $ export PATH=${PATH}:/usr/local/bin:/usr/share/pk2
 
+You may also want to add the following to your `udev` rules directory as the
+file `99_pickit2.rules`:
+
+    $ cat > /etc/udev/rules.d/99_pickit2.rules 
+    SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="04d8",
+    ATTR{idProduct}=="0033", MODE="0664", GROUP="plugdev" SYMLINK+="pickit2"
+
+This will create a `/dev/pickit2` symlink to your programmer as well. It is a
+good way to test if your programmer was loaded correctly or not.
+
 Before you run `pk2cmd` on Mac OS X, you will need to set the `lsusb` command
 which is available on Linux but not on the Mac but is used by `pk2cmd`
 internally.
