@@ -1,6 +1,8 @@
 package VIC::PIC::Functions::Chip;
 use strict;
 use warnings;
+our $VERSION = '0.15';
+$VERSION = eval $VERSION;
 use Moo::Role;
 
 ##allow adjusting of this based on user input. for now fixed to this

@@ -1,6 +1,8 @@
 package VIC::PIC::Functions::CCP;
 use strict;
 use warnings;
+our $VERSION = '0.15';
+$VERSION = eval $VERSION;
 use Carp;
 use POSIX ();
 use Moo::Role;

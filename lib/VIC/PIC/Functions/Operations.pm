@@ -2,6 +2,8 @@ package VIC::PIC::Functions::Operations;
 use strict;
 use warnings;
 use bigint;
+our $VERSION = '0.15';
+$VERSION = eval $VERSION;
 use Carp;
 use POSIX ();
 use Moo::Role;
