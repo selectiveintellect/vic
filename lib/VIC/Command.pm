@@ -58,10 +58,10 @@ $stxt
 
 sub check_support {
     my $chip = shift;
-    my $yes = "does not";
-    $yes = "does" if VIC::is_chip_supported($chip);
+    my $yes = "does not support";
+    $yes = "supports" if VIC::is_chip_supported($chip);
     my $txt = << "...";
-VIC $yes support $chip
+VIC $yes $chip.
 ...
     print $txt;
 }
@@ -69,10 +69,17 @@ VIC $yes support $chip
 sub list_chip_features {
     my $chip = shift;
     check_support($chip);
-    my @arr = VIC::list_chip_features($chip);
-    if (@arr) {
-        my $txt = join("\n", @arr);
-        print "$chip supports the following features\n$txt\n";
+    my $hh = VIC::list_chip_features($chip);
+    if ($hh) {
+        my $rtxt = join("\n", @{$hh->{roles}});
+        print "\n$chip supports the following features:\n$rtxt\n";
+        print "\n$chip has the following memory capabilities:\n";
+        my $mh = $hh->{memory};
+        foreach (keys %$mh) {
+            my $units = 'bytes';
+            $units = 'words' if $_ =~ /flash/i; # HACK
+            print "$_: " . $mh->{$_} . " $units\n";
+        }
     }
 }
 

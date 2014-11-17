@@ -106,7 +106,12 @@ sub list_chip_features {
         carp "Chip $chip is not supported\n";
         return;
     }
-    return __PACKAGE__->new($chip)->list_roles();
+    my $obj = __PACKAGE__->new($chip);
+    my $roles = $obj->list_roles();
+    return {
+        roles => $roles,
+        memory => $obj->memory,
+    };
 }
 
 1;
