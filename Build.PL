@@ -45,7 +45,7 @@ my $build = Module::Build->new(
             repository => 'https://github.com/selectiveintellect/vic',
             bugtracker => 'https://github.com/selectiveintellect/vic/issues',
             x_IRC => 'irc://irc.freenode.net/#vic',
-            x_twitter => 'https://twitter.com/_vicash_',
+            x_Twitter => 'https://twitter.com/_vicash_',
         },
         keywords => [qw/VIC PIC assembly/],
         no_index => {
