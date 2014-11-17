@@ -58,12 +58,9 @@ $stxt
 
 sub check_support {
     my $chip = shift;
-    my $yes = "does not support";
-    $yes = "supports" if VIC::is_chip_supported($chip);
-    my $txt = << "...";
-VIC $yes $chip.
-...
-    print $txt;
+    my $flag = VIC::is_chip_supported($chip);
+    die "VIC does not support '$chip'\n" unless $flag;
+    print "VIC supports '$chip'\n" if $flag;
 }
 
 sub list_chip_features {

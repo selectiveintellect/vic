@@ -15,12 +15,17 @@ ifeq ($(VIC),)
 $(error "Unable to find the 'vic' program for compiling. Please set it in the $$PATH")
 endif
 
+ifneq ($(PIC),)
+ PICOPT:=--pic $(PIC)
+else
+ PICOPT:=
+endif
 ifeq ($(VERBOSE),1)
  QUIET:=
- VICOPT:=-i
+ VICOPT:=-i $(PICOPT)
 else
  QUIET:=-q
- VICOPT:=
+ VICOPT:=$(PICOPT)
 endif
 
 ASMFILES:=$(patsubst %.vic,%.asm,$(wildcard *.vic))
