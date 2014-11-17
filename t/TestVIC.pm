@@ -13,6 +13,7 @@ our @EXPORT = qw(
     compile_fails_ok
     compiles_asm_ok
     done_testing
+    subtest
 );
 
 my $CLASS = __PACKAGE__;
@@ -77,25 +78,34 @@ sub compile_fails_ok {
     $Tester->ok($@, $@);
 }
 
+
 sub compiles_asm_ok {
     my ($input, $chip) = @_;
     unless (defined $input) {
         croak("compiles_asm_ok: must pass an input code to compile");
     }
-    return $Tester->skip("Only for developer") unless defined $ENV{TEST_GPASM};
-    return $Tester->skip("gputils is not installed") unless -e which('gpasm');
+    return $Tester->skip('Only for developer. Set $ENV{TEST_GPASM} to run.') unless defined $ENV{TEST_GPASM};
+    return $Tester->skip("gputils(gpasm) is not installed") unless -e which('gpasm');
+    return $Tester->skip("gputils(gplink) is not installed") unless -e which('gplink');
     my $compiled = VIC::compile($input, $chip);
     my $output = File::Spec->catfile(File::Spec->tmpdir, "$chip.asm");
     my $fh;
     open $fh, ">$output" or die "Unable to open $output: $!";
     print $fh $compiled, "\n";
     close $fh;
+
     my $ok = $Tester->ok(system("gpasm -p $chip -c $output -o $output.o") == 0);
-    map(unlink, <$output.*>, $output) if $ok;
+    if ($ok) {
+        ## create hex file now to check linking
+        $ok &= $Tester->ok(system("gplink -q -m $output.o -o $output.hex ") == 0);
+        map(unlink, <$output.*>, $output) if $ok;
+    }
     return $ok;
 }
 
 sub done_testing { $Tester->done_testing(); }
+
+sub subtest { $Tester->subtest(@_); }
 
 1;
 

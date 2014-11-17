@@ -7,8 +7,8 @@ use Moo;
 extends 'VIC::PIC::P18F13K50';
 
 # role CodeGen
-has type => (is => 'ro', default => 'p18f13k50');
-has include => (is => 'ro', default => 'p18f13k50.inc');
+has type => (is => 'ro', default => 'p18lf13k50');
+has include => (is => 'ro', default => 'p18lf13k50.inc');
 1;
 
 __END__

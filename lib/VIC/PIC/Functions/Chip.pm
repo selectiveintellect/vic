@@ -3,12 +3,27 @@ use strict;
 use warnings;
 use Moo::Role;
 
-##TODO: allow adjusting of this based on user input. for now fixed to this
+##allow adjusting of this based on user input. for now fixed to this
 #string
-sub chip_config {
-    return <<"...";
-        __config (_INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _BOR_OFF & _IESO_OFF & _FCMEN_OFF)
-...
+sub get_chip_config {
+    my $self = shift;
+    my $conf = $self->chip_config;
+    return "\n" unless (defined $conf and ref $conf eq 'HASH');
+    my $onoff = $conf->{on_off} || {};
+    my $clkout = $conf->{f_osc} || {};
+    if ($self->pcl_size == 13) {
+        my @flags = ();
+        foreach (keys %$onoff) {
+            push @flags, "_$_" . ($onoff->{$_} ? '_ON' : '_OFF');
+        }
+        foreach (keys %$clkout) {
+            push @flags, "_$_" . ($clkout->{$_} ? '_NOCLKOUT' : '_CLKOUT');
+        }
+        return "\t__config (" . join(' & ', sort @flags) . ")\n" if @flags;
+    } elsif ($self->pcl_size == 21) {
+    } else {
+    }
+    return "\n";
 }
 
 1;

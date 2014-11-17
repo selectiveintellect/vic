@@ -6,11 +6,21 @@ PIC PIC16F690;
 # A Comment
 
 Main { # set the Main function
-     digital_output RA0; # mark pin RA0 as output
-     write RA0, 1; # write the value 1 to RA0
+     digital_output RC0; # mark pin RC0 as output
+     write RC0, 1; # write the value 1 to RC0
 } # end the Main function
 ...
 
-compiles_asm_ok($input, 'pic16f690');
+my $chips = VIC::supported_chips();
+foreach (sort @$chips) {
+    my $code = $input;
+    if (/12f683/i) {
+        $code =~ s/RC0/GP0/cgs;
+    } elsif (/16f6[24]\w+/i) {
+        $code =~ s/RC0/RA0/cgs;
+    }
+    my $chip = $_;
+    subtest "gputils check for $_" => sub { compiles_asm_ok($code, $chip) };
+}
 
 done_testing();

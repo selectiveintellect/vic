@@ -409,6 +409,23 @@ has cmp_output_pins => (is => 'ro', default => sub {
     }
 });
 
+has chip_config => (is => 'ro', default => sub {
+    {
+        on_off => {
+            MCLRE => 0,
+            WDT => 0,
+            PWRTE => 0,
+            CP => 0,
+            BOR => 0,
+            IESO => 0,
+            FCMEN => 0,
+        },
+        f_osc => {
+            INTRC_OSC => 0,
+        },
+    }
+});
+
 my @rolenames = qw(CodeGen Operators Chip GPIO ADC ISR Timer Operations ECCP
                     USART SPI I2C Comparator);
 my @roles = map (("VIC::PIC::Roles::$_", "VIC::PIC::Functions::$_"), @rolenames);

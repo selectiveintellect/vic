@@ -24,4 +24,6 @@ sub doesroles {
     return 1;
 }
 
+has chip_config => (is => 'ro', default => sub { {} });
+
 1;

@@ -117,7 +117,8 @@ sub _gpio_select {
         my $iopin = ($io == 0) ? $self->get_output_pin($outp) :
                                     $self->get_input_pin($outp);
         unless (defined $iopin) {
-            carp "Cannot find $outp in the list of registers or pins supporting GPIO";
+            my $iostr = ($io == 0) ? 'output' : 'input';
+            carp "Cannot find $outp in the list of registers or $iostr pins supporting GPIO for the chip " . $self->type;
             return;
         }
         my ($port, $trisp, $pinbit) = ($io == 0) ?

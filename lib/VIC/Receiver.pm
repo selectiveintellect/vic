@@ -55,7 +55,7 @@ sub got_mcu_select {
     $self->ast->{include} = $self->pic->include;
     # set the defaults in case the headers are not provided by the user
     $self->ast->{org} = $self->pic->org;
-    $self->ast->{chip_config} = $self->pic->chip_config;
+    $self->ast->{chip_config} = $self->pic->get_chip_config;
     $self->ast->{code_config} = $self->pic->code_config;
     # create the default simulator
     $self->simulator(VIC::PIC::Any->new_simulator(pic => $self->pic));
@@ -67,7 +67,7 @@ sub got_pragmas {
     $self->flatten($list);
     $self->pic->update_code_config(@$list);
     # get the updated config
-    $self->ast->{chip_config} = $self->pic->chip_config;
+    $self->ast->{chip_config} = $self->pic->get_chip_config;
     $self->ast->{code_config} = $self->pic->code_config;
     my ($sim, $stype) = @$list if scalar @$list;
     if ($sim eq 'simulator' and $stype !~ /disable/i) {
