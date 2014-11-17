@@ -1,7 +1,7 @@
 use t::TestVIC tests => 1, debug => 0;
 
 my $input = <<'...';
-PIC P16F690;
+PIC PIC16F690;
 
 # A Comment
 

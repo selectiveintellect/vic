@@ -1,4 +1,4 @@
-PIC P16F690;
+PIC P16F628A;
 
 # enable gpsim as a simulator
 pragma simulator gpsim;

@@ -128,7 +128,8 @@ sub run {
         open STDOUT, ">&", $fh or die "$!";
     }
     return unless scalar @ARGV;
-    print VIC::compile(do {local $/; <>}, $pic);
+    $pic =~ s/^PIC/P/gi;
+    print VIC::compile(do {local $/; <>}, lc $pic);
 }
 
 1;

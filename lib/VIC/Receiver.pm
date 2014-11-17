@@ -49,7 +49,7 @@ sub got_mcu_select {
     # assume supported type else return
     $self->pic(VIC::PIC::Any->new($type));
     unless (defined $self->pic and
-        $self->pic->type eq $type) {
+        defined $self->pic->type) {
         $self->parser->throw_error("$type is not a supported chip");
     }
     $self->ast->{include} = $self->pic->include;
