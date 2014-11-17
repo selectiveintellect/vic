@@ -1,6 +1,10 @@
 package VIC::PIC::Base;
 use strict;
 use warnings;
+
+our $VERSION = '0.14';
+$VERSION = eval $VERSION;
+
 use Carp;
 use Moo;
 use VIC::PIC::Roles; # load all the roles

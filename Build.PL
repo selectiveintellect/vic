@@ -42,13 +42,15 @@ my $build = Module::Build->new(
     add_to_cleanup => [ qw/*.bak/ ],
     meta_merge => {
         resources => {
-            repository => "https://github.com/selectiveintellect/vic",
-            bugtracker => "https://github.com/selectiveintellect/vic/issues",
-            x_IRC => "irc://irc.freenode.net/#vic",
+            repository => 'https://github.com/selectiveintellect/vic',
+            bugtracker => 'https://github.com/selectiveintellect/vic/issues',
+            x_IRC => 'irc://irc.freenode.net/#vic',
+            x_twitter => 'https://twitter.com/_vicash_',
         },
         keywords => [qw/VIC PIC assembly/],
         no_index => {
             directory => [qw/ t /],
+            no_index => ['VIC::PIC::Roles', 'VIC::PIC::Functions'],
         },
     },
     PL_files => { 'share/rebuild-grammar.PL' => [] },
