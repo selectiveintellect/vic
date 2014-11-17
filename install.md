@@ -21,8 +21,8 @@ You will also need `git` installed if you're downloading the code from
 To make full use of VIC&trade; you need to install the following applications as
 well:
 
-- [gputils](http://gputils.sourceforge.net) for compiling VIC&trade; output
-- [gpsim](http://gpsim.sourceforge.net/gpsim.html) for default simulator support
+- [gputils](http://gputils.sourceforge.net) version `1.3.0` or better for compiling VIC&trade; output
+- [gpsim](http://gpsim.sourceforge.net/gpsim.html) version `0.27.0` or better for default simulator support
 - [Piklab](http://piklab.sourceforge.net/) as an IDE
 - [pk2cmd](pk2cmd.html) for command-line programming of the device, if using the [PICKit 2 Starter Kit](http://www.microchip.com/pickit2/)
 - [gtkwave](http://gtkwave.sourceforge.net/) for viewing simulator output
