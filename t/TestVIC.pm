@@ -85,6 +85,11 @@ sub compiles_asm_ok {
     return $Tester->skip('Only for developer. Set $ENV{TEST_GPASM} to run.') unless defined $ENV{TEST_GPASM};
     return $Tester->skip("gputils(gpasm) is not installed") unless -e which('gpasm');
     return $Tester->skip("gputils(gplink) is not installed") unless -e which('gplink');
+    # version check
+    my $gpasmversion = `gpasm -v 2>&1`;
+    chomp $gpasmversion;
+    my $version = $1 * 10000 + $2 * 100 + $3 if $gpasmversion =~ /gpasm-(\d+)\.(\d+)\.(\d+)/i;
+    return unless $Tester->ok($version > 10300, "gpasm version: $gpasmversion");
     my $compiled = VIC::compile($input, $chip);
     my $output = File::Spec->catfile(File::Spec->tmpdir, "$chip.asm");
     my $fh;
