@@ -12,8 +12,6 @@ our @EXPORT = qw(
     compiles_ok
     compile_fails_ok
     compiles_asm_ok
-    done_testing
-    subtest
 );
 
 my $CLASS = __PACKAGE__;

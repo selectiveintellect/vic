@@ -20,7 +20,7 @@ foreach (sort @$chips) {
         $code =~ s/RC0/RA0/cgs;
     }
     my $chip = $_;
-    subtest "gputils check for $_" => sub { compiles_asm_ok($code, $chip) };
+    t::TestVIC::subtest "gputils check for $_" => sub { compiles_asm_ok($code, $chip) };
 }
 
-done_testing();
+t::TestVIC::done_testing();
