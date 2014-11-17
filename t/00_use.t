@@ -10,6 +10,8 @@ can_ok('t::TestVIC', 'compiles_ok');
 
 can_ok('t::TestVIC', 'compile_fails_ok');
 
+can_ok('t::TestVIC', 'compiles_asm_ok');
+
 can_ok('VIC', 'supported_chips');
 
 can_ok('VIC', 'supported_simulators');

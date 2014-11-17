@@ -96,4 +96,5 @@ t/20_fail_write.t
 t/21_delaysim.t
 t/22_pwm.t
 t/23_pwm2.t
+t/24_asmcompiles.t
 t/TestVIC.pm

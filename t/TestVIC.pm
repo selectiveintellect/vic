@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Carp;
+use File::Which qw(which);
 use Test::Builder;
 use VIC;
 use base qw(Exporter);
@@ -10,6 +11,8 @@ use base qw(Exporter);
 our @EXPORT = qw(
     compiles_ok
     compile_fails_ok
+    compiles_asm_ok
+    done_testing
 );
 
 my $CLASS = __PACKAGE__;
@@ -22,7 +25,7 @@ sub import {
         $VIC::Debug = $hh{debug} if exists $hh{debug};
         my $package = caller;
         $Tester->exported_to($package);
-        $Tester->plan(@_);
+        $Tester->plan(%hh);
     }
     $self->export_to_level(1, $self, $_) foreach @EXPORT;
 }
@@ -73,6 +76,26 @@ sub compile_fails_ok {
     eval { VIC::compile($input); };
     $Tester->ok($@, $@);
 }
+
+sub compiles_asm_ok {
+    my ($input, $chip) = @_;
+    unless (defined $input) {
+        croak("compiles_asm_ok: must pass an input code to compile");
+    }
+    return $Tester->skip("Only for developer") unless defined $ENV{TEST_GPASM};
+    return $Tester->skip("gputils is not installed") unless -e which('gpasm');
+    my $compiled = VIC::compile($input, $chip);
+    my $output = File::Spec->catfile(File::Spec->tmpdir, "$chip.asm");
+    my $fh;
+    open $fh, ">$output" or die "Unable to open $output: $!";
+    print $fh $compiled, "\n";
+    close $fh;
+    my $ok = $Tester->ok(system("gpasm -p $chip -c $output -o $output.o") == 0);
+    map(unlink, <$output.*>, $output) if $ok;
+    return $ok;
+}
+
+sub done_testing { $Tester->done_testing(); }
 
 1;
 

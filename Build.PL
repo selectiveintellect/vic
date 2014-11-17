@@ -18,6 +18,7 @@ my $build = Module::Build->new(
         'Module::Build' => 0,
         'Test::More' => 0,
         'File::Spec' => 0,
+        'File::Which' => 0,
         'Pegex' => 0.55, # needed for PL_files to work
         'strictures' => 0,
         'indirect' => 0,
