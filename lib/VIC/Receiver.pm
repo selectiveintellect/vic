@@ -226,8 +226,10 @@ sub got_instruction {
         # this is a simulator instruction
         $tag = 'SIM';
     } else {
-        return $self->parser->throw_error("Unknown instruction '$method'")
-            unless $self->pic->can($method);
+        unless ($self->pic->can($method)) {
+            my $err = "Unsupported instruction '$method' for chip " . uc $self->pic->type;
+            return $self->parser->throw_error($err);
+        }
     }
     my @args = ();
     while (scalar @$list) {
