@@ -4,10 +4,10 @@
 ### DATE: 29th May 2013
 ### SOFTWARE: PIC uC Software
 #######################################
-GPASM?=$(shell which gpasm)
-GPLINK?=$(shell which gplink)
+#GPASM?=$(shell which gpasm)
+#GPLINK?=$(shell which gplink)
 PK2CMD?=$(shell which pk2cmd)
-PIC?=PIC16F690
+PIC?=
 VIC?=$(shell which vic)
 CURDIR:=$(shell pwd)
 
@@ -71,16 +71,19 @@ $(TARGETS): %: %.hex
 	$(PK2CMD) -P$(PIC) -M -F$<
 .PHONY: $(TARGETS)
 
-%.hex: %.o
-	$(GPLINK) $(QUIET) -m -o $@ $<
+#%.hex: %.o
+#	$(GPLINK) $(QUIET) -m -o $@ $<
 
 %.stc: %.cod
 	@echo "load s $*.cod" | tee $*.stc
 
-%.o %.cod: %.asm
-	$(GPASM) -p$(PIC) -M -c $<
+#%.o %.cod: %.asm
+#	$(GPASM) -p$(PIC) -M -c $<
 
-%.asm: %.vic
+#%.asm: %.vic
+#	$(VIC) $(VICOPT) -o $@ $<
+
+%.hex %.asm %.cod %.o: %.vic
 	$(VIC) $(VICOPT) -o $@ $<
 
 -include $(HEXFILES:.hex=.d)
