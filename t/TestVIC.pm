@@ -99,7 +99,10 @@ sub assembles_ok {
     print $fh $compiled, "\n";
     close $fh;
     my $ok = $Tester->ok(VIC::assemble($chip, $output));
-    map(unlink, <$output.*>, $output) if $ok;
+    if ($ok) {
+        my $ff = File::Spec->catfile(File::Spec->tmpdir, $chip);
+        map(unlink, <$ff.*>, $output) if $ok;
+    }
     return $ok;
 }
 
