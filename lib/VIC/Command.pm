@@ -158,7 +158,7 @@ sub run {
         $hexfile =~ s/\.asm$/\.hex/g;
         $objfile =~ s/\.asm$/\.o/g;
         unless (defined $gpasm and defined $gplink and -e $gpasm and -e $gplink) {
-            die "Cannot find gpasm/gplink to compile $output into a hex file $hexfile."
+            die "Cannot find gpasm/gplink to compile $output into a hex file $hexfile.";
         }
         print "Using gpasm: $gpasm\n" if $debug;
         print "Using gplink: $gplink\n" if $debug;
