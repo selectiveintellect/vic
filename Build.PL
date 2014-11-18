@@ -2,6 +2,9 @@ use strict;
 use warnings;
 use Module::Build;
 
+my %gputils = ('Alien::gputils' => 0);
+%gputils = () if $^O =~ /mswin32|cygwin/i;
+
 my $build = Module::Build->new(
     module_name => 'VIC',
     license => 'perl',
@@ -39,6 +42,7 @@ my $build = Module::Build->new(
     recommends => {
         'XXX' => 0,
         'App::Prove' => 0,
+        %gputils,
     },
     share_dir => 'share',
     dynamic_config => 1,
