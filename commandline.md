@@ -44,22 +44,44 @@ enables the user to achieve the following goals:
     1. verify if a piece of code can work on another Microchip's PIC&reg; MCU without reading that MCU's data sheet
     1. find out the parts of the code which will _not_ work on another MCU
 
-- `--check-support <MCU Target>`:
+- `--supports <MCU Target>`:
     This is similar to the `-p` option above except that it does _not_ compile any
 code. It can be used by the user or any other external program to verify if a
 certain MCU target is supported by `vic`. If it is not supported, the code
 cannot be compiled to that target.
 
+- `--list-features <MCU Target>`:
+    This is similar to the `--supports` option above except that it also lists
+the features supported by the chip. This automatically turns on the `--supports`
+option.
+
+- `--list-gputils`:
+    This option lets the user know where the `gpasm` and `gplink` tools are
+located on the current system for the `gputils` package. The `vic` compiler
+checks the system install paths as well as any installs done by
+`Alien::gputils`.
+
+- `--no-hex`:
+    The `vic` compiler automatically looks for `gpasm` and `gplink` to create
+the appropriate `.hex` file for use by the `pk2cmd` or other programming
+software. If the user does not want to generate the `.hex` file then they should
+use this option. This is especially useful if `gputils` is installed and the
+user does not want to compile the `.hex` file.
+
 Based on these options here are some sample examples on how to use them:
 
     $ vic -o helloworld.asm helloworld.vic
-    $ vic -p p16f631 -o helloworld.asm helloworld.vic
+    $ vic -p p16f631 -o helloworld.hex helloworld.vic
     $ vic -h
     $ vic -V
+    # to compile only to assembly and not a hex file
     $ vic -i -o helloworld.asm helloworld.vic
+    $ vic -i -o helloworld.hex --no-hex helloworld.vic
     $ vic --list-chips
     $ vic --list-simulators
-    $ vic --check-support P18F452
+    $ vic --supports P12F683
+    $ vic --list-chip-features P16F685
+    $ vic --list-gputils
 
 Now that we have learned enough about using the `vic` compiler, let us move on
 to studying the various available in-built functions for VIC&trade;.
