@@ -20,6 +20,14 @@ can_ok('VIC', 'is_chip_supported');
 
 can_ok('VIC', 'list_chip_features');
 
+can_ok('VIC', 'gputils');
+note(join("\n", VIC::gputils()), "\n");
+
+can_ok('VIC', 'gpasm');
+note(VIC::gpasm(), "\n");
+can_ok('VIC', 'gplink');
+note(VIC::gplink(), "\n");
+
 my $chips = VIC::supported_chips();
 isa_ok($chips, 'ARRAY');
 note(join(",", @$chips), "\n");
