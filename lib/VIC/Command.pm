@@ -3,6 +3,8 @@ package VIC::Command;
 use strict;
 use warnings;
 use Getopt::Long;
+use File::Spec;
+use File::Which qw(which);
 use VIC;
 
 our $VERSION = '0.15';
@@ -20,8 +22,9 @@ sub usage {
         -i, --intermediate    Inline the intermediate code with the output
         --list-chips          List the supported microcontroller chips
         --list-simulators     List the supported simulators
-        --check-support <PIC> Checks if the given PIC is supported
-        --chip-features <PIC> Lists the features of the PIC
+        --supports <PIC>      Checks if the given PIC is supported
+        --list-features <PIC> Lists the features of the PIC
+        --no-hex              Does not generate the hex file using gputils
 
 ...
     die $usage;
@@ -94,6 +97,7 @@ sub run {
     my $list_sims = 0;
     my $check_support = undef;
     my $chip_features = undef;
+    my $no_hex = 0;
 
     GetOptions(
         "output=s" => \$output,
@@ -104,8 +108,9 @@ sub run {
         "version" => \$version,
         "list-chips" => \$list_chips,
         "list-simulators" => \$list_sims,
-        "check-support=s" => \$check_support,
-        "chip-features=s" => \$chip_features,
+        "list-features=s" => \$chip_features,
+        "supports=s" => \$check_support,
+        "no-hex" => \$no_hex,
     ) or usage();
     usage() if $help;
     version() if $version;
@@ -121,15 +126,49 @@ sub run {
 
     my $fh;
     if (length $output) {
+        $output =~ s/\.hex$/\.asm/g;
         open $fh, ">$output" or die "Unable to open $output: $!";
-        open STDOUT, ">&", $fh or die "$!";
     }
-    return unless scalar @ARGV;
+    return usage() unless scalar @ARGV;
     if (defined $pic) {
         $pic =~ s/^PIC/P/gi;
         $pic = lc $pic;
     }
-    print VIC::compile(do {local $/; <>}, $pic);
+    my ($compiled_out, $chip) = VIC::compile(do {local $/; <>}, $pic);
+    if ($fh) {
+        print $fh $compiled_out;
+    } else {
+        print $compiled_out;
+    }
+    return if $no_hex;
+    if (length $output) {
+        my ($gpasm, $gplink);
+        eval "require Alien::gputils";
+        if ($@) {
+            $gpasm = which('gpasm');
+            $gplink = which('gplink');
+        } else {
+            my $bindir = Alien::gputils->new()->bin_dir;
+            print "Using gpasm and gplink from $bindir\n" if $debug;
+            $gpasm = File::Spec->catfile($bindir, 'gpasm');
+            $gplink = File::Spec->catfile($bindir, 'gplink');
+        }
+        my $hexfile = $output;
+        my $objfile = $output;
+        $hexfile =~ s/\.asm$/\.hex/g;
+        $objfile =~ s/\.asm$/\.o/g;
+        unless (defined $gpasm and defined $gplink and -e $gpasm and -e $gplink) {
+            die "Cannot find gpasm/gplink to compile $output into a hex file $hexfile."
+        }
+        print "Using gpasm: $gpasm\n" if $debug;
+        print "Using gplink: $gplink\n" if $debug;
+        $chip = uc $chip;
+        $chip =~ s/^P(\d.*)/PIC$1/g;
+        my $gpasm_cmd = "$gpasm -p$chip -M -c $output";
+        my $gplink_cmd = "$gplink -q -m -o $hexfile $objfile ";
+        system($gpasm_cmd) == 0 or die "Unable to run '$gpasm_cmd': $?";
+        system($gplink_cmd) == 0 or die "Unable to run '$gplink_cmd': $?";
+    }
 }
 
 1;

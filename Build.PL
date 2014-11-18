@@ -28,6 +28,7 @@ my $build = Module::Build->new(
     requires => {
         'Getopt::Long' => 0,
         'File::Spec' => 0,
+        'File::Which' => 0,
         'Pegex' => 0.55, # needed for PL_files to work
         'List::Util' => 0,
         'List::MoreUtils' => 0,

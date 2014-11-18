@@ -25,7 +25,9 @@ sub compile {
         throw_on_error => 1,
     );
 
-    $parser->parse($input);
+    my $output = $parser->parse($input);
+    my $chip = $parser->receiver->current_chip();
+    return wantarray ? ($output, $chip) : $output;
 }
 
 sub supported_chips { return VIC::Receiver::supported_chips(); }
