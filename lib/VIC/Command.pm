@@ -141,6 +141,7 @@ sub run {
         $output =~ s/\.hex$/\.asm/g;
         open $fh, ">$output" or die "Unable to open $output: $!";
     } else {
+        $fh = *STDOUT;
         $no_hex = 1; # no file name given so print to screen
     }
     return usage() unless scalar @ARGV;
@@ -149,28 +150,9 @@ sub run {
         $pic = lc $pic;
     }
     my ($compiled_out, $chip) = VIC::compile(do {local $/; <>}, $pic);
-    if ($fh) {
-        print $fh $compiled_out;
-    } else {
-        print $compiled_out;
-    }
+    print $fh $compiled_out;
     return if $no_hex;
-    if (length $output) {
-        my $hexfile = $output;
-        my $objfile = $output;
-        $hexfile =~ s/\.asm$/\.hex/g;
-        $objfile =~ s/\.asm$/\.o/g;
-        my ($gpasm, $gplink) = VIC::gputils();
-        unless (defined $gpasm and defined $gplink and -e $gpasm and -e $gplink) {
-            die "Cannot find gpasm/gplink to compile $output into a hex file $hexfile.";
-        }
-        $chip = uc $chip;
-        $chip =~ s/^P(\d.*)/PIC$1/g;
-        my $gpasm_cmd = "$gpasm -p$chip -M -c $output";
-        my $gplink_cmd = "$gplink -q -m -o $hexfile $objfile ";
-        system($gpasm_cmd) == 0 or die "Unable to run '$gpasm_cmd': $?";
-        system($gplink_cmd) == 0 or die "Unable to run '$gplink_cmd': $?";
-    }
+    return VIC::assemble($chip, $output) if length $output;
 }
 
 1;

@@ -86,6 +86,30 @@ sub gplink {
     return $out[1];
 }
 
+sub assemble($$) {
+    my ($chip, $output) = @_;
+    return unless defined $chip;
+    return unless defined $output;
+    my $hexfile = $output;
+    my $objfile = $output;
+    if ($output =~ /\.asm$/) {
+        $hexfile =~ s/\.asm$/\.hex/g;
+        $objfile =~ s/\.asm$/\.o/g;
+    } else {
+        $hexfile = $output . '.hex';
+        $objfile = $output . '.o';
+    }
+    my ($gpasm, $gplink) = VIC::gputils();
+    unless (defined $gpasm and defined $gplink and -e $gpasm and -e $gplink) {
+        die "Cannot find gpasm/gplink to compile $output into a hex file $hexfile.";
+    }
+    my $gpasm_cmd = "$gpasm -p $chip -M -c $output";
+    my $gplink_cmd = "$gplink -q -m -o $hexfile $objfile ";
+    system($gpasm_cmd) == 0 or die "Unable to run '$gpasm_cmd': $?";
+    system($gplink_cmd) == 0 or die "Unable to run '$gplink_cmd': $?";
+    1;
+}
+
 1;
 
 =encoding utf8

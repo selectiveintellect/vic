@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 use Carp;
-use File::Which qw(which);
 use Test::Builder;
 use VIC;
 use base qw(Exporter);
@@ -11,7 +10,7 @@ use base qw(Exporter);
 our @EXPORT = qw(
     compiles_ok
     compile_fails_ok
-    compiles_asm_ok
+    assembles_ok
 );
 
 my $CLASS = __PACKAGE__;
@@ -77,32 +76,30 @@ sub compile_fails_ok {
 }
 
 
-sub compiles_asm_ok {
+sub assembles_ok {
     my ($input, $chip) = @_;
     unless (defined $input) {
-        croak("compiles_asm_ok: must pass an input code to compile");
+        croak("assembles_ok: must pass an input code to compile");
     }
-    return $Tester->skip('Only for developer. Set $ENV{TEST_GPASM} to run.') unless defined $ENV{TEST_GPASM};
-    return $Tester->skip("gputils(gpasm) is not installed") unless -e which('gpasm');
-    return $Tester->skip("gputils(gplink) is not installed") unless -e which('gplink');
+    my ($gpasm, $gplink) = VIC::gputils();
+    return $Tester->skip("gputils is not installed or cannot be found") unless (defined $gpasm and defined $gplink);
+    return $Tester->skip("$gpasm is invalid.") unless -e $gpasm;
+    return $Tester->skip("$gplink is invalid.") unless -e $gplink;
     # version check
-    my $gpasmversion = `gpasm -v 2>&1`;
+    my $gpasmversion = `$gpasm -v 2>&1`;
     chomp $gpasmversion;
     my $version = $1 * 10000 + $2 * 100 + $3 if $gpasmversion =~ /gpasm-(\d+)\.(\d+)\.(\d+)/i;
+    return $Tester->skip("$gpasm version is $gpasmversion. Need >= 1.3.0") if $version < 10300;
     return unless $Tester->ok($version >= 10300, "gpasm version: $gpasmversion");
-    my $compiled = VIC::compile($input, $chip);
+    my $compiled;
+    ($compiled, $chip) = VIC::compile($input, $chip);
     my $output = File::Spec->catfile(File::Spec->tmpdir, "$chip.asm");
     my $fh;
     open $fh, ">$output" or die "Unable to open $output: $!";
     print $fh $compiled, "\n";
     close $fh;
-
-    my $ok = $Tester->ok(system("gpasm -p $chip -c $output -o $output.o") == 0);
-    if ($ok) {
-        ## create hex file now to check linking
-        $ok &= $Tester->ok(system("gplink -q -m $output.o -o $output.hex ") == 0);
-        map(unlink, <$output.*>, $output) if $ok;
-    }
+    my $ok = $Tester->ok(VIC::assemble($chip, $output));
+    map(unlink, <$output.*>, $output) if $ok;
     return $ok;
 }
 
