@@ -4,6 +4,7 @@ use warnings;
 
 use Carp;
 use Test::Builder;
+use Capture::Tiny qw(capture_merged);
 use VIC;
 use base qw(Exporter);
 
@@ -87,8 +88,8 @@ sub assembles_ok {
     return $Tester->skip("$gpasm is invalid.") unless -e $gpasm;
     return $Tester->skip("$gplink is invalid.") unless -e $gplink;
     # version check
-    my $gpasmversion = `$gpasm -v 2>&1`;
-    chomp $gpasmversion;
+    my $gpasmversion = capture_merged { `$gpasm -v`; };
+    chomp $gpasmversion if $gpasmversion;
     my $version = $1 * 10000 + $2 * 100 + $3 if $gpasmversion =~ /gpasm-(\d+)\.(\d+)\.(\d+)/i;
     return $Tester->skip("$gpasm version is $gpasmversion. Need >= 1.3.0") if $version < 10300;
     return unless $Tester->ok($version >= 10300, "gpasm version: $gpasmversion");
