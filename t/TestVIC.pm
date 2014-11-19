@@ -22,6 +22,7 @@ sub import {
         my %hh = @_;
         $VIC::Debug = $hh{debug} if exists $hh{debug};
         my $package = caller;
+        delete $hh{debug};
         $Tester->exported_to($package);
         $Tester->plan(%hh);
     }
