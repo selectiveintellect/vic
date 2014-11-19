@@ -5,7 +5,7 @@ use warnings;
 use Getopt::Long;
 use VIC;
 
-our $VERSION = '0.17';
+our $VERSION = '0.18';
 $VERSION = eval $VERSION;
 
 sub usage {

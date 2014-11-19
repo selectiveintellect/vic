@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Carp;
 
-our $VERSION = '0.17';
+our $VERSION = '0.18';
 $VERSION = eval $VERSION;
 
 use VIC::PIC::Gpsim;

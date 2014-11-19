@@ -1,7 +1,7 @@
 package VIC::PIC::Functions::CodeGen;
 use strict;
 use warnings;
-our $VERSION = '0.17';
+our $VERSION = '0.18';
 $VERSION = eval $VERSION;
 use Carp;
 use POSIX ();

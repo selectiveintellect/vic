@@ -2,7 +2,7 @@ package VIC::PIC::Functions::GPIO;
 use strict;
 use warnings;
 use bigint;
-our $VERSION = '0.17';
+our $VERSION = '0.18';
 $VERSION = eval $VERSION;
 use Carp;
 use POSIX ();

@@ -14,7 +14,7 @@ our $Intermediate = 0;
 our $GPASM;
 our $GPLINK;
 
-our $VERSION = '0.17';
+our $VERSION = '0.18';
 $VERSION = eval $VERSION;
 
 sub compile {
