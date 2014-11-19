@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use Module::Build;
 
-my %gputils = ('Alien::gputils' => 0);
+my %gputils = ('Alien::gputils' => 0.02);
 %gputils = () if $^O =~ /mswin32|cygwin/i;
 
 my $build = Module::Build->new(

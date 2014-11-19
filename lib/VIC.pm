@@ -50,11 +50,14 @@ sub _load_gputils {
             require Alien::gputils;
         };
         unless ($@) {
-            my $bindir = Alien::gputils->new()->bin_dir;
-            print "Looking for gpasm and gplink in $bindir\n" if $Debug;
-            $gpasm = File::Spec->catfile($bindir, 'gpasm');
-            $gplink = File::Spec->catfile($bindir, 'gplink');
-        } else {
+            my $alien = Alien::gputils->new();
+            print "Looking for gpasm and gplink using Alien::gputils\n" if $Debug;
+            if ($alien) {
+                $gpasm = $alien->gpasm;
+                $gplink = $alien->gplink;
+            }
+        }
+        unless (defined $gpasm and defined $gplink) {
             print "Looking for gpasm and gplink in \$ENV{PATH}\n" if $Debug;
             $gpasm = which('gpasm');
             $gplink = which('gplink');
