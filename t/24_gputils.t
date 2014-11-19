@@ -15,9 +15,9 @@ my $chips = VIC::supported_chips();
 foreach (sort @$chips) {
     my $code = $input;
     if (/12f683/i) {
-        $code =~ s/RC0/GP0/cgs;
+        $code =~ s/RC0/GP0/gs;
     } elsif (/16f6[24]\w+/i) {
-        $code =~ s/RC0/RA0/cgs;
+        $code =~ s/RC0/RA0/gs;
     }
     my $chip = $_;
     t::TestVIC::subtest "gputils check for $_" => sub { assembles_ok($code, $chip) };
