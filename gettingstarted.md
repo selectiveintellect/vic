@@ -197,10 +197,23 @@ block into a file called `helloworld.vic`.
 Compiling VIC&trade; code is really easy. To compile the file `helloworld.vic` we run
 the following command:
 
+    $ vic helloworld.vic -o helloworld.hex
+
+This creates the PIC&reg; assembly file `helloworld.asm` that is then linked to form the
+`helloworld.hex` file that the user can then use to program the MCU using
+`pk2cmd` or a similar tool. The `vic` compiler internally finds the installed
+`gpsim` and `gplink` to perform the assembling and linking to create the `.hex`
+file so the user does not have to do it.
+
+If the user just wants to compile the `.asm` file they can do the following:
+
     $ vic helloworld.vic -o helloworld.asm
 
-This creates the PIC&reg; assembly file that the user can then manipulate further if
-they want to. Then the user compiles this the standard way using `gputils`.
+or
+
+    $ vic helloworld.vic -o helloworld.hex --no-hex
+
+Then the user compiles this `helloworld.asm` the standard way using `gputils`.
 
     $ gpasm -o helloworld.o helloworld.asm
     $ gplink -m -o helloworld.hex helloworld.o

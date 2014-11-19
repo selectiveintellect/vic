@@ -238,11 +238,26 @@ block into a file called <code>helloworld.vic</code>.</p>
 <p>Compiling VIC&trade; code is really easy. To compile the file <code>helloworld.vic</code> we run
 the following command:</p>
 
+<pre><code>$ vic helloworld.vic -o helloworld.hex
+</code></pre>
+
+<p>This creates the PIC&reg; assembly file <code>helloworld.asm</code> that is then linked to form the
+<code>helloworld.hex</code> file that the user can then use to program the MCU using
+<code>pk2cmd</code> or a similar tool. The <code>vic</code> compiler internally finds the installed
+<code>gpsim</code> and <code>gplink</code> to perform the assembling and linking to create the <code>.hex</code>
+file so the user does not have to do it.</p>
+
+<p>If the user just wants to compile the <code>.asm</code> file they can do the following:</p>
+
 <pre><code>$ vic helloworld.vic -o helloworld.asm
 </code></pre>
 
-<p>This creates the PIC&reg; assembly file that the user can then manipulate further if
-they want to. Then the user compiles this the standard way using <code>gputils</code>.</p>
+<p>or</p>
+
+<pre><code>$ vic helloworld.vic -o helloworld.hex --no-hex
+</code></pre>
+
+<p>Then the user compiles this <code>helloworld.asm</code> the standard way using <code>gputils</code>.</p>
 
 <pre><code>$ gpasm -o helloworld.o helloworld.asm
 $ gplink -m -o helloworld.hex helloworld.o
@@ -336,7 +351,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-30 14:52:41 -0400.
+        This page was last updated on 2014-11-05 10:18:27 -0500.
     </p>
     </div>
     </section>
