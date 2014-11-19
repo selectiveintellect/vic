@@ -2,7 +2,7 @@ package VIC::PIC::P16F690;
 use strict;
 use warnings;
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 $VERSION = eval $VERSION;
 
 use Moo;
