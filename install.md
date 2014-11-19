@@ -23,6 +23,8 @@ well:
 
 - [gputils](http://gputils.sourceforge.net) version `1.3.0` or better for compiling VIC&trade; output
     - For Windows download the pre-built installers from <http://sourceforge.net/projects/gputils/files/latest/download>.
+    - For Linux and Mac OS X, the user can either install it themselves or using
+      CPAN's [Alien::gputils](https://metacpan.org/pod/Alien::gputils) module as outlined [here](#dependencies).
 - [gpsim](http://gpsim.sourceforge.net/gpsim.html) version `0.27.0` or better for default simulator support
     - For Windows download the pre-built installers from <http://sourceforge.net/projects/gpsim/files/snapshot_builds/gpsim-win32/>.
 - [Piklab](http://piklab.sourceforge.net/) as an IDE
@@ -51,6 +53,9 @@ cpan client.
 
 ##Building from source
 
+You may need to install the Perl package dependencies first which are done as
+[below](#dependencies).
+
 Download the software from Github.
 
     $ git clone https://github.com/selectiveintellect/vic.git
@@ -58,17 +63,6 @@ Download the software from Github.
     $ perl ./Build.PL --install_base=/usr/local/
     $ ./Build test
     $ sudo ./Build install
-
-You may need to install the Perl package dependencies first which are done as
-below:
-
-    $ sudo cpan -i Moo Pegex App::Prove
-
-or using `App::cpanminus`
-
-    $ cpanm App::Prove
-    $ cpanm Pegex
-    $ cpanm Moo
 
 ##Dependencies
 
@@ -79,7 +73,28 @@ This module depends on the following:
 - `Moo` (this is needed for multiple inheritance management. Needs to be
   installed from CPAN)
 - `Getopt::Long` (for handling command line options. Comes with perl itself)
+- `Capture::Tiny` (for trapping screen outputs and errors)
+- `File::Which` (for finding paths to `gpasm` and `gplink`)
+- `Alien::gputils` (for installing `gputils` if not available)
 - `XXX` (only required for debugging)
+
+
+You may need to install the Perl package dependencies first which are done as
+below:
+
+    $ sudo cpan -i Moo Pegex App::Prove File::Which Capture::Tiny
+
+or using `App::cpanminus`
+
+    $ cpanm App::Prove
+    $ cpanm Pegex
+    $ cpanm Moo
+
+Optionally the user can also install on Linux and Mac OSX:
+
+    $ cpanm Alien::gputils
+
+This will install the `gputils` package if not already present on the system.
 
 ##Testing the Module (Developers Only)
 

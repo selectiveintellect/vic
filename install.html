@@ -67,6 +67,8 @@ well:</p>
 
 <ul>
 <li>For Windows download the pre-built installers from <a href="http://sourceforge.net/projects/gputils/files/latest/download">http://sourceforge.net/projects/gputils/files/latest/download</a>.</li>
+<li>For Linux and Mac OS X, the user can either install it themselves or using
+ CPAN&#8217;s <a href="https://metacpan.org/pod/Alien::gputils">Alien::gputils</a> module as outlined <a href="#dependencies">here</a>.</li>
 </ul></li>
 <li><a href="http://gpsim.sourceforge.net/gpsim.html">gpsim</a> version <code>0.27.0</code> or better for default simulator support
 
@@ -103,6 +105,9 @@ cpan client.</p>
 
 <h2 id="buildingfromsource">Building from source</h2>
 
+<p>You may need to install the Perl package dependencies first which are done as
+<a href="#dependencies">below</a>.</p>
+
 <p>Download the software from Github.</p>
 
 <pre><code>$ git clone https://github.com/selectiveintellect/vic.git
@@ -110,19 +115,6 @@ $ cd vic
 $ perl ./Build.PL --install_base=/usr/local/
 $ ./Build test
 $ sudo ./Build install
-</code></pre>
-
-<p>You may need to install the Perl package dependencies first which are done as
-below:</p>
-
-<pre><code>$ sudo cpan -i Moo Pegex App::Prove
-</code></pre>
-
-<p>or using <code>App::cpanminus</code></p>
-
-<pre><code>$ cpanm App::Prove
-$ cpanm Pegex
-$ cpanm Moo
 </code></pre>
 
 <h2 id="dependencies">Dependencies</h2>
@@ -135,8 +127,31 @@ $ cpanm Moo
 <li><code>Moo</code> (this is needed for multiple inheritance management. Needs to be
  installed from CPAN)</li>
 <li><code>Getopt::Long</code> (for handling command line options. Comes with perl itself)</li>
+<li><code>Capture::Tiny</code> (for trapping screen outputs and errors)</li>
+<li><code>File::Which</code> (for finding paths to <code>gpasm</code> and <code>gplink</code>)</li>
+<li><code>Alien::gputils</code> (for installing <code>gputils</code> if not available)</li>
 <li><code>XXX</code> (only required for debugging)</li>
 </ul>
+
+<p>You may need to install the Perl package dependencies first which are done as
+below:</p>
+
+<pre><code>$ sudo cpan -i Moo Pegex App::Prove File::Which Capture::Tiny
+</code></pre>
+
+<p>or using <code>App::cpanminus</code></p>
+
+<pre><code>$ cpanm App::Prove
+$ cpanm Pegex
+$ cpanm Moo
+</code></pre>
+
+<p>Optionally the user can also install on Linux and Mac OSX:</p>
+
+<pre><code>$ cpanm Alien::gputils
+</code></pre>
+
+<p>This will install the <code>gputils</code> package if not already present on the system.</p>
 
 <h2 id="testingthemoduledevelopersonly">Testing the Module (Developers Only)</h2>
 
