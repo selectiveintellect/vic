@@ -5,6 +5,8 @@ use Module::Build;
 my %gputils = ('Alien::gputils' => 0.02);
 %gputils = () if $^O =~ /mswin32|cygwin/i;
 
+my %pl_files = ();
+%pl_files = ( PL_files => { 'share/rebuild-grammar.PL' => [] } ) if $ENV{DEVELOPER};
 my $build = Module::Build->new(
     module_name => 'VIC',
     license => 'perl',
@@ -12,10 +14,8 @@ my $build = Module::Build->new(
     dist_abstract => 'VIC is a high level syntax to generate PIC microcontroller assembly',
     dist_version_from => 'lib/VIC.pm',
     create_readme => 0,
-    create_license => 0,
     configure_requires => {
         'Module::Build' => 0,
-        'Software::License' => 0,
     },
     build_requires => {
         'Module::Build' => 0,
@@ -52,14 +52,14 @@ my $build = Module::Build->new(
             repository => 'https://github.com/selectiveintellect/vic',
             bugtracker => 'https://github.com/selectiveintellect/vic/issues',
             x_IRC => 'irc://irc.freenode.net/#vic',
-            #x_Twitter => 'https://twitter.com/_vicash_',
+            x_twitter => 'https://twitter.com/_vicash_',
         },
         keywords => [qw/VIC PIC assembly/],
         no_index => {
             directory => [qw/ t /],
         },
     },
-    PL_files => { 'share/rebuild-grammar.PL' => [] },
+    %pl_files,
 );
 
 $build->create_build_script;
