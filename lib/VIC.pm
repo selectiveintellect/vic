@@ -177,6 +177,10 @@ sub assemble($$) {
             $inc2 .= " -I $_ " if -d $_;
         }
     }
+    $codfile = File::Spec->rel2abs($codfile);
+    $stcfile = File::Spec->rel2abs($stcfile);
+    $hexfile = File::Spec->rel2abs($hexfile);
+    $objfile = File::Spec->rel2abs($objfile);
     my $gpasm_cmd = "$gpasm $inc1 -p $chip -M -c $output";
     my $gplink_cmd = "$gplink $inc2 -q -m -o $hexfile $objfile ";
     print "$gpasm_cmd\n" if $Verbose;
@@ -185,7 +189,7 @@ sub assemble($$) {
     system($gplink_cmd) == 0 or die "Unable to run '$gplink_cmd': $?";
     my $fh;
     open $fh, ">$stcfile" or die "Unable to write $stcfile: $?";
-    print $fh "load s $codfile\n";
+    print $fh "load s '$codfile'\n";
     close $fh;
     return { hex => $hexfile, obj => $objfile, cod => $codfile, stc => $stcfile };
 }
