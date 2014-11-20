@@ -1,7 +1,7 @@
 package VIC::PIC::P18F452;
 use strict;
 use warnings;
-our $VERSION = '0.18';
+our $VERSION = '0.19';
 $VERSION = eval $VERSION;
 use Moo;
 extends 'VIC::PIC::P18F442';
