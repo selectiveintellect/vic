@@ -13,7 +13,8 @@ sub usage {
     Usage: vic [options] <input file>
 
         -h, --help            This help message
-        -V, --version         Version number
+        --version             Version number
+        --verbose             Verbose printing during compilation
         -p, --pic <PIC>       Use this PIC choice instead of the one in the code
         -o, --output <file>   Writes the compiled syntax to the given output file
         -d, --debug           Dump the compile tree for debugging
