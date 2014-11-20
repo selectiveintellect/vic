@@ -10,6 +10,7 @@ use VIC::Grammar;
 use VIC::Receiver;
 
 our $Debug = 0;
+our $Verbose = 0;
 our $Intermediate = 0;
 our $GPASM;
 our $GPLINK;
@@ -53,7 +54,7 @@ sub _load_gputils {
         };
         unless ($@) {
             my $alien = Alien::gputils->new();
-            print "Looking for gpasm and gplink using Alien::gputils\n" if $Debug;
+            print "Looking for gpasm and gplink using Alien::gputils\n" if $Verbose;
             if ($alien) {
                 $gpasm = $alien->gpasm;
                 $gplink = $alien->gplink;
@@ -61,7 +62,7 @@ sub _load_gputils {
             }
         }
         unless (defined $gpasm and defined $gplink) {
-            print "Looking for gpasm and gplink in \$ENV{PATH}\n" if $Debug;
+            print "Looking for gpasm and gplink in \$ENV{PATH}\n" if $Verbose;
             $gpasm = which('gpasm');
             $gplink = which('gplink');
         }
@@ -73,10 +74,13 @@ sub _load_gputils {
             }
         }
     };
-    print STDOUT $stdo if ($Debug and $stdo);
-    print STDERR $stde if ($Debug and $stde);
-    print STDERR "Using gpasm: $gpasm\n" if ($Debug and $gpasm);
-    print STDERR "Using gplink: $gplink\n" if ($Debug and $gplink);
+    if ($Verbose) {
+        print STDOUT $stdo if $stdo;
+        print STDERR $stde if $stde;
+        print STDERR "Using gpasm: $gpasm\n" if $gpasm;
+        print STDERR "Using gplink: $gplink\n" if $gplink;
+        print STDERR "gputils installed in: $bindir\n" if $bindir;
+    }
     $GPASM = $gpasm;
     $GPLINK = $gplink;
     $GPUTILSDIR = $bindir;
@@ -146,7 +150,9 @@ sub assemble($$) {
     }
     my $gpasm_cmd = "$gpasm $inc1 -p $chip -M -c $output";
     my $gplink_cmd = "$gplink $inc2 -q -m -o $hexfile $objfile ";
+    print "$gpasm_cmd\n" if $Verbose;
     system($gpasm_cmd) == 0 or die "Unable to run '$gpasm_cmd': $?";
+    print "$gplink_cmd\n" if $Verbose;
     system($gplink_cmd) == 0 or die "Unable to run '$gplink_cmd': $?";
     1;
 }

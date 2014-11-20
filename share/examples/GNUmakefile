@@ -22,7 +22,7 @@ else
 endif
 ifeq ($(VERBOSE),1)
  QUIET:=
- VICOPT:=-i $(PICOPT)
+ VICOPT:=-i $(PICOPT) --verbose
 else
  QUIET:=-q
  VICOPT:=$(PICOPT)

@@ -101,6 +101,7 @@ sub run {
     my $pic = undef;
     my $intermediate = undef;
     my $version = 0;
+    my $verbose = 0;
     my $list_chips = 0;
     my $list_sims = 0;
     my $check_support = undef;
@@ -115,6 +116,7 @@ sub run {
         "pic=s" => \$pic,
         "intermediate" => \$intermediate,
         "version" => \$version,
+        "verbose" => \$verbose,
         "list-chips" => \$list_chips,
         "list-simulators" => \$list_sims,
         "list-features=s" => \$chip_features,
@@ -134,6 +136,7 @@ sub run {
 
     $VIC::Debug = $debug;
     $VIC::Intermediate = $intermediate;
+    $VIC::Verbose = $verbose;
 
     my $fh;
     if (length $output) {

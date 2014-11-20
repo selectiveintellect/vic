@@ -50,6 +50,7 @@ sub compiles_ok {
     unless (defined $output) {
         croak("compiles_ok: must pass an output code to compare with");
     }
+    $VIC::Verbose = 0;
     my $compiled = VIC::compile($input);
     $compiled = sanitize($compiled);
     $output = sanitize($output);
@@ -100,6 +101,7 @@ sub assembles_ok {
     open $fh, ">$output" or die "Unable to open $output: $!";
     print $fh $compiled, "\n";
     close $fh;
+    $VIC::Verbose = 1;
     my $ok = $Tester->ok(VIC::assemble($chip, $output));
     if ($ok) {
         my $ff = File::Spec->catfile(File::Spec->tmpdir, $chip);
