@@ -75,11 +75,11 @@ sub _load_gputils {
         }
     };
     if ($Verbose) {
-        print STDOUT $stdo if $stdo;
+        print $stdo if $stdo;
         print STDERR $stde if $stde;
-        print STDERR "Using gpasm: $gpasm\n" if $gpasm;
-        print STDERR "Using gplink: $gplink\n" if $gplink;
-        print STDERR "gputils installed in: $bindir\n" if $bindir;
+        print "Using gpasm: $gpasm\n" if $gpasm;
+        print "Using gplink: $gplink\n" if $gplink;
+        print "gputils installed in: $bindir\n" if $bindir;
     }
     $GPASM = $gpasm;
     $GPLINK = $gplink;

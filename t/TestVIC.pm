@@ -84,6 +84,7 @@ sub assembles_ok {
     unless (defined $input) {
         croak("assembles_ok: must pass an input code to compile");
     }
+    $VIC::Verbose = 1;
     my ($gpasm, $gplink) = VIC::gputils();
     return $Tester->skip("gputils is not installed or cannot be found") unless (defined $gpasm and defined $gplink);
     return $Tester->skip("$gpasm is invalid.") unless -e $gpasm;
@@ -101,7 +102,6 @@ sub assembles_ok {
     open $fh, ">$output" or die "Unable to open $output: $!";
     print $fh $compiled, "\n";
     close $fh;
-    $VIC::Verbose = 1;
     my $ok = $Tester->ok(VIC::assemble($chip, $output));
     if ($ok) {
         my $ff = File::Spec->catfile(File::Spec->tmpdir, $chip);
