@@ -21,6 +21,7 @@ $VERSION = eval $VERSION;
 sub compile {
     my ($input, $pic) = @_;
 
+    die "No code given to compile\n" unless $input;
     my $parser = VIC::Parser->new(
         grammar => VIC::Grammar->new,
         receiver => VIC::Receiver->new(
