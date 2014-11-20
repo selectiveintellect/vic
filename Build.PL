@@ -39,7 +39,7 @@ my $build = Module::Build->new(
     recommends => {
         'XXX' => 0,
         'App::Prove' => 0,
-        'Alien::gputils' => 0.06,
+        'Alien::gputils' => 0.07,
     },
     share_dir => 'share',
     dynamic_config => 1,
