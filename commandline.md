@@ -10,7 +10,7 @@ long form:
 - `-h`, `--help`:
     This option displays the help message for the compiler.
 
-- `-V`, `--version`:
+- `--version`:
     This option displays the version number of the compiler.
 
 - `--list-chips`:
@@ -18,6 +18,10 @@ long form:
 
 - `--list-simulators`:
     This option lists the simulators supported by the compiler.
+
+- `--verbose`:
+    This option turns on verbose printing of the compiler during compile time. This is different
+from the `--debug` or `--intermediate` options which are for the compiled code.
 
 - `-d`, `--debug`:
     This option turns on internal debugging of the compiler's parser. The user
