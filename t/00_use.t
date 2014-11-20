@@ -4,6 +4,7 @@ use_ok('VIC');
 
 can_ok('VIC', 'compile');
 can_ok('VIC', 'assemble');
+can_ok('VIC', 'simulate');
 
 use_ok('t::TestVIC');
 

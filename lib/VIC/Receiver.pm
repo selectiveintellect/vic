@@ -43,6 +43,8 @@ sub list_chip_features { return VIC::PIC::Any::list_chip_features(@_); }
 
 sub current_chip { return $_[0]->pic->type; }
 
+sub current_simulator { return $_[0]->simulator->type; }
+
 sub got_mcu_select {
     my ($self, $type) = @_;
     # override the PIC in code if defined

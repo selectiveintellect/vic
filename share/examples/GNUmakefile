@@ -74,8 +74,8 @@ $(TARGETS): %: %.hex
 #%.hex: %.o
 #	$(GPLINK) $(QUIET) -m -o $@ $<
 
-%.stc: %.cod
-	@echo "load s $*.cod" | tee $*.stc
+#%.stc: %.cod
+#	@echo "load s $*.cod" | tee $*.stc
 
 #%.o %.cod: %.asm
 #	$(GPASM) -p$(PIC) -M -c $<
@@ -83,7 +83,7 @@ $(TARGETS): %: %.hex
 #%.asm: %.vic
 #	$(VIC) $(VICOPT) -o $@ $<
 
-%.hex %.asm %.cod %.o: %.vic
+%.hex %.asm %.cod %.stc %.o: %.vic
 	$(VIC) $(VICOPT) -o $@ $<
 
 -include $(HEXFILES:.hex=.d)

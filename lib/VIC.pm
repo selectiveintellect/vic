@@ -2,6 +2,7 @@ package VIC;
 use strict;
 use warnings;
 
+use Env qw(@PATH);
 use File::Spec;
 use File::Which qw(which);
 use Capture::Tiny ':all';
@@ -35,7 +36,8 @@ sub compile {
 
     my $output = $parser->parse($input);
     my $chip = $parser->receiver->current_chip();
-    return wantarray ? ($output, $chip) : $output;
+    my $sim = $parser->receiver->current_simulator();
+    return wantarray ? ($output, $chip, $sim) : $output;
 }
 
 sub supported_chips { return VIC::Receiver::supported_chips(); }
@@ -87,6 +89,27 @@ sub _load_gputils {
     return wantarray ? ($gpasm, $gplink, $bindir) : [$gpasm, $gplink, $bindir];
 }
 
+sub _load_simulator {
+    my $simtype = shift;
+    my $simexe;
+    die "Simulator type $simtype not supported yet\n" unless $simtype eq 'gpsim';
+    if ($^O =~ /mswin32/i) {
+        foreach (qw{PROGRAMFILES ProgramFiles PROGRAMFILES(X86)
+            ProgramFiles(X86) ProgamFileW6432 PROGRAMFILESW6432}) {
+            next unless exists $ENV{$_};
+            my $dir = ($ENV{$_} =~ /\s+/) ? Win32::GetShortPathName($ENV{$_}) : $ENV{$_};
+            push @PATH, File::Spec->catdir($dir, $simtype, 'bin') if $dir;
+        }
+        $simexe = which("$simtype.exe");
+        $simexe = which($simtype) unless $simexe;
+    } else {
+        $simexe = which($simtype);
+    }
+    print "$simtype found at $simexe\n" if ($Verbose and $simexe);
+    warn "$simtype not found\n" unless $simexe;
+    return $simexe;
+}
+
 sub gputils {
     return ($GPASM, $GPLINK, $GPUTILSDIR) if (defined $GPASM and defined $GPLINK
                                                 and defined $GPUTILSDIR);
@@ -117,12 +140,18 @@ sub assemble($$) {
     return unless defined $output;
     my $hexfile = $output;
     my $objfile = $output;
+    my $codfile = $output;
+    my $stcfile = $output;
     if ($output =~ /\.asm$/) {
         $hexfile =~ s/\.asm$/\.hex/g;
         $objfile =~ s/\.asm$/\.o/g;
+        $codfile =~ s/\.asm$/\.cod/g;
+        $stcfile =~ s/\.asm$/\.stc/g;
     } else {
         $hexfile = $output . '.hex';
         $objfile = $output . '.o';
+        $codfile = $output . '.hex';
+        $stcfile = $output . '.o';
     }
     my ($gpasm, $gplink, $bindir) = VIC::gputils();
     unless (defined $gpasm and defined $gplink and -e $gpasm and -e $gplink) {
@@ -154,6 +183,29 @@ sub assemble($$) {
     system($gpasm_cmd) == 0 or die "Unable to run '$gpasm_cmd': $?";
     print "$gplink_cmd\n" if $Verbose;
     system($gplink_cmd) == 0 or die "Unable to run '$gplink_cmd': $?";
+    my $fh;
+    open $fh, ">$stcfile" or die "Unable to write $stcfile: $?";
+    print $fh "load s $codfile\n";
+    close $fh;
+    return { hex => $hexfile, obj => $objfile, cod => $codfile, stc => $stcfile };
+}
+
+sub simulate {
+    my ($sim, $hh) = @_;
+    my $stc;
+    if (ref $hh eq 'HASH') {
+        $stc = $hh->{stc};
+    } elsif (ref $hh eq 'ARRAY') {
+        ($stc) = grep {/\.stc$/} @$hh;
+    } else {
+        $stc = $hh;
+    }
+    die "Cannot find $stc to run the simulator $sim on\n" unless (defined $stc and -e $stc);
+    my $simexe = &_load_simulator($sim);
+    die "$sim is not present in your system PATH for simulation\n" unless $simexe;
+    my $sim_cmd = "$simexe $stc";
+    print "$sim_cmd\n" if $Verbose;
+    system($sim_cmd) == 0 or die "Unable to run '$sim_cmd': $?";
     1;
 }
 
