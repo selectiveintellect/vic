@@ -2,9 +2,6 @@ use strict;
 use warnings;
 use Module::Build;
 
-my %gputils = ('Alien::gputils' => 0.02);
-%gputils = () if $^O =~ /mswin32|cygwin/i;
-
 my %pl_files = ();
 %pl_files = ( PL_files => { 'share/rebuild-grammar.PL' => [] } ) if $ENV{DEVELOPER};
 my $build = Module::Build->new(
@@ -42,7 +39,7 @@ my $build = Module::Build->new(
     recommends => {
         'XXX' => 0,
         'App::Prove' => 0,
-        %gputils,
+        'Alien::gputils' => 0.06,
     },
     share_dir => 'share',
     dynamic_config => 1,
