@@ -20,6 +20,8 @@ can_ok('VIC', 'supported_simulators');
 
 can_ok('VIC', 'is_chip_supported');
 
+can_ok('VIC', 'is_simulator_supported');
+
 can_ok('VIC', 'list_chip_features');
 
 can_ok('VIC', 'gputils');

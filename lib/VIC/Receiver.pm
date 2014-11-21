@@ -39,6 +39,8 @@ sub supported_simulators { return VIC::PIC::Any::supported_simulators(); }
 
 sub is_chip_supported { return VIC::PIC::Any::is_chip_supported(@_); }
 
+sub is_simulator_supported { return VIC::PIC::Any::is_simulator_supported(@_); }
+
 sub list_chip_features { return VIC::PIC::Any::list_chip_features(@_); }
 
 sub current_chip { return $_[0]->pic->type; }

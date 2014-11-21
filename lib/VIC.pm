@@ -9,6 +9,22 @@ use Capture::Tiny ':all';
 use VIC::Parser;
 use VIC::Grammar;
 use VIC::Receiver;
+use base qw(Exporter);
+
+our @EXPORT = qw(
+    compile
+    assemble
+    simulate
+    supported_chips
+    supported_simulators
+    gpasm
+    gplink
+    gputils
+    bindir
+    is_chip_supported
+    is_simulator_supported
+    list_chip_features
+);
 
 our $Debug = 0;
 our $Verbose = 0;
@@ -45,6 +61,8 @@ sub supported_chips { return VIC::Receiver::supported_chips(); }
 sub supported_simulators { return VIC::Receiver::supported_simulators(); }
 
 sub is_chip_supported { return VIC::Receiver::is_chip_supported(@_) };
+
+sub is_simulator_supported { return VIC::Receiver::is_simulator_supported(@_) };
 
 sub list_chip_features { return VIC::Receiver::list_chip_features(@_) };
 
