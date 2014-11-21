@@ -89,7 +89,6 @@ _start_conditional_2:
 	movf DUMMY, W
 	sublw 0x00
 	btfsc STATUS, C ;; W(DUMMY) > k(0x00) => C = 0
-	btfss STATUS, Z ;; 0 < dummy ?
 	goto _end_conditional_2
 	goto _true_4
 _end_conditional_2:
@@ -150,7 +149,6 @@ _start_conditional_0:
 	movf DUMMY, W
 	sublw 0x0F
 	btfss STATUS, C ;; W(DUMMY) <= k(0x0F) => C = 1
-	btfss STATUS, Z ;; 15 >= dummy ?
 	goto _end_conditional_0
 	goto _true_3
 _end_conditional_0:

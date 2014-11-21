@@ -1040,7 +1040,7 @@ sub _get_predicate {
         my $tlabel = $extra{SWAP} ? $extra{FALSE} : $extra{TRUE};
         my $elabel = $extra{END};
         $pred .= << "..."
-\tbtfss STATUS, Z ;; $comment ?
+;; $comment
 \tgoto $flabel
 \tgoto $tlabel
 $elabel:
@@ -1052,7 +1052,7 @@ $elabel:
                         "$extra{END}_t_$extra{COUNTER}";
         my $elabel = "$extra{END}_e_$extra{COUNTER}";
         $pred .=  << "...";
-\tbtfss STATUS, Z ;; $comment ?
+;; $comment
 \tgoto $flabel
 \tgoto $tlabel
 $flabel:
@@ -1109,6 +1109,7 @@ sub op_eq {
 \tbcf STATUS, Z
 \tmovf $rhs, W
 \txorwf $lhs, W
+\tbtfss STATUS, Z
 $pred
 ...
     } elsif ($rhs !~ $literal and $lhs =~ $literal) {
@@ -1119,6 +1120,7 @@ $pred
 \tbcf STATUS, Z
 \tmovf $rhs, W
 \txorlw $lhs
+\tbtfss STATUS, Z ;; $comment
 $pred
 ...
     } elsif ($rhs =~ $literal and $lhs !~ $literal) {
@@ -1129,6 +1131,7 @@ $pred
 \tbcf STATUS, Z
 \tmovf $lhs, W
 \txorlw $rhs
+\tbtfss STATUS, Z ;; $comment
 $pred
 ...
     } else {

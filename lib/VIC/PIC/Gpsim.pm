@@ -302,6 +302,10 @@ sub _get_operator {
     my $op = shift;
     return '==' if $op eq 'EQ';
     return '!=' if $op eq 'NE';
+    return '>' if $op eq 'GT';
+    return '>=' if $op eq 'GE';
+    return '<' if $op eq 'LT';
+    return '<=' if $op eq 'LE';
     return undef;
 }
 

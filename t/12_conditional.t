@@ -115,7 +115,6 @@ _end_conditional_0_0_e_1:
 	btfss STATUS, Z  ;; VIC_STACK + 0 is false if it is set else true
 	movf VIC_STACK + 1, W
 	btfss STATUS, Z ;; VIC_STACK + 1 is false if it is set else true
-	btfss STATUS, Z ;; VIC_STACK + 0 && VIC_STACK + 1 ?
 	goto _end_conditional_0_0_f_2
 	goto _end_conditional_0_0_t_2
 _end_conditional_0_0_f_2:
@@ -142,7 +141,6 @@ _end_conditional_0_0:
 	btfsc STATUS, Z  ;; VAR1 is false if it is set else true
 	movf VAR2, W
 	btfsc STATUS, Z ;; VAR2 is false if it is set else true
-	btfss STATUS, Z ;; var1 || var2 ?
 	goto _end_conditional_0_1
 	goto _true_3
 _end_conditional_0_1:
