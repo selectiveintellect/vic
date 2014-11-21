@@ -83,7 +83,13 @@ $(TARGETS): %: %.hex
 #%.asm: %.vic
 #	$(VIC) $(VICOPT) -o $@ $<
 
-%.hex %.asm %.cod %.stc %.o: %.vic
+%.hex: %.vic
 	$(VIC) $(VICOPT) -o $@ $<
+
+%.asm: %.vic
+	$(VIC) --no-hex $(VICOPT) -o $@ $<
+
+%.sim: %.vic
+	$(VIC) --simulate $(VICOPT) -o $*.hex $<
 
 -include $(HEXFILES:.hex=.d)
