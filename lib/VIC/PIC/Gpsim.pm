@@ -180,7 +180,7 @@ sub attach_led {
                 my $simport = $self->_get_simport($port, $_);
                 $code .= $self->_gen_led($c, $x, $y, $node, $simport, $color);
             }
-            $self->led_count($self->led_count + $count);
+            $self->led_count($self->led_count + $count + 1);
         }
     }
     return $code;
