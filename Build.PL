@@ -4,6 +4,9 @@ use Module::Build;
 
 my %pl_files = ();
 %pl_files = ( PL_files => { 'share/rebuild-grammar.PL' => [] } ) if $ENV{DEVELOPER};
+my %gputils = ( 'Alien::gputils' => 0.07 );
+my %linux = $^O =~ /linux/i ? %gputils : ();
+my %nonlinux = $^O !~ /linux/i ? %gputils : ();
 my $build = Module::Build->new(
     module_name => 'VIC',
     license => 'perl',
@@ -35,11 +38,12 @@ my $build = Module::Build->new(
         'List::MoreUtils' => 0,
         'Moo' => 0,
         'namespace::clean' => 0,
+        %linux,
     },
     recommends => {
         'XXX' => 0,
         'App::Prove' => 0,
-        'Alien::gputils' => 0.07,
+        %nonlinux,
     },
     share_dir => 'share',
     dynamic_config => 1,
