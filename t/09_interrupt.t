@@ -372,9 +372,12 @@ _action_3:
 	;; clrw -- leftover from old code
 
 ;; generate code for !DIRXN
-	comf DIRXN, W
-	btfsc STATUS, Z
-	movlw 1
+    movf DIRXN, W
+    btfss STATUS, Z
+    goto $ + 3
+    movlw 1
+    goto $ + 2
+    clrw
 
 	movwf DIRXN
 

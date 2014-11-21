@@ -149,9 +149,12 @@ _end_conditional_0_1:
 
 
 	;;;; generate code for !VAR1
-	comf VAR1, W
-	btfsc STATUS, Z
+	movf VAR1, W
+	btfss STATUS, Z
+	goto $ + 3
 	movlw 1
+	goto $ + 2
+	clrw
 	movwf VIC_STACK + 0
 
 
@@ -201,9 +204,12 @@ _false_6:
 	movwf PORTC
 
 	;;;; generate code for !VAR2
-	comf VAR2, W
-	btfsc STATUS, Z
+	movf VAR2, W
+	btfss STATUS, Z
+	goto $ + 3
 	movlw 1
+	goto $ + 2
+	clrw
 	movwf VAR1
 
 
@@ -217,9 +223,12 @@ _true_2:
 	movwf PORTC
 
 	;;;; generate code for !VAR2
-	comf VAR2, W
-	btfsc STATUS, Z
+	movf VAR2, W
+	btfss STATUS, Z
+	goto $ + 3
 	movlw 1
+	goto $ + 2
+	clrw
 	movwf VAR1
 
 
@@ -246,9 +255,12 @@ _true_4:
 	movwf PORTC
 
 	;;;; generate code for !VAR1
-	comf VAR1, W
-	btfsc STATUS, Z
+	movf VAR1, W
+	btfss STATUS, Z
+	goto $ + 3
 	movlw 1
+	goto $ + 2
+	clrw
 	movwf VAR2
 
 
@@ -262,9 +274,12 @@ _true_5:
 	movwf PORTC
 
 	;;;; generate code for !VAR1
-	comf VAR1, W
-	btfsc STATUS, Z
+	movf VAR1, W
+	btfss STATUS, Z
+	goto $ + 3
 	movlw 1
+	goto $ + 2
+	clrw
 	movwf VAR2
 
 

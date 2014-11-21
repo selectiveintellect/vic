@@ -267,11 +267,18 @@ sub op_not {
     $var2 = uc $var2;
     return << "...";
 \t;;;; generate code for !$var2
-\tcomf $var2, W
-\tbtfsc STATUS, Z
+\tmovf $var2, W
+\tbtfss STATUS, Z
+\tgoto \$ + 3
 \tmovlw 1
+\tgoto \$ + 2
+\tclrw
 $pred
 ...
+# used to be
+#;;\tcomf $var2, W
+#;;\tbtfsc STATUS, Z
+#;;\tmovlw 1
 }
 
 sub op_comp {
