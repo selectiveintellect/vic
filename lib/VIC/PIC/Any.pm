@@ -94,6 +94,12 @@ sub supported_simulators {
     return wantarray ? @sims : \@sims;
 }
 
+sub is_simulator_supported {
+    my $ss = shift;
+    my @sims = &supported_simulators();
+    return (grep {/$ss/} @sims) ? 1 : 0;
+}
+
 sub is_chip_supported {
     my $chip = shift;
     my $ret = &_get_pic_type(uc $chip);
