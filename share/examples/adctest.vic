@@ -20,4 +20,5 @@ Simulator {
     stop_after 10s;
     log RC0;
     scope RC0;
+    #TODO: adc stimulus
 }

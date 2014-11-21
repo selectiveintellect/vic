@@ -15,3 +15,9 @@ Main {
         ror $display, 1;
     }
 }
+
+Simulator {
+    attach_led PORTC, 4, 'red';
+    stop_after 10s;
+    #TODO: adc stimulus
+}
