@@ -53,8 +53,8 @@ sub _load_gputils {
     my ($stdo, $stde) = capture {
         my $alien;
         eval q{
-            require Alien::gputils2;
-            $alien = Alien::gputils2->new();
+            require Alien::gputils;
+            $alien = Alien::gputils->new();
         } or warn "Cannot find Alien::gputils. Ignoring\n";
         if ($alien) {
             print "Looking for gpasm and gplink using Alien::gputils\n" if $Verbose;
