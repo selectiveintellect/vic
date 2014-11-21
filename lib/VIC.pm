@@ -51,17 +51,16 @@ sub list_chip_features { return VIC::Receiver::list_chip_features(@_) };
 sub _load_gputils {
     my ($gpasm, $gplink, $bindir);
     my ($stdo, $stde) = capture {
-        eval {
-            require Alien::gputils;
-        };
-        unless ($@) {
-            my $alien = Alien::gputils->new();
+        my $alien;
+        eval q{
+            require Alien::gputils2;
+            $alien = Alien::gputils2->new();
+        } or warn "Cannot find Alien::gputils. Ignoring\n";
+        if ($alien) {
             print "Looking for gpasm and gplink using Alien::gputils\n" if $Verbose;
-            if ($alien) {
-                $gpasm = $alien->gpasm;
-                $gplink = $alien->gplink;
-                $bindir = $alien->bin_dir;
-            }
+            $gpasm = $alien->gpasm;
+            $gplink = $alien->gplink;
+            $bindir = $alien->bin_dir;
         }
         unless (defined $gpasm and defined $gplink) {
             print "Looking for gpasm and gplink in \$ENV{PATH}\n" if $Verbose;
