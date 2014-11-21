@@ -1,7 +1,7 @@
 package VIC::PIC::Functions::PSP;
 use strict;
 use warnings;
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 $VERSION = eval $VERSION;
 use Carp;
 use POSIX ();
