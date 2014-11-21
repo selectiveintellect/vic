@@ -76,7 +76,7 @@ sub check_support {
     print "VIC supports '$chip'\n" if $flag;
 }
 
-sub list_chip_features {
+sub list_features {
     my $chip = shift;
     check_support($chip);
     my $hh = VIC::list_chip_features($chip);
@@ -133,7 +133,7 @@ sub run {
     print_chips() if $list_chips;
     print_sims() if $list_sims;
     check_support($check_support) if $check_support;
-    list_chip_features($chip_features) if $chip_features;
+    list_features($chip_features) if $chip_features;
     list_gputils() if $list_gputils;
     return if ($list_chips or $list_sims or $check_support or
                 $chip_features or $list_gputils);
