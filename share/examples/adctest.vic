@@ -14,3 +14,10 @@ Main {
         delay 100us;
     }
 }
+
+Simulator {
+    attach_led RC0;
+    stop_after 10s;
+    log RC0;
+    scope RC0;
+}

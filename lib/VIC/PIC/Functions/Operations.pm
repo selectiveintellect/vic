@@ -229,18 +229,30 @@ sub delay {
     if ($sec > 0) {
         my $fn = "_delay_${sec}s";
         $code .= "\tcall $fn\n";
-        $funcs->{$fn} = <<"....";
-\tm_delay_s D'$sec'
-\treturn
-....
+        my $fncode = '';
+        my $siter = $sec;
+        ## the number 50 comes from 255 * 197379 / 1e6
+        while ($siter >= 50) {
+            $fncode .= "\tm_delay_s D'50'\n";
+            $siter -= 50;
+        }
+        $fncode .= "\tm_delay_s D'$siter'\n" if $siter > 0;
+        $fncode .= "\treturn\n";
+        $funcs->{$fn} = $fncode;
     }
     if ($ms > 0) {
         my $fn = "_delay_${ms}ms";
         $code .= "\tcall $fn\n";
-        $funcs->{$fn} = <<"....";
-\tm_delay_ms D'$ms'
-\treturn
-....
+        my $fncode = '';
+        my $msiter = $ms;
+        ## the number 196 comes from 255 * 771 / 1000
+        while ($msiter >= 196) {
+            $fncode .= "\tm_delay_ms D'196'\n";
+            $msiter -= 196;
+        }
+        $fncode .= "\tm_delay_ms D'$msiter'\n" if $msiter > 0;
+        $fncode .= "\treturn\n";
+        $funcs->{$fn} = $fncode;
     }
     if ($us > 0) {
         # for less than 6 us we just inline the code
@@ -249,10 +261,16 @@ sub delay {
         } else {
             my $fn = "_delay_${us}us";
             $code .= "\tcall $fn\n";
-            $funcs->{$fn} = <<"....";
-\tm_delay_us D'$us'
-\treturn
-....
+            my $fncode = '';
+            my $usiter = $us;
+            ## the number 771 comes from (255 + 2) * 3
+            while ($usiter >= 771) {
+                $fncode .= "\tm_delay_us D'771'\n";
+                $usiter -= 771;
+            }
+            $fncode .= "\tm_delay_us D'$usiter'\n" if $usiter > 0;
+            $fncode .= "\treturn\n";
+            $funcs->{$fn} = $fncode;
         }
     }
     return wantarray ? ($code, $funcs, $macros) : $code;
