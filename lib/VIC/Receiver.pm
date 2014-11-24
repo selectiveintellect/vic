@@ -709,6 +709,7 @@ sub got_boolean {
     } else {
         $b = $list;
     }
+    return 0 unless defined $b;
     return 1 if $b =~ /TRUE|true/i;
     return 1 if $b == 1;
     return 0 if $b =~ /FALSE|false/i;

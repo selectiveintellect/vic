@@ -76,9 +76,9 @@ sub _load_gputils {
         } or warn "Cannot find Alien::gputils. Ignoring\n";
         if ($alien) {
             print "Looking for gpasm and gplink using Alien::gputils\n" if $Verbose;
-            $gpasm = $alien->gpasm;
-            $gplink = $alien->gplink;
-            $bindir = $alien->bin_dir;
+            $gpasm = $alien->gpasm() if $alien->can('gpasm');
+            $gplink = $alien->gplink() if $alien->can('gplink');
+            $bindir = $alien->bin_dir() if $alien->can('bin_dir');
         }
         unless (defined $gpasm and defined $gplink) {
             print "Looking for gpasm and gplink in \$ENV{PATH}\n" if $Verbose;
