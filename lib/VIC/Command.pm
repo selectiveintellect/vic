@@ -24,6 +24,7 @@ sub usage {
         --list-simulators     List the supported simulators
         --check <PIC>         Checks if the given PIC is supported
         --list-features <PIC> Lists the features of the PIC
+        --chip-pinout <PIC>   Draws the pin diagram of the PIC on screen
         --no-hex              Does not generate the hex file using gputils
         --list-gputils        List the path for the gputils executables
 
@@ -73,7 +74,9 @@ sub check_support {
     my $chip = shift;
     my $flag = VIC::is_chip_supported($chip);
     die "VIC does not support '$chip'\n" unless $flag;
-    print "VIC supports '$chip'\n" if $flag;
+    unless (@_) {
+        print "VIC supports '$chip'\n" if $flag;
+    }
 }
 
 sub list_features {
@@ -93,6 +96,12 @@ sub list_features {
     }
 }
 
+sub chip_pinouts {
+    my $chip = shift;
+    check_support($chip, 1);
+    VIC::print_pinout($chip);
+}
+
 sub run {
     my ($class, @args) = @_;
     local @ARGV = @args;
@@ -108,6 +117,7 @@ sub run {
     my $list_sims = 0;
     my $check_support = undef;
     my $chip_features = undef;
+    my $chip_pinouts = undef;
     my $no_hex = 0;
     my $list_gputils = 0;
     my $simulate = 0;
@@ -123,6 +133,7 @@ sub run {
         "list-chips" => \$list_chips,
         "list-simulators" => \$list_sims,
         "list-features=s" => \$chip_features,
+        "chip-pinout=s" => \$chip_pinouts,
         "check=s" => \$check_support,
         "no-hex" => \$no_hex,
         "list-gputils" => \$list_gputils,
@@ -134,9 +145,10 @@ sub run {
     print_sims() if $list_sims;
     check_support($check_support) if $check_support;
     list_features($chip_features) if $chip_features;
+    chip_pinouts($chip_pinouts) if $chip_pinouts;
     list_gputils() if $list_gputils;
     return if ($list_chips or $list_sims or $check_support or
-                $chip_features or $list_gputils);
+                $chip_features or $list_gputils or $chip_pinouts);
 
     $VIC::Debug = $debug;
     $VIC::Intermediate = $intermediate;

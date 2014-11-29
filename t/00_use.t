@@ -24,6 +24,7 @@ can_ok('VIC', 'is_simulator_supported');
 
 can_ok('VIC', 'list_chip_features');
 
+can_ok('VIC', 'print_pinout');
 can_ok('VIC', 'gputils');
 can_ok('VIC', 'gpasm');
 can_ok('VIC', 'gplink');

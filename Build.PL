@@ -57,7 +57,7 @@ my $build = Module::Build->new(
         },
         keywords => [qw/VIC PIC assembly/],
         no_index => {
-            directory => [qw/ t /],
+            directory => [qw{t share}],
         },
     },
     %pl_files,

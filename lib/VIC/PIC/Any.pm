@@ -121,6 +121,17 @@ sub list_chip_features {
     };
 }
 
+sub print_pinout {
+    my $chip = shift;
+    my $ctype = &_get_pic_type($chip);
+    unless (defined $ctype) {
+        carp "Chip $chip is not supported\n";
+        return;
+    }
+    my $obj = __PACKAGE__->new($chip);
+    return $obj->print_pinout;
+}
+
 1;
 
 =encoding utf8
