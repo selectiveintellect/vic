@@ -14,7 +14,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.57)
   {
     '+grammar' => 'vic',
     '+toprule' => 'program',
-    '+version' => '0.2.4',
+    '+version' => '0.2.5',
     'COMMA' => {
       '.rgx' => qr/\G,/
     },
@@ -115,6 +115,9 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.57)
           '.any' => [
             {
               '.ref' => 'number_units'
+            },
+            {
+              '.ref' => 'real_number'
             },
             {
               '.ref' => 'number'
@@ -730,6 +733,16 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.57)
         },
         {
           '.ref' => 'EOS'
+        }
+      ]
+    },
+    'real_number' => {
+      '.any' => [
+        {
+          '.rgx' => qr/\G(\-?[0-9]*\.[0-9]+)/
+        },
+        {
+          '.rgx' => qr/\G(\-?[0-9]+\.[0-9]*)/
         }
       ]
     },

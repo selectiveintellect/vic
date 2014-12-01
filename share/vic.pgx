@@ -1,5 +1,5 @@
 %grammar vic
-%version 0.2.4
+%version 0.2.5
 #COPYRIGHT: 2014 Vikas N Kumar <vikas@cpan.org>. All Rights Reserved
 
 # mcu-select is necessary.
@@ -93,6 +93,7 @@ string: single-quoted-string | double-quoted-string
 number-units: number - units
 # number handles both hex and non-hex values for ease of use
 number: /('0'[xX] HEX+ | '-'? DIGIT+)/ | boolean
+real-number: /('-'? DIGIT* '.' DIGIT+)/ | /('-'? DIGIT+ '.' DIGIT*)/
 units: /([mu]?'s'|[kM]?'Hz' | '%')/
 boolean: /('TRUE'|'FALSE'|'true'|'false'|'0'|'1')/
 
@@ -102,7 +103,7 @@ modifier-constant: identifier-without-keyword - constant
 variable: DOLLAR identifier
 constant: number-units | number | string | array
 array: start-array - array-element-type* % list-separator - end-array
-array-element-type: - (number-units | number | string) -
+array-element-type: - (number-units | real-number | number | string) -
 identifier-without-keyword: /(! keyword)( ALPHA[ WORDS]*)/
 identifier: /( ALPHA [ WORDS ]*)/
 keyword: /'if'|'else'|'while'|'true'|'false'|'TRUE'|'FALSE'/

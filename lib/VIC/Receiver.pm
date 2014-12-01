@@ -748,6 +748,14 @@ sub got_number_units {
     return $num;
 }
 
+sub got_real_number {
+    my ($self, $list) = @_;
+    $list .= '0' if $list =~ /\d+\.$/;
+    $list = "0.$1" if $list =~ /^\.(\d+)$/;
+    $list = "-0.$1" if $list =~ /^-\.(\d+)$/;
+    return $list;
+}
+
 # remove the dumb stuff from the tree
 sub got_comment { return; }
 
