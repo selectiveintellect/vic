@@ -20,5 +20,10 @@ Simulator {
     stop_after 10s;
     log RC0;
     scope RC0;
-    #TODO: adc stimulus
+    #adc stimulus
+    stimulate AN0, every 3s, wave [
+        500000, 2.85, 1000000, 3.6,
+        1500000, 4.5, 2000000, 3.2,
+        2500000, 1.8
+    ];
 }

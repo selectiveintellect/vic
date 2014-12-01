@@ -18,6 +18,13 @@ Main {
 
 Simulator {
     attach_led PORTC, 4, 'red';
+    #adc stimulus
+    stimulate AN0, every 3s, wave [
+        500000, 2.85, 1000000, 3.6,
+        1500000, 4.5, 2000000, 3.2,
+        2500000, 1.8
+    ];
+    scope AN0;
+    log AN0;
     stop_after 10s;
-    #TODO: adc stimulus
 }

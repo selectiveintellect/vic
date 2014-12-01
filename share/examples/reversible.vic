@@ -30,8 +30,8 @@ Main {
 Simulator {
     attach_led PORTC, 4, 'red';
     logfile "reversible.lxt";
-    log RA3;
-    scope RA3;
+    log RA3, AN0;
+    scope RA3, AN0;
     # stimulus should reflect the debounce delay to be viable
     stimulate RA3, every 5s, wave [
         300, 1, 1300, 0,
@@ -42,7 +42,12 @@ Simulator {
         5800, 1, 6800, 0,
         6900, 1, 8000, 0
     ];
+    #adc stimulus
+    stimulate AN0, every 3s, wave [
+        500000, 2.85, 1000000, 3.6,
+        1500000, 4.5, 2000000, 3.2,
+        2500000, 1.8
+    ];
     stop_after 30s;
     autorun;
-    #TODO: adc stimulus
 }
