@@ -18,11 +18,26 @@ Main {
         delay 100us;
     }
 }
+
+Simulator {
+    attach_led RC0;
+    stop_after 10s;
+    log RC0;
+    scope RC0;
+    #adc stimulus
+    stimulate AN0, every 3s, wave [
+        500000, 2.85, 1000000, 3.6,
+        1500000, 4.5, 2000000, 3.2,
+        2500000, 1.8
+    ];
+}
 ...
 
 my $output = <<'...';
 ;;;; generated code for PIC header file
 #include <p16f690.inc>
+;;;; generated code for gpsim header file
+#include <coff.inc>
 
 ;;;; generated code for variables
 GLOBAL_VAR_UDATA udata
@@ -165,6 +180,42 @@ _delayw_msecs_loop_0:
 
 
 	org 0
+
+;;;; generated common code for the Simulator
+	.sim "module library libgpsim_modules"
+	.sim "p16f690.xpos = 200"
+	.sim "p16f690.ypos = 200"
+	.sim "p16f690.frequency = 4000000"
+
+;;;; generated code for Simulator
+	.sim "module load led L0"
+	.sim "L0.xpos = 100"
+	.sim "L0.ypos = 50"
+	.sim "L0.color = red"
+	.sim "node rc0led"
+	.sim "attach rc0led portc0 L0.in"
+
+	.sim "break c 100000000"
+
+	.sim "log r portc"
+	.sim "log w portc"
+
+	.sim "scope.ch0 = \"portc0\""
+
+	.sim "echo creating stimulus number 0"
+	.sim "stimulus asynchronous_stimulus"
+	.sim "initial_state 0"
+	.sim "start_cycle 0"
+	.sim "analog"
+	.sim "period 3000000"
+	.sim "{ 500000,2.85,1000000,3.6,1500000,4.5,2000000,3.2,2500000,1.8 }"
+	.sim "name stim0"
+	.sim "end"
+	.sim "echo done creating stimulus number 0"
+	.sim "node stim0AN0"
+	.sim "attach stim0AN0 stim0 porta0"
+
+
 
 ;;;; generated code for Main
 _start:
