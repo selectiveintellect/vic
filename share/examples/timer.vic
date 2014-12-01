@@ -11,3 +11,9 @@ Main {
         };
     }
 }
+
+Simulator {
+    attach_led PORTC, 8, 'red';
+    stop_after 1s;
+    autorun;
+}

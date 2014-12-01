@@ -28,3 +28,27 @@ Main {
         };
     }
 }
+
+Simulator {
+    attach_led PORTC, 4, 'red';
+    log RA3, AN0;
+    scope RA3, AN0;
+    # stimulus should reflect the debounce delay to be viable
+    stimulate RA3, every 5s, wave [
+        300, 1, 1300, 0,
+        1400, 1, 2400, 0,
+        2500, 1, 3500, 0,
+        3600, 1, 4600, 0,
+        4700, 1, 5700, 0,
+        5800, 1, 6800, 0,
+        6900, 1, 8000, 0
+    ];
+    #adc stimulus
+    stimulate AN0, every 3s, wave [
+        500000, 2.85, 1000000, 3.6,
+        1500000, 4.5, 2000000, 3.2,
+        2500000, 1.8
+    ];
+    stop_after 30s;
+    autorun;
+}

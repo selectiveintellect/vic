@@ -12,7 +12,7 @@ Main {
 
 Simulator {
     attach_led CCP1;
-    stop_after 1s;
+    stop_after 100ms;
     log CCP1;
     scope CCP1;
     autorun;
