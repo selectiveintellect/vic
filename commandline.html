@@ -51,12 +51,15 @@ long form:</p>
 <ul>
 <li><p><code>-h</code>, <code>--help</code>:
 This option displays the help message for the compiler.</p></li>
-<li><p><code>-V</code>, <code>--version</code>:
+<li><p><code>--version</code>:
 This option displays the version number of the compiler.</p></li>
 <li><p><code>--list-chips</code>:
 This option lists the microcontroller chips supported by the compiler.</p></li>
 <li><p><code>--list-simulators</code>:
 This option lists the simulators supported by the compiler.</p></li>
+<li><p><code>--verbose</code>:
+This option turns on verbose printing of the compiler during compile time. This is different
+from the <code>--debug</code> or <code>--intermediate</code> options which are for the compiled code.</p></li>
 <li><p><code>-d</code>, <code>--debug</code>:
 This option turns on internal debugging of the compiler&#8217;s parser. The user
 should not have to use this option unless filing a bug report. It is mainly for
@@ -67,9 +70,12 @@ assembly outputs as comments. This can be used by the user to view how the
 compiler generates code for the VIC&trade; statements and by the developer for
 debugging code generation.</p></li>
 <li><p><code>-o &lt;FILE&gt;</code>, <code>--output &lt;FILE&gt;</code>:
-This option tells the compiler to save the assembly output to the <code>FILE</code>
-argument provided. If the user does not provide this option the compiler
-prints the assembly output to the screen(<code>stdout</code>).</p></li>
+This option tells the compiler to save the output to the <code>FILE</code>
+argument provided. If the filename ends with <code>.asm</code> the compiler only compiles
+to assembly. If the filename ends with <code>.hex</code> or anything else, the compiler
+will compile to assembly and also try to link it to create a binary hex file to
+be programmed onto the chip. However, if <code>gputils</code> is not installed, only the
+compilation to assembly will take place. If the user does not provide this option the compiler prints the assembly output to the screen(<code>stdout</code>).</p></li>
 <li><p><code>-p &lt;MCU Target&gt;</code>, <code>--pic &lt;MCU Target&gt;</code>:
 This is the most <strong>useful</strong> of all options where the user can compile a code
 written for one type of Microchip&#8217;s PIC&reg; MCU target for a different MCU target. This
@@ -80,6 +86,12 @@ enables the user to achieve the following goals:</p>
 <li>verify if a piece of code can work on another Microchip&#8217;s PIC&reg; MCU without reading that MCU&#8217;s data sheet</li>
 <li>find out the parts of the code which will <em>not</em> work on another MCU</li>
 </ol></li>
+<li><p><code>--simulate</code>
+This has to be used along with the <code>--output</code> option defined above as it
+uses the compiled and linked file and starts the simulator <code>gpsim</code> or any other
+selected simulator with it. This
+allows the user to quickly run everything from the same executable <code>vic</code> without
+having to type the simulator&#8217;s commands directly.</p></li>
 <li><p><code>--supports &lt;MCU Target&gt;</code>:
 This is similar to the <code>-p</code> option above except that it does <em>not</em> compile any
 code. It can be used by the user or any other external program to verify if a
@@ -89,6 +101,41 @@ cannot be compiled to that target.</p></li>
 This is similar to the <code>--supports</code> option above except that it also lists
 the features supported by the chip. This automatically turns on the <code>--supports</code>
 option.</p></li>
+<li><p><code>--chip-pinout &lt;MCU Target&gt;</code>:
+This option draws the pin diagram of the chip on the terminal that it has
+been invoked in. This allows for the user to quickly see how the pins are
+arranged on a particular chip and what their names are, as per feature.</p></li>
+</ul>
+
+<p>Here is an example of the pin diagram of the <code>PIC16F631</code> chip.</p>
+
+<pre><code>                           +======__======+
+                    Vdd ---|1           20|--- Vss
+                           |              |
+   RA5/T1CKI/OSC1/CLKIN ---|2           19|--- RA0/C1N+/ICSPDAT/ULPWU
+                           |              |
+    RA4/T1G/OSC2/CLKOUT ---|3           18|--- RA1/C12IN0-/ICSPCLK
+                           |              |
+           RA3/MCLR/Vpp ---|4           17|--- RA2/T0CKI/INT/C1OUT
+                           |              |
+                    RC5 ---|5           16|--- RC0/C2IN+
+                           |              |
+                           |   P16F631    |
+                           |              |
+              RC4/C2OUT ---|6           15|--- RC1/C12IN1-
+                           |              |
+            RC3/C12IN3- ---|7           14|--- RC2/C12IN2-
+                           |              |
+                    RC6 ---|8           13|--- RB4
+                           |              |
+                    RC7 ---|9           12|--- RB5
+                           |              |
+                    RB7 ---|10          11|--- RB6
+                           |              |
+                           +==============+
+</code></pre>
+
+<ul>
 <li><p><code>--list-gputils</code>:
 This option lets the user know where the <code>gpasm</code> and <code>gplink</code> tools are
 located on the current system for the <code>gputils</code> package. The <code>vic</code> compiler
@@ -104,17 +151,32 @@ user does not want to compile the <code>.hex</code> file.</p></li>
 
 <p>Based on these options here are some sample examples on how to use them:</p>
 
-<pre><code>$ vic -o helloworld.asm helloworld.vic
-$ vic -p p16f631 -o helloworld.hex helloworld.vic
-$ vic -h
+<pre><code># to print the compiler version
 $ vic -V
-# to compile only to assembly and not a hex file
+# to print the help message
+$ vic -h
+# to compile to a hex file
+$ vic -o helloworld.hex helloworld.vic
+# to compile to assembly
+$ vic -o helloworld.asm helloworld.vic
+# to compile to a hex file but override the chip in the code
+$ vic -p p16f631 -o helloworld.hex helloworld.vic
+# to compile only to assembly with intermediate code and not to a hex file
 $ vic -i -o helloworld.asm helloworld.vic
 $ vic -i -o helloworld.hex --no-hex helloworld.vic
+# to compile to a hex file and simulate the code
+$ vic -o helloworld.hex --simulate helloworld.vic
+# to list the chips supported
 $ vic --list-chips
+# to list the simulators supported
 $ vic --list-simulators
+# to check if the chip is supported
 $ vic --supports P12F683
+# to list the chip's features
 $ vic --list-chip-features P16F685
+# to print the chip's pin diagram
+$ vic --chip-pinout P16F631
+# to print the locations of the gputils tools
 $ vic --list-gputils
 </code></pre>
 
@@ -136,7 +198,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-11-18 15:43:18 -0500.
+        This page was last updated on 2014-12-02 10:39:14 -0500.
     </p>
     </div>
     </section>

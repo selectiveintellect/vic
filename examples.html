@@ -205,27 +205,40 @@ Main {
     $var1 = TRUE;
     $var2 = FALSE;
     Loop {
-        if $var1 != FALSE &amp;&amp; $var2 != FALSE {
-            write PORTC, 1;
+        if ($var1 != FALSE &amp;&amp; $var2 != FALSE) {
             $var1 = !$var2;
+            sim_assert $var1 == FALSE, &quot;$var1 == FALSE. block 1&quot;;
+            write PORTC, 1;
+            sim_assert &quot;pause. block 1&quot;;
         } else if $var1 || $var2 {
-            write PORTC, 2;
             $var2 = $var1;
+            write PORTC, 2;
+            sim_assert &quot;pause. block 2&quot;;
         } else if !$var1 {
-            write PORTC, 4;
             $var2 = !$var1;
+            write PORTC, 4;
+            sim_assert &quot;pause. block 3&quot;;
         } else if $var2 {
-            write PORTC, 4;
             $var2 = !$var1;
+            write PORTC, 4;
+            sim_assert &quot;pause. block 4&quot;;
         } else {
             write PORTC, 8;
             $var1 = !$var2;
+            sim_assert &quot;pause. block 5&quot;;
+            break;
         };
         $var3 = 0xFF;
         while $var3 != 0 {
             $var3 &gt;&gt;= 1;
         }
     }
+    sim_assert &quot;pause. end of main&quot;;
+}
+
+Simulator {
+    attach_led PORTC, 8;
+    stop_after 5s;
 }
 </code></pre>
 
@@ -245,15 +258,18 @@ Main {
         while $dummy != 0 {
             $dummy &gt;&gt;= 1;
             write PORTC, 1;
+            sim_assert $dummy &gt; 0x0F, &quot;dummy is &gt; 0x0F&quot;;
             if $dummy &lt;= 0x0F {
                 break;
             }
         }
-        while $dummy &gt; 0 {
+        sim_assert $dummy == 0x0F, &quot;dummy is 0x0F&quot;;
+        while $dummy &gt; 1 {
             $dummy &gt;&gt;= 1;
             write PORTC, 3;
             continue;
         }
+        sim_assert $dummy == 1, &quot;dummy is 1&quot;;
         if $dummy == TRUE {
             write PORTC, 2;
             break;
@@ -262,10 +278,16 @@ Main {
             continue;
         }
     }
+    sim_assert &quot;we have exited the infinite loop 1&quot;;
     # we have broken from the loop
     while TRUE {
         write PORTC, 0xFF;
     }
+}
+
+Simulator {
+    attach_led PORTC, 8;
+    stop_after 3s;
 }
 </code></pre>
 
@@ -396,6 +418,11 @@ In our case, we tested this on physical hardware where the pin <code>AN0</code> 
 connected to a potentiometer switch (variable rotation) and the pin <code>RC0</code> was
 connected to an LED. The code can be found in <code>share/examples/adctest.vic</code>.</p>
 
+<p>The difference in use of the <a href="simulator.html#wavesimulations"><code>stimulate</code>
+statement</a> is that it accepts floating point
+values. When the values are floating point then the stimulus is assumed to be
+analog.</p>
+
 <pre><code>PIC P16F690;
 
 pragma adc right_justify = 0;
@@ -411,6 +438,19 @@ Main {
         write RC0, 0;
         delay 100us;
     }
+}
+
+Simulator {
+    attach_led RC0;
+    stop_after 10s;
+    log RC0;
+    scope RC0;
+    #adc stimulus
+    stimulate AN0, every 3s, wave [
+        500000, 2.85, 1000000, 3.6,
+        1500000, 4.5, 2000000, 3.2,
+        2500000, 1.8
+    ];
 }
 </code></pre>
 
@@ -440,6 +480,19 @@ Main {
         ror $display, 1;
     }
 }
+
+Simulator {
+    attach_led PORTC, 4, 'red';
+    #adc stimulus
+    stimulate AN0, every 3s, wave [
+        500000, 2.85, 1000000, 3.6,
+        1500000, 4.5, 2000000, 3.2,
+        2500000, 1.8
+    ];
+    scope AN0;
+    log AN0;
+    stop_after 10s;
+}
 </code></pre>
 
 <h2 id="reversingledsonswitchpress">Reversing LEDs on Switch Press</h2>
@@ -452,7 +505,8 @@ and that the analog channel/pin <code>AN0</code> is connected to a variable pote
 <p>When the user presses a switch the direction of lighting up the 4 LEDs changes
 from left to right and back. When the user rotates the potentiometer, the speed
 of blinking of the 4 LEDs changes accordingly. This example can be found in
-<code>share/examples/reversible.vic</code>.</p>
+<code>share/examples/reversible.vic</code>. Here we see both the digital and analog
+stimulus being applied in the <code>Simulator</code> block.</p>
 
 <pre><code>PIC P16F690;
 
@@ -482,6 +536,31 @@ Main {
         };
     }
 }
+
+Simulator {
+    attach_led PORTC, 4, 'red';
+    logfile &quot;reversible.lxt&quot;;
+    log RA3, AN0;
+    scope RA3, AN0;
+    # stimulus should reflect the debounce delay to be viable
+    stimulate RA3, every 5s, wave [
+        300, 1, 1300, 0,
+        1400, 1, 2400, 0,
+        2500, 1, 3500, 0,
+        3600, 1, 4600, 0,
+        4700, 1, 5700, 0,
+        5800, 1, 6800, 0,
+        6900, 1, 8000, 0
+    ];
+    #adc stimulus
+    stimulate AN0, every 3s, wave [
+        500000, 2.85, 1000000, 3.6,
+        1500000, 4.5, 2000000, 3.2,
+        2500000, 1.8
+    ];
+    stop_after 30s;
+    autorun;
+}
 </code></pre>
 
 <h2 id="timerusage">Timer Usage</h2>
@@ -493,6 +572,9 @@ similar to the <a href="#rotatingoverleds">Rotating over LEDs example</a>, excep
 instead of rotating the blinking of the LEDs, it displays the binary values
 ranging from <code>0-15</code> on the LEDs connected to <code>PORTC</code> (pins <code>RC0-RC7</code>). This can be
 found in the <code>share/examples/timer.vic</code> file.</p>
+
+<p>The timer features, if used, are automatically simulated by the simulator and
+the user does not have to create any fake stimuli for it.</p>
 
 <pre><code>PIC P16F690;
 
@@ -507,6 +589,12 @@ Main {
         };
     }
 }
+
+Simulator {
+    attach_led PORTC, 8, 'red';
+    stop_after 1s;
+    autorun;
+}
 </code></pre>
 
 <h2 id="interruptserviceroutineusage">Interrupt Service Routine Usage</h2>
@@ -517,6 +605,10 @@ as in the <a href="#reversingledsonswitchpress">Reversing LEDs on Switch Press</
 This is available in the <code>share/examples/interrupt.vic</code> file. As you can see,
 the ADC is beign read using the interrupt. This is more efficiently implemented
 as checking the ADC is now done on an event-based timer instead of using a synchronous MCU loop.</p>
+
+<p>The interrupt handling is automatically simulated by the simulator, but the
+external stimuli like debouncing the switch and analog stimulus have to still be
+added by the user.</p>
 
 <pre><code>PIC P16F690;
 
@@ -548,6 +640,30 @@ Main {
         };
     }
 }
+
+Simulator {
+    attach_led PORTC, 4, 'red';
+    log RA3, AN0;
+    scope RA3, AN0;
+    # stimulus should reflect the debounce delay to be viable
+    stimulate RA3, every 5s, wave [
+        300, 1, 1300, 0,
+        1400, 1, 2400, 0,
+        2500, 1, 3500, 0,
+        3600, 1, 4600, 0,
+        4700, 1, 5700, 0,
+        5800, 1, 6800, 0,
+        6900, 1, 8000, 0
+    ];
+    #adc stimulus
+    stimulate AN0, every 3s, wave [
+        500000, 2.85, 1000000, 3.6,
+        1500000, 4.5, 2000000, 3.2,
+        2500000, 1.8
+    ];
+    stop_after 30s;
+    autorun;
+}
 </code></pre>
 
 <h2 id="pulsewidthmodulationpwm">Pulse Width Modulation (PWM)</h2>
@@ -557,6 +673,9 @@ Main {
 <p>The <em>single</em> PWM example can be found in <code>share/examples/pwm2.vic</code>. This example
 starts a PWM duty cycle at <code>20%</code> and then updates it to <code>30%</code>.</p>
 
+<p>The PWM is automatically simulated by the simulator and the user just has to
+attach an LED and/or a scope to view the output.</p>
+
 <pre><code>PIC P16F690;
 
 Main {
@@ -564,6 +683,12 @@ Main {
     delay 5s;
     pwm_update 1220Hz, 30%; # update duty cycle
     delay 5s;
+}
+Simulator {
+    attach_led CCP1;
+    log CCP1;
+    scope CCP1;
+    autorun;
 }
 </code></pre>
 
@@ -585,7 +710,7 @@ Main {
 
 Simulator {
     attach_led CCP1;
-    stop_after 20s;
+    stop_after 100ms;
     log CCP1;
     scope CCP1;
     autorun;
@@ -609,7 +734,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-11-01 13:37:49 -0400.
+        This page was last updated on 2014-12-02 10:21:28 -0500.
     </p>
     </div>
     </section>

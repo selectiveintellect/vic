@@ -322,26 +322,37 @@ to express to the simulator.</p>
 
 <p>The wave argument is basically an array of pairs of numbers, with the first
 number being the instance of the time on the X-axis in cycles of the MCU (generally microseconds), followed
-by the value of the wave on the Y-axis. Currently supported values are all
-integers. Floating point values are not yet supported in VIC&trade;</p>
+by the value of the wave on the Y-axis. If the value is an integer, the code for
+a digital stimulus is generated but if any value is a floating point number the
+code for an analog stimulus is generated. The user is advised to use <code>0</code> and <code>1</code>
+as values for a digital stimulus and voltage values for analog stimulus.</p>
 
 <p>For a standard square wave, the values oscillate between <code>0</code> and <code>1</code>, as
 shown in the below example, in the <a href="examples.html#debouncingaswitch">debouncing a switch
 example</a> or in the <code>share/examples/debouncer.vic</code> showing how
-to simulate a debouncing switch in <code>gpsim</code>.</p>
+to simulate a debouncing switch in <code>gpsim</code>. For analog stimulus refer the
+<a href="examples.html#analog-to-digitalconverteradctest">analog to digital converter example</a>.</p>
 
 <p>Examples:</p>
 
-<pre><code>Simulator {
-    # log a pin to view in scope
-    log RA3;
-    scope RA3;
+<pre><code>## a digital stimulus
+Simulator {
     # stimulate the pin with an input square wave
     stimulate RA3, every 5s, wave [
         300, 1, 1300, 0,
         1400, 1, 2400, 0,
         2500, 1, 3500, 0,
         3600, 1, 4600, 0
+    ];
+}
+
+## an analog stimulus
+Simulator {
+    #adc stimulus
+    stimulate AN0, every 3s, wave [
+        500000, 2.85, 1000000, 3.6,
+        1500000, 4.5, 2000000, 3.2,
+        2500000, 1.8
     ];
 }
 </code></pre></li>
@@ -362,7 +373,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-30 12:44:48 -0400.
+        This page was last updated on 2014-12-02 10:21:28 -0500.
     </p>
     </div>
     </section>
