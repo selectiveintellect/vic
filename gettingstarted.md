@@ -1,7 +1,7 @@
 # Getting Started With VIC&trade;
 
 Writing VIC&trade; code is similar to writing Bash scripts except for the fact
-that there are no functions supported as of version 0.12.
+that there are no functions supported as of version 0.23.
 
 For more details on the syntax and features of VIC&trade; visit the
 [syntax](syntax.html) page after you have completed this chapter.
@@ -105,7 +105,7 @@ For more details on the language syntax descriptions look at the section on [syn
 
 ## Simulating the _Hello World!_ program
 
-VIC&trade; also supports simulation of the code. As of version 0.12, only
+VIC&trade; also supports simulation of the code. As of version 0.23, only
 `gpsim` is supported as a simulator. However, more simulators may be added in
 the future.
 

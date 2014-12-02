@@ -1,6 +1,6 @@
 # Supported Target Hardware 
 
-As of version 0.12, VIC&trade; supports the following Microchip PIC&reg;
+As of version 0.23, VIC&trade; supports the following Microchip PIC&reg;
 microcontrollers:
 
 PIC12 family: **In Development**
@@ -9,7 +9,10 @@ PIC12 family: **In Development**
 
 PIC16 family:
 
+- P16F627A
+- P16F628A
 - P16F631
+- P16F648A
 - P16F677
 - P16F685
 - P16F687

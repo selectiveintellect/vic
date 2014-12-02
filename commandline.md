@@ -35,9 +35,12 @@ compiler generates code for the VIC&trade; statements and by the developer for
 debugging code generation.
 
 - `-o <FILE>`, `--output <FILE>`:
-    This option tells the compiler to save the assembly output to the `FILE`
-argument provided. If the user does not provide this option the compiler
-prints the assembly output to the screen(`stdout`).
+    This option tells the compiler to save the output to the `FILE`
+argument provided. If the filename ends with `.asm` the compiler only compiles
+to assembly. If the filename ends with `.hex` or anything else, the compiler
+will compile to assembly and also try to link it to create a binary hex file to
+be programmed onto the chip. However, if `gputils` is not installed, only the
+compilation to assembly will take place. If the user does not provide this option the compiler prints the assembly output to the screen(`stdout`).
 
 - `-p <MCU Target>`, `--pic <MCU Target>`:
     This is the most **useful** of all options where the user can compile a code
@@ -47,6 +50,13 @@ enables the user to achieve the following goals:
     1. allow for code reuse between MCUs, allowing compilation to various targets
     1. verify if a piece of code can work on another Microchip's PIC&reg; MCU without reading that MCU's data sheet
     1. find out the parts of the code which will _not_ work on another MCU
+
+- `--simulate`
+    This has to be used along with the `--output` option defined above as it
+uses the compiled and linked file and starts the simulator `gpsim` or any other
+selected simulator with it. This
+allows the user to quickly run everything from the same executable `vic` without
+having to type the simulator's commands directly.
 
 - `--supports <MCU Target>`:
     This is similar to the `-p` option above except that it does _not_ compile any
@@ -108,18 +118,32 @@ user does not want to compile the `.hex` file.
 
 Based on these options here are some sample examples on how to use them:
 
-    $ vic -o helloworld.asm helloworld.vic
-    $ vic -p p16f631 -o helloworld.hex helloworld.vic
-    $ vic -h
+    # to print the compiler version
     $ vic -V
-    # to compile only to assembly and not a hex file
+    # to print the help message
+    $ vic -h
+    # to compile to a hex file
+    $ vic -o helloworld.hex helloworld.vic
+    # to compile to assembly
+    $ vic -o helloworld.asm helloworld.vic
+    # to compile to a hex file but override the chip in the code
+    $ vic -p p16f631 -o helloworld.hex helloworld.vic
+    # to compile only to assembly with intermediate code and not to a hex file
     $ vic -i -o helloworld.asm helloworld.vic
     $ vic -i -o helloworld.hex --no-hex helloworld.vic
+    # to compile to a hex file and simulate the code
+    $ vic -o helloworld.hex --simulate helloworld.vic
+    # to list the chips supported
     $ vic --list-chips
+    # to list the simulators supported
     $ vic --list-simulators
+    # to check if the chip is supported
     $ vic --supports P12F683
+    # to list the chip's features
     $ vic --list-chip-features P16F685
+    # to print the chip's pin diagram
     $ vic --chip-pinout P16F631
+    # to print the locations of the gputils tools
     $ vic --list-gputils
 
 Now that we have learned enough about using the `vic` compiler, let us move on

@@ -190,7 +190,7 @@ with the MCU assembly variable handling.
 
 There are **no** such things as variable declarations. The type of the variable
 is automatically inferred by the `vic compiler. The first time a particular
-variable is used is where it gets _declared_. Currently, as of version 0.12, all
+variable is used is where it gets _declared_. Currently, as of version 0.23, all
 variables are global. There is no scoping implemented. However, to have a
 variable be accessed by a simulator, they have to be exported using the
 appropriate [pragma](#pragmas). Once a variable type has been inferred, it

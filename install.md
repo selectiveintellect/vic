@@ -11,7 +11,8 @@ FreeBSD, OpenBSD and Apple&reg; Mac OS X.
 For Microsoft Windows&reg;, you can download [Strawberry
 Perl](http://www.strawberryperl.com).
 
-The minimum version of Perl required is 5.10.1.
+The minimum version of Perl required is 5.8.9. (It may work with earlier Perl
+versions but there are no guarantees.)
 
 You will also need `git` installed if you're downloading the code from
 [Github](https://github.com/selectiveintellect/vic).
@@ -22,7 +23,8 @@ To make full use of VIC&trade; you need to install the following applications as
 well:
 
 - [gputils](http://gputils.sourceforge.net) version `1.3.0` or better for compiling VIC&trade; output
-    - For Windows download the pre-built installers from <http://sourceforge.net/projects/gputils/files/latest/download>.
+    - For Windows download the pre-built installers from <http://sourceforge.net/projects/gputils/files/latest/download>
+      and then install CPAN's [Alien::gputils](https://metacpan.org/pod/Alien::gputils) module as outlined [here](#dependencies).
     - For Linux and Mac OS X, the user can either install it themselves or using
       CPAN's [Alien::gputils](https://metacpan.org/pod/Alien::gputils) module as outlined [here](#dependencies).
 - [gpsim](http://gpsim.sourceforge.net/gpsim.html) version `0.27.0` or better for default simulator support
@@ -45,7 +47,7 @@ Strawberry Perl command shell.
     > cpan -i VIC
 
 Another way to install from CPAN is to use `App::cpanminus`, which may be
-available on your operating system or you could install that as well using the
+available on your operating system or Perl installation. If it is not available, you could install that as well using the
 cpan client.
 
     > cpan -i App::cpanminus
@@ -74,8 +76,8 @@ This module depends on the following:
   installed from CPAN)
 - `Getopt::Long` (for handling command line options. Comes with perl itself)
 - `Capture::Tiny` (for trapping screen outputs and errors)
-- `File::Which` (for finding paths to `gpasm` and `gplink`)
-- `Alien::gputils` (for installing `gputils` if not available)
+- `File::Which` (for finding paths to `gpasm`, `gplink` and `gpsim`)
+- `Alien::gputils` (for installing `gputils` if not available, and/or using the ones already installed)
 - `XXX` (only required for debugging)
 
 
@@ -90,11 +92,13 @@ or using `App::cpanminus`
     $ cpanm Pegex
     $ cpanm Moo
 
-Optionally the user can also install on Linux and Mac OSX:
+The user should also install `Alien::gputils` on their operating system:
 
     $ cpanm Alien::gputils
 
 This will install the `gputils` package if not already present on the system.
+For Windows, they will need to download the installer from the link given
+[earlier](#supportingapplications) and then install `Alien::gputils`.
 
 ##Testing the Module (Developers Only)
 
@@ -125,6 +129,11 @@ The examples are in `share/examples` folder. To compile the [`helloworld.vic` ex
     $ ./bin/vic ./share/examples/helloworld.vic -o ./share/examples/helloworld.asm
 
 This will generate the PIC&reg; assembly for the VIC file.
+
+    $ ./bin/vic ./share/examples/helloworld.vic -o ./share/examples/helloworld.hex
+
+This will generate the PIC&reg; binary hex file ready to be programmed on to the chip.
+
 
 ##Placing `vic` in your `$PATH` for Makefiles
 
