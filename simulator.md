@@ -261,26 +261,37 @@ to express to the simulator.
 
     The wave argument is basically an array of pairs of numbers, with the first
 number being the instance of the time on the X-axis in cycles of the MCU (generally microseconds), followed
-by the value of the wave on the Y-axis. Currently supported values are all
-integers. Floating point values are not yet supported in VIC&trade;
+by the value of the wave on the Y-axis. If the value is an integer, the code for
+a digital stimulus is generated but if any value is a floating point number the
+code for an analog stimulus is generated. The user is advised to use `0` and `1`
+as values for a digital stimulus and voltage values for analog stimulus.
 
     For a standard square wave, the values oscillate between `0` and `1`, as
 shown in the below example, in the [debouncing a switch
 example](examples.html#debouncingaswitch) or in the `share/examples/debouncer.vic` showing how
-to simulate a debouncing switch in `gpsim`.
+to simulate a debouncing switch in `gpsim`. For analog stimulus refer the
+[analog to digital converter example](examples.html#analog-to-digitalconverteradctest).
 
     Examples:
 
+        ## a digital stimulus
         Simulator {
-            # log a pin to view in scope
-            log RA3;
-            scope RA3;
             # stimulate the pin with an input square wave
             stimulate RA3, every 5s, wave [
                 300, 1, 1300, 0,
                 1400, 1, 2400, 0,
                 2500, 1, 3500, 0,
                 3600, 1, 4600, 0
+            ];
+        }
+
+        ## an analog stimulus
+        Simulator {
+            #adc stimulus
+            stimulate AN0, every 3s, wave [
+                500000, 2.85, 1000000, 3.6,
+                1500000, 4.5, 2000000, 3.2,
+                2500000, 1.8
             ];
         }
 

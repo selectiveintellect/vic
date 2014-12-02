@@ -158,27 +158,40 @@ The simulator code is left as an exercise for the reader.
         $var1 = TRUE;
         $var2 = FALSE;
         Loop {
-            if $var1 != FALSE && $var2 != FALSE {
-                write PORTC, 1;
+            if ($var1 != FALSE && $var2 != FALSE) {
                 $var1 = !$var2;
+                sim_assert $var1 == FALSE, "$var1 == FALSE. block 1";
+                write PORTC, 1;
+                sim_assert "pause. block 1";
             } else if $var1 || $var2 {
-                write PORTC, 2;
                 $var2 = $var1;
+                write PORTC, 2;
+                sim_assert "pause. block 2";
             } else if !$var1 {
-                write PORTC, 4;
                 $var2 = !$var1;
+                write PORTC, 4;
+                sim_assert "pause. block 3";
             } else if $var2 {
-                write PORTC, 4;
                 $var2 = !$var1;
+                write PORTC, 4;
+                sim_assert "pause. block 4";
             } else {
                 write PORTC, 8;
                 $var1 = !$var2;
+                sim_assert "pause. block 5";
+                break;
             };
             $var3 = 0xFF;
             while $var3 != 0 {
                 $var3 >>= 1;
             }
         }
+        sim_assert "pause. end of main";
+    }
+
+    Simulator {
+        attach_led PORTC, 8;
+        stop_after 5s;
     }
 
 ## Breaking Out of Nested Loops
@@ -197,15 +210,18 @@ exercise to the reader. The code is available in the file
             while $dummy != 0 {
                 $dummy >>= 1;
                 write PORTC, 1;
+                sim_assert $dummy > 0x0F, "dummy is > 0x0F";
                 if $dummy <= 0x0F {
                     break;
                 }
             }
-            while $dummy > 0 {
+            sim_assert $dummy == 0x0F, "dummy is 0x0F";
+            while $dummy > 1 {
                 $dummy >>= 1;
                 write PORTC, 3;
                 continue;
             }
+            sim_assert $dummy == 1, "dummy is 1";
             if $dummy == TRUE {
                 write PORTC, 2;
                 break;
@@ -214,10 +230,16 @@ exercise to the reader. The code is available in the file
                 continue;
             }
         }
+        sim_assert "we have exited the infinite loop 1";
         # we have broken from the loop
         while TRUE {
             write PORTC, 0xFF;
         }
+    }
+
+    Simulator {
+        attach_led PORTC, 8;
+        stop_after 3s;
     }
 
 ## Mathematical Operations
@@ -345,6 +367,12 @@ In our case, we tested this on physical hardware where the pin `AN0` was
 connected to a potentiometer switch (variable rotation) and the pin `RC0` was
 connected to an LED. The code can be found in `share/examples/adctest.vic`.
 
+The difference in use of the [`stimulate`
+statement](simulator.html#wavesimulations) is that it accepts floating point
+values. When the values are floating point then the stimulus is assumed to be
+analog.
+
+
     PIC P16F690;
 
     pragma adc right_justify = 0;
@@ -360,6 +388,19 @@ connected to an LED. The code can be found in `share/examples/adctest.vic`.
             write RC0, 0;
             delay 100us;
         }
+    }
+
+    Simulator {
+        attach_led RC0;
+        stop_after 10s;
+        log RC0;
+        scope RC0;
+        #adc stimulus
+        stimulate AN0, every 3s, wave [
+            500000, 2.85, 1000000, 3.6,
+            1500000, 4.5, 2000000, 3.2,
+            2500000, 1.8
+        ];
     }
 
 ## Variable Rotation of LEDs
@@ -389,6 +430,19 @@ LEDs](#rotatingoverleds) example. This example can be found in `share/examples/v
         }
     }
 
+    Simulator {
+        attach_led PORTC, 4, 'red';
+        #adc stimulus
+        stimulate AN0, every 3s, wave [
+            500000, 2.85, 1000000, 3.6,
+            1500000, 4.5, 2000000, 3.2,
+            2500000, 1.8
+        ];
+        scope AN0;
+        log AN0;
+        stop_after 10s;
+    }
+
 ## Reversing LEDs on Switch Press
 
 This is a combination of the [debouncing a switch](#debouncingaswitch) example and the [variable
@@ -399,7 +453,8 @@ and that the analog channel/pin `AN0` is connected to a variable potentiometer.
 When the user presses a switch the direction of lighting up the 4 LEDs changes
 from left to right and back. When the user rotates the potentiometer, the speed
 of blinking of the 4 LEDs changes accordingly. This example can be found in
-`share/examples/reversible.vic`.
+`share/examples/reversible.vic`. Here we see both the digital and analog
+stimulus being applied in the `Simulator` block.
 
     PIC P16F690;
 
@@ -430,6 +485,31 @@ of blinking of the 4 LEDs changes accordingly. This example can be found in
         }
     }
 
+    Simulator {
+        attach_led PORTC, 4, 'red';
+        logfile "reversible.lxt";
+        log RA3, AN0;
+        scope RA3, AN0;
+        # stimulus should reflect the debounce delay to be viable
+        stimulate RA3, every 5s, wave [
+            300, 1, 1300, 0,
+            1400, 1, 2400, 0,
+            2500, 1, 3500, 0,
+            3600, 1, 4600, 0,
+            4700, 1, 5700, 0,
+            5800, 1, 6800, 0,
+            6900, 1, 8000, 0
+        ];
+        #adc stimulus
+        stimulate AN0, every 3s, wave [
+            500000, 2.85, 1000000, 3.6,
+            1500000, 4.5, 2000000, 3.2,
+            2500000, 1.8
+        ];
+        stop_after 30s;
+        autorun;
+    }
+
 ## Timer Usage
 
 This example demonstrates how to use the [synchronous timer
@@ -439,6 +519,9 @@ similar to the [Rotating over LEDs example](#rotatingoverleds), except that
 instead of rotating the blinking of the LEDs, it displays the binary values
 ranging from `0-15` on the LEDs connected to `PORTC` (pins `RC0-RC7`). This can be
 found in the `share/examples/timer.vic` file.
+
+The timer features, if used, are automatically simulated by the simulator and
+the user does not have to create any fake stimuli for it.
 
     PIC P16F690;
 
@@ -454,6 +537,12 @@ found in the `share/examples/timer.vic` file.
         }
     }
 
+    Simulator {
+        attach_led PORTC, 8, 'red';
+        stop_after 1s;
+        autorun;
+    }
+
 ## Interrupt Service Routine Usage
 
 This example demonstrates how to use the [interrupt service
@@ -462,6 +551,10 @@ as in the [Reversing LEDs on Switch Press](#reversingledsonswitchpress) example.
 This is available in the `share/examples/interrupt.vic` file. As you can see,
 the ADC is beign read using the interrupt. This is more efficiently implemented
 as checking the ADC is now done on an event-based timer instead of using a synchronous MCU loop.
+
+The interrupt handling is automatically simulated by the simulator, but the
+external stimuli like debouncing the switch and analog stimulus have to still be
+added by the user.
 
     PIC P16F690;
 
@@ -494,12 +587,39 @@ as checking the ADC is now done on an event-based timer instead of using a synch
         }
     }
 
+    Simulator {
+        attach_led PORTC, 4, 'red';
+        log RA3, AN0;
+        scope RA3, AN0;
+        # stimulus should reflect the debounce delay to be viable
+        stimulate RA3, every 5s, wave [
+            300, 1, 1300, 0,
+            1400, 1, 2400, 0,
+            2500, 1, 3500, 0,
+            3600, 1, 4600, 0,
+            4700, 1, 5700, 0,
+            5800, 1, 6800, 0,
+            6900, 1, 8000, 0
+        ];
+        #adc stimulus
+        stimulate AN0, every 3s, wave [
+            500000, 2.85, 1000000, 3.6,
+            1500000, 4.5, 2000000, 3.2,
+            2500000, 1.8
+        ];
+        stop_after 30s;
+        autorun;
+    }
+    
 ## Pulse Width Modulation (PWM)
 
 ### Single PWM
 
 The _single_ PWM example can be found in `share/examples/pwm2.vic`. This example
 starts a PWM duty cycle at `20%` and then updates it to `30%`.
+
+The PWM is automatically simulated by the simulator and the user just has to
+attach an LED and/or a scope to view the output.
 
     PIC P16F690;
 
@@ -508,6 +628,12 @@ starts a PWM duty cycle at `20%` and then updates it to `30%`.
         delay 5s;
         pwm_update 1220Hz, 30%; # update duty cycle
         delay 5s;
+    }
+    Simulator {
+        attach_led CCP1;
+        log CCP1;
+        scope CCP1;
+        autorun;
     }
 
 ### Half-bridge and Full-bridge Modes
@@ -528,7 +654,7 @@ modes.
 
     Simulator {
         attach_led CCP1;
-        stop_after 20s;
+        stop_after 100ms;
         log CCP1;
         scope CCP1;
         autorun;

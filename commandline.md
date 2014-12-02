@@ -59,6 +59,40 @@ cannot be compiled to that target.
 the features supported by the chip. This automatically turns on the `--supports`
 option.
 
+- `--chip-pinout <MCU Target>`:
+    This option draws the pin diagram of the chip on the terminal that it has
+been invoked in. This allows for the user to quickly see how the pins are
+arranged on a particular chip and what their names are, as per feature.
+
+Here is an example of the pin diagram of the `PIC16F631` chip.
+
+
+                               +======__======+
+                        Vdd ---|1           20|--- Vss
+                               |              |
+       RA5/T1CKI/OSC1/CLKIN ---|2           19|--- RA0/C1N+/ICSPDAT/ULPWU
+                               |              |
+        RA4/T1G/OSC2/CLKOUT ---|3           18|--- RA1/C12IN0-/ICSPCLK
+                               |              |
+               RA3/MCLR/Vpp ---|4           17|--- RA2/T0CKI/INT/C1OUT
+                               |              |
+                        RC5 ---|5           16|--- RC0/C2IN+
+                               |              |
+                               |   P16F631    |
+                               |              |
+                  RC4/C2OUT ---|6           15|--- RC1/C12IN1-
+                               |              |
+                RC3/C12IN3- ---|7           14|--- RC2/C12IN2-
+                               |              |
+                        RC6 ---|8           13|--- RB4
+                               |              |
+                        RC7 ---|9           12|--- RB5
+                               |              |
+                        RB7 ---|10          11|--- RB6
+                               |              |
+                               +==============+
+
+
 - `--list-gputils`:
     This option lets the user know where the `gpasm` and `gplink` tools are
 located on the current system for the `gputils` package. The `vic` compiler
@@ -85,6 +119,7 @@ Based on these options here are some sample examples on how to use them:
     $ vic --list-simulators
     $ vic --supports P12F683
     $ vic --list-chip-features P16F685
+    $ vic --chip-pinout P16F631
     $ vic --list-gputils
 
 Now that we have learned enough about using the `vic` compiler, let us move on
