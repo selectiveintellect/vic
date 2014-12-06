@@ -36,7 +36,7 @@ my $build = Module::Build->new(
         'Pegex' => 0.55, # needed for PL_files to work
         'List::Util' => 0,
         'List::MoreUtils' => 0,
-        'Moo' => 0,
+        'Moo' => '1.003',
         'namespace::clean' => 0,
         %linux,
     },
