@@ -248,7 +248,7 @@ $ sudo ./Build install
                     <p><strong>NOTE:</strong>&nbsp;&nbsp;You may need to install
                     pre-requisites from CPAN</p>
 					<pre><code data-trim contenteditable style="font-size: 22px; margin-top: 20px;">
-$ sudo cpan -i Pegex App::Prove Alien::gputils
+$ sudo cpan -i Moo Pegex App::Prove Alien::gputils
                     </code></pre>
                     </section>
                     <section>
@@ -574,6 +574,21 @@ debounce RA3, Action {
                     <li><code>gpsim</code> supports 100+ chips</li>
                     <li>VIC&trade; generates internal <code>gpsim</code> language</li>
                     </ul>
+                </section>
+                <section>
+                    <h2>Delay Function Testing</h2>
+					<pre><code class="stretch" data-trim contenteditable style="font-size: 22px; margin-top: 20px;">
+PIC P16F690;
+
+Main {
+    delay 100ms;
+    sim_assert "*** EARLY STOP ***";
+}
+
+Simulator {
+    stopwatch 100ms;
+}
+                    </code></pre>
                 </section>
 				<section>
 					<h2>Useful Links</h2>
