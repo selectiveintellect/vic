@@ -188,7 +188,7 @@
                             <li>Microsoft Windows&reg; (Strawberry Perl)</li>
                             </ul>
                         </li>
-                        <li>Perl 5.10.1 or greater</li>
+                        <li>Perl &gt;= 5.8.8</li>
                         <li>Git (if installing from Github)</li>
                     </ul>
                     </section>
@@ -458,7 +458,7 @@ Simulator {
                         <li>Nested blocks allowed</li>
                         <li>User <strong style="color:yellow;">must</strong> use built-in functions</li>
                         <li><code style="color:orange;">Simulator</code> block is optional.</li>
-                        <li><a href="#/action"><code>Action</code></a> blocks</li>
+                        <li><a href="#/action"><code>Action</code></a> blocks (callbacks)</li>
                     </ul>
                     </section>
                     <section>
@@ -622,7 +622,7 @@ Simulator {
 				progress: true,
 				history: true,
 				center: true,
-                loop: false, //true, // loop the presentation
+                loop: true, // loop the presentation
                 //autoSlide: 4000,
 				transition: 'default', // default/cube/page/concave/zoom/linear/fade/none
 				// Optional libraries used to extend on reveal.js
