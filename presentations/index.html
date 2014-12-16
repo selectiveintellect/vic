@@ -196,19 +196,26 @@
                     <h2>Supporting Applications</h2>
                     <br/>
                     <ul>
-                        <li><a href="http://gputils.sourceforge.net"><code>gputils</code></a> for compiling VIC&trade;
-                        output</li>
-                        <li><a href="http://gpsim.sourceforge.net/gpsim.html"><code>gpsim</code></a> for default simulator
-                        support</li>
-                        <li><a href="http://piklab.sourceforge.net/"><code>Piklab</code></a> as an IDE
-                        </li>
-                        <li><a href="../pk2cmd.html"><code>pk2cmd</code></a> for command-line programming of the device using
-                            <a href="http://www.microchip.com/pickit2">PICKit 2 Starter Kit</a></li>
-                        <li>Any of the following Device Programmers:
+                        <li>REQUIRED:
                         <ul>
-                            <li><a href="http://www.microchip.com/pickit3">PICKit 3 Starter Kit</a></li>
-                            <li><a href="http://www.microchip.com/pickit2">PICKit 2 Starter Kit</a></li>
-                        </ul></li>
+                            <li><a href="http://gputils.sourceforge.net"><code>gputils</code></a> for compiling VIC&trade;
+                            output</li>
+                            <li><a href="http://gpsim.sourceforge.net/gpsim.html"><code>gpsim</code></a> for default simulator
+                            support</li>
+                        </ul>
+                        </li>
+                        <li>OPTIONAL:
+                        <ul>
+                            <li><a href="http://piklab.sourceforge.net/"><code>Piklab</code></a> as an IDE
+                            </li>
+                            <li><a href="../pk2cmd.html"><code>pk2cmd</code></a> for command-line programming of the device using
+                                <a href="http://www.microchip.com/pickit2">PICKit 2 Starter Kit</a></li>
+                            <li>Any of the following Device Programmers:
+                            <ul>
+                                <li><a href="http://www.microchip.com/pickit3">PICKit 3 Starter Kit</a></li>
+                                <li><a href="http://www.microchip.com/pickit2">PICKit 2 Starter Kit</a></li>
+                            </ul></li>
+                        </ul>
                     </ul>
                     </section>
                     <section data-autoslide="2000">
@@ -241,7 +248,7 @@ $ sudo ./Build install
                     <p><strong>NOTE:</strong>&nbsp;&nbsp;You may need to install
                     pre-requisites from CPAN</p>
 					<pre><code data-trim contenteditable style="font-size: 22px; margin-top: 20px;">
-$ sudo cpan -i Pegex App::Prove
+$ sudo cpan -i Pegex App::Prove Alien::gputils
                     </code></pre>
                     </section>
                     <section>
@@ -415,8 +422,8 @@ Simulator {
 				progress: true,
 				history: true,
 				center: true,
-                loop: true, // loop the presentation
-                autoSlide: 4000,
+                loop: false, //true, // loop the presentation
+                //autoSlide: 4000,
 				transition: 'default', // default/cube/page/concave/zoom/linear/fade/none
 				// Optional libraries used to extend on reveal.js
 				dependencies: [
