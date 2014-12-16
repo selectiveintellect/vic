@@ -385,7 +385,7 @@ Simulator {
                     </section>
                     <section>
                         <h3>Blinking the LED</h3>
-					<pre><code data-trim contenteditable style="font-size: 22px; margin-top: 20px;">
+					<pre><code data-trim contenteditable style="font-size: 22px; margin-top: 20px;width: 100%">
 PIC P16F690;
 
 Main {
@@ -413,8 +413,168 @@ Simulator {
                     <section data-autoslide="3000">
                     <h2>Syntax</h2>
                     </section>
-                </section>
+                    <section>
+                    <h2>Typical Program</h2>
+					<pre><code class="stretch" data-trim contenteditable style="font-size: 22px; margin-top: 20px;">
+PIC pic_name; #required
 
+pragma pragma_type pragma_values; # optional
+
+Main {
+    # user invokes functions
+    function_name argument, argument, argument, ..., argument;
+    ...
+    ## optional loops
+    Loop {
+        function_name argument, argument, ..., argument;
+        ...
+    }
+}
+## optional simulator block
+Simulator {
+    # special simulator functions
+    function_name argument, argument, argument, ..., argument;
+    function_name argument, argument, argument, ..., argument;
+}
+                </code></pre>
+                    </section>
+                    <section>
+                    <h2>Typical Program</h2>
+                    <ul>
+                        <li>Starts with a header naming the chip to compile for</li>
+                        <li>Every statement ends with a <code style="color:orange;">;</code></li>
+                        <li>A <code style="color:orange;">Main</code> block is <strong
+                            style="color:yellow;">required</strong></li>
+                        <li>Pragmas for controlling code generation</li>
+                        <li>Comments begin with <code style="color:orange;">#</code></li>
+                        <li>Arithmetic, Bitwise and Logical Operations</li>
+                    </ul>
+                    </section>
+                    <section>
+                    <h2>Everything is a Block {}</h2>
+                    <ul>
+                        <li>Unconditional loops: <code style="color:orange;">Loop {} </code></li>
+                        <li>C-style conditional loops &amp; blocks: <code style="color:orange;">if-else, while</code></li>
+                        <li>Nested blocks allowed</li>
+                        <li>User <strong style="color:yellow;">must</strong> use built-in functions</li>
+                        <li><code style="color:orange;">Simulator</code> block is optional.</li>
+                        <li><a href="#/action"><code>Action</code></a> blocks</li>
+                    </ul>
+                    </section>
+                    <section>
+                    <h2>Variables, Constants</h2>
+                    <ul>
+                        <li>Variables begin with a <code style="color:orange;">$</code> sign</li>
+                        <li>String literals enclosed in quotes</li>
+                        <li>Numeric literals
+                        <ul>
+                            <li>Integers only</li>
+                            <li>Floating point supported only in <code style="color:orange;">Simulator</code> block</li>
+                            <li>Units of time, frequency, percentage</li>
+                        </ul>
+                            <pre><code>
+$my_timer = 1s; # 1 second
+$my_timer = 100ms; # 100 milliseconds
+$frequency = 4kHz; # 4000 Hz
+$dutycycle = 10%; # 0.01
+                            </pre></code>
+                        </li>
+                        <li>Constant Arrays supported as lookup tables</li>
+                        <li>Pin constants supported as shown in pin diagram</li>
+                    </ul>
+                    </section>
+                    <section id="action">
+                    <h2>Action Blocks</h2>
+                    <ul>
+                        <li>Built-in functions allow for callbacks</li>
+<pre><code>
+function_name argument, ..., Action {
+    # .. do something here ...
+};
+</code></pre>
+                        <li>Invoked when function completes task</li>
+<pre><code>
+debounce RA3, Action {
+    # .. do something here ..
+}
+</pre></code>
+                        <li>Similarly: Interrupt Service Routines</li>
+<pre><code>timer_enable TMR0, 4kHz, ISR {
+    # .. do something ..
+};
+</code></pre>
+                        <li>ISR uses chip interrupt capabilities</li>
+                    </ul>
+                    </section>
+                    <section>
+                    <h2>Operations</h2>
+<ul>
+    <li>Arithmetic operators: &nbsp;<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code></li>
+<li>Assignment operators: <br/><code>=</code>, <code>+=</code>, <code>-=</code>, <code>*=</code>, <code>/=</code>, <code>%=</code>, <code>^=</code>, <code>|=</code>, <code>&amp;=</code>, <code>&lt;&lt;=</code>, <code>&gt;&gt;=</code></li>
+<li>Bitwise operators: <br/><code>&gt;&gt;</code>, <code>&lt;&lt;</code>, <code>^</code>, <code>&amp;</code>, <code>|</code></li>
+<li>Complement operators: &nbsp;<code>!</code>, <code>~</code></li>
+<li>Logical operators: <br/><code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>, <code>!=</code>, <code>==</code>, <code>&amp;&amp;</code>, <code>||</code></li>
+<li>Increment/decrement operators: &nbsp;<code>++</code>, <code>--</code></li>
+</ul>
+                    </section>
+                </section>
+                <section>
+                <h2>Compiler Features</h2>
+                Using commandline options you can:<br/><br/>
+                <ul>
+                    <li>check if a chip is supported</li>
+                    <li>list features of a chip</li>
+                    <li>draw pin diagram on screen</li>
+                    <li>invoke simulator to test code</li>
+                    <li>assemble to <code>.hex</code></li>
+                    <li>generate intermediate code and parse tree for debugging</li>
+                </ul>
+                </section>
+                <section>
+                    <section><h2>Built-in Functions</h2></section>
+                    <section>
+                    <h2>I/O</h2>
+                    <ul>
+                        <li>Pin declarations:
+                        <ul>
+                        <li><code>digital_output</code></li>
+                        <li><code>digital_input</code></li>
+                        <li><code>analog_input</code></li>
+                        </ul>
+                        <li><code>write</code></li>
+                        <li><code>debounce</code></li>
+                    </section>
+                    <section>
+                    <h2>Timers and Delays</h2>
+                    <ul>
+                        <li><code>timer_enable</code></li>
+                        <li><code>timer_disable</code></li>
+                        <li><code>delay</code></li>
+                        <li><code>delay_s</code></li>
+                        <li><code>delay_ms</code></li>
+                        <li><code>delay_us</code></li>
+                    </ul>
+                    </section>
+                    <section>
+                    <h2>Others</h2>
+                    <ul>
+                        <li>Mathematical: <code>sqrt, ror, rol</code></li>
+                        <li>Pulse Width Modulation</li>
+                        <li>Analog-to-Digital Converter</li>
+                        <li>UART/SPI/I<sup>2</sup>C: <em>Coming Soon!</em></li>
+                    </ul>
+                    </section>
+                </section>
+                <section>
+                    <h2>Simulator</h2>
+                    <ul>
+                    <li><a href="http://gpsim.sourceforge.net/gpsim.html"><code>gpsim</code></a> is the default</li>
+                    <li>Can test code and timing issues</li>
+                    <li>Can do wave simulations</li>
+                    <li><code>gpsim</code> supports 100+ chips</li>
+                    <li>VIC&trade; generates internal <code>gpsim</code> language</li>
+                    </ul>
+                </section>
 				<section>
 					<h2>Useful Links</h2>
 					<ul>
