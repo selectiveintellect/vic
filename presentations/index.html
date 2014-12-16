@@ -383,6 +383,31 @@ Simulator {
                         <h3>Let's See It Work</h3>
                         <!-- Video of LED being lit -->
                     </section>
+                    <section>
+                        <h3>Blinking the LED</h3>
+					<pre><code data-trim contenteditable style="font-size: 22px; margin-top: 20px;">
+PIC P16F690;
+
+Main {
+     digital_output RC0; # mark pin RC0 as output
+     Loop {
+         write RC0, 1; # turn the LED on
+         delay 1s; # wait 1 second
+         write RC0, 0; # turn the LED off
+         delay 1s; # wait 1 second
+     }
+}
+
+Simulator {
+    attach_led RC0; # attach an LED to the pin RC0
+    stop_after 5s; # stop the simulation after 5 seconds
+}
+                </code></pre>
+                    </section>
+                    <section>
+                        <h3>Let's See It Work</h3>
+                        <!-- Video of LED blinking -->
+                    </section>
                 </section>
                 <section>
                     <section data-autoslide="3000">
