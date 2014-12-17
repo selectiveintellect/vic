@@ -20,6 +20,9 @@ VIC&trade; is a nice syntax that compiles to Microchip's PIC&reg; assembly.
 Slides for the most recent demo of VIC&trade; are available
 [here](presentations/index.html).
 
+Slides for developers who want to learn how to write a compiler in Perl such as
+VIC&trade; are available [here](presentations/development.html).
+
 You will need a modern HTML5 supporting
 browser, such as the latest versions of Mozilla Firefox, Google Chrome,
 Microsoft Internet Explorer or Apple Safari to view the slides.
