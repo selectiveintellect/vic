@@ -58,6 +58,7 @@ share/examples/debouncer.vic
 share/examples/delay.vic
 share/examples/GNUmakefile
 share/examples/helloworld.vic
+share/examples/hw.vic
 share/examples/interrupt.vic
 share/examples/led7seg.vic
 share/examples/loopbreak.vic
