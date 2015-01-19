@@ -342,8 +342,65 @@ has usart_pins => (is => 'ro', default => sub {
         async_out => 'TX',
         sync_clock => 'CK',
         sync_data => 'DT',
+        # this defines the port names that the user can use
+        # validly. The port names define whether the user wants to use them in
+        # synchronous or asynchronous mode
+        UART => 'async',
+        USART => 'sync',
     }
 });
+
+sub usart_baudrates {
+    my ($self, $baud, $f_osc, $sync) = @_;
+    $baud = 9600 unless defined $baud;
+    my %acceptable = map { $_ => 1 } (300, 1200, 2400, 9600, 19200, 57600, 115200);
+    unless (exists $acceptable{$baud}) {
+        my $str = sprintf "Baud rate %d is unacceptable. Allowed rates are: %s",
+        $baud, join(',', keys %acceptable);
+        carp $str;
+        return;
+    }
+    $f_osc = defined $f_osc ? $f_osc : $self->f_osc;
+    $sync = defined $sync ? $sync : 0;
+    ## we check with the expected error rates and pick the appropriate baud-rate
+    ## generation parameters such as the values of BRG16 and BRGH
+    if ($sync) {
+        # BRGH = x, BRG16 = 1
+        my $spbrg = int(($f_osc / ($baud * 4)) - 1);
+        my $cbaud = int($f_osc / (($spbrg + 1) * 4));
+        my $error = (($cbaud - $baud) * 100) / $baud;
+        return { SPBRG => $spbrg, BRGH => 0, BRG16 => 1,
+                error => $error, actual => $cbaud, baud => $baud };
+    } else {
+        # BRG16 = 0, BRGH = 0
+        my $spbrg_00 = int(($f_osc / ($baud * 64)) - 1);
+        my $cbaud_00 = $f_osc / (($spbrg_00 + 1) * 64);
+        my $error_00 = (($cbaud_00 - $baud) * 100) / $baud;
+        my $hh_00 = { SPBRG => $spbrg_00, error => $error_00, actual => $cbaud_00,
+                      BRG16 => 0, BRGH => 0, baud => $baud };
+        # BRG16 = 0, BRGH = 1
+        my $spbrg_01 = int(($f_osc / ($baud * 16)) - 1);
+        my $cbaud_01 = $f_osc / (($spbrg_01 + 1) * 16);
+        my $error_01 = (($cbaud_01 - $baud) * 100) / $baud;
+        my $hh_01 = { SPBRG => $spbrg_01, error => $error_01, actual => $cbaud_01,
+                      BRG16 => 0, BRGH => 1, baud => $baud };
+        # BRG16 = 1, BRGH = 0
+        my $spbrg_10 = int(($f_osc / ($baud * 16)) - 1);
+        my $cbaud_10 = $f_osc / (($spbrg_10 + 1) * 16);
+        my $error_10 = (($cbaud_10 - $baud) * 100) / $baud;
+        my $hh_10 = { SPBRG => $spbrg_10, error => $error_10, actual => $cbaud_10,
+                      BRG16 => 1, BRGH => 0, baud => $baud };
+        # BRG16 = 1, BRGH = 1
+        my $spbrg_11 = int(($f_osc / ($baud * 4)) - 1);
+        my $cbaud_11 = $f_osc / (($spbrg_11 + 1) * 4);
+        my $error_11 = (($cbaud_11 - $baud) * 100) / $baud;
+        my $hh_11 = { SPBRG => $spbrg_11, error => $error_11, actual => $cbaud_11,
+                      BRG16 => 1, BRGH => 1, baud => $baud };
+        ## sort based on error in ascending order and remove NaN
+        my @sorted = sort { $a->{error} <=> $b->{error} } grep { $_->{error} == $_->{error} } ($hh_00, $hh_01, $hh_10, $hh_11);
+        return $sorted[0];
+    }
+}
 
 has selector_pins => (is => 'ro', default => sub {
     {

@@ -98,7 +98,7 @@ package VIC::PIC::Roles::Operations;
 package VIC::PIC::Roles::USART;
 {
     use Moo::Role;
-    requires qw(usart_pins usart_write usart_setup);
+    requires qw(usart_pins usart_write usart_setup usart_baudrates);
 }
 
 package VIC::PIC::Roles::SPI;

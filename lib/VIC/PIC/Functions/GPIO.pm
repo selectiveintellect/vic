@@ -49,7 +49,8 @@ sub get_input_pin {
 }
 
 sub _gpio_select {
-    my ($self, $io, $ad, $outp) = @_;
+    my $self = shift;
+    my ($io, $ad, $outp) = @_;
     return unless $self->doesroles(qw(Chip GPIO));
     return unless defined $outp;
     $io = 0 if $io =~ /output/i;
