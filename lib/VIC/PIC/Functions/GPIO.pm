@@ -155,6 +155,9 @@ sub _gpio_select {
             $port_code = "\tbanksel $port";
         }
     } else {
+        if ($self->doesrole('USART') and exists $self->usart_pins->{$outp}) {
+            return $self->usart_setup(@_);
+        }
         carp "Cannot find $outp in the list of registers or pins supporting GPIO";
         return;
     }
@@ -243,6 +246,9 @@ sub write {
         $code .= $self->op_assign($outp, $val);
         return $code;
     } else {
+        if ($self->doesrole('USART') and exists $self->usart_pins->{$outp}) {
+            return $self->usart_write($outp, $val);
+        }
         carp "Cannot find $outp in the list of ports, register or pins to write to";
         return;
     }

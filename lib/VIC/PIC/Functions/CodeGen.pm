@@ -34,6 +34,8 @@ sub validate {
     return 0 unless $self->doesrole('Chip');
     return 1 if exists $self->pins->{$var};
     return 1 if exists $self->registers->{$var};
+    return 1 if ($self->doesrole('USART') and
+                exists $self->usart_pins->{$var});
     return 0;
 }
 
