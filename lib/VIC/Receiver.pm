@@ -718,6 +718,12 @@ sub got_boolean {
     return 0; # default boolean is false
 }
 
+sub got_string {
+    my $self = shift;
+    my $str = shift;
+    return '@' . $str;
+}
+
 sub got_number {
     my ($self, $list) = @_;
     # if it is a hexadecimal number we can just convert it to number using int()

@@ -5,6 +5,7 @@ our $VERSION = '0.23';
 $VERSION = eval $VERSION;
 use Carp;
 use POSIX ();
+use Scalar::Util qw(looks_like_number);
 use Moo::Role;
 
 sub usart_setup {
@@ -153,7 +154,11 @@ sub usart_write {
     return unless $outp =~ /UART|USART/;
     return unless defined $data;
     # check if $data is a string or value or variable
-    return ";;; UNIMPLEMENTED";
+    if (looks_like_number($data) and $data !~ /^@/) {
+        return ";;; sending the number '$data' to $outp";
+    }
+    $data = substr($data, 1) if $data =~ /^@/;
+    return ";;; sending the string '$data' to $outp";
 }
 
 1;

@@ -57,6 +57,7 @@ sub _gen_led {
     $color = 'red' unless defined $color;
     $color = 'red' unless $color =~ /red|orange|green|yellow|blue/i;
     $color = lc $color;
+    $color = substr ($color, 1) if $color =~ /^@/;
     return << "...";
 \t.sim "module load led L$id"
 \t.sim "L$id.xpos = $x"
@@ -202,6 +203,7 @@ sub attach_led7seg {
             }
         } elsif ($p =~ /red|orange|green|yellow|blue/i) {
             $color = $p;
+            $color = substr($p, 1) if $p =~ /^@/;
             next;
         } else {
             carp "Ignoring port $p as it doesn't exist\n";
@@ -242,6 +244,7 @@ sub stop_after {
 sub logfile {
     my ($self, $file) = @_;
     $file = "vicsim.log" unless defined $file;
+    $file = substr($file, 1) if $file =~ /^@/;
     return "\t.sim \"log lxt $file\"\n" if $file =~ /\.lxt/i;
     return "\t.sim \"log on $file\"\n";
 }
@@ -352,13 +355,19 @@ sub sim_assert {
         }
         #TODO: handle more complex expressions
         $msg  = "$condition is false" unless $msg;
+        $msg = substr($msg, 1) if $msg =~ /^@/;
+        $condition = substr($condition, 1) if $condition =~ /^@/;
         $assert_msg = qq{$condition, \\\"$msg\\\"};
     } else {
         if (defined $condition and defined $msg) {
+            $msg = substr($msg, 1) if $msg =~ /^@/;
+            $condition = substr($condition, 1) if $condition =~ /^@/;
             $assert_msg = qq{$condition, \\\"$msg\\\"};
         } elsif (defined $condition and not defined $msg) {
+            $condition = substr($condition, 1) if $condition =~ /^@/;
             $assert_msg = qq{\\\"$condition\\\"};
         } elsif (defined $msg and not defined $condition) {
+            $msg = substr($msg, 1) if $msg =~ /^@/;
             $assert_msg = qq{\\\"$msg\\\"};
         } else {
             $assert_msg = qq{\\\"user requested an assert\\\"};
