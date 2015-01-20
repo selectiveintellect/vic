@@ -71,6 +71,7 @@ sub update_code_config {
     my ($self, $grp, $key, $val) = @_;
     return unless $self->doesrole('CodeGen');
     return unless defined $grp;
+    $grp = lc $grp; # force lower case in case of usage for things like SPI/UART/I2C
     $self->code_config->{$grp} = {} unless exists $self->code_config->{$grp};
     my $grpref = $self->code_config->{$grp};
     if ($key eq 'bits') {

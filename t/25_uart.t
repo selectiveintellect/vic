@@ -3,7 +3,7 @@ use t::TestVIC tests => 1, debug => 0;
 my $input = <<'...';
 PIC P16F690;
 
-pragma uart baud = 9600; # set baud rate
+pragma UART baud = 9600; # set baud rate
 
 Main {
     digital_output UART; # set up USART for transmit

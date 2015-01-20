@@ -1,6 +1,6 @@
 PIC P16F690;
 
-pragma uart baud = 9600; # set baud rate
+pragma UART baud = 300; # set baud rate
 
 Main {
     digital_output UART; # set up USART for transmit

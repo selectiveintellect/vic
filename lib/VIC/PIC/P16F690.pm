@@ -398,33 +398,38 @@ sub usart_baudrates {
         return { SPBRG => $spbrg, BRGH => 0, BRG16 => 1,
                 error => $error, actual => $cbaud, baud => $baud };
     } else {
-        # BRG16 = 0, BRGH = 0
+        # BRG16 = 0, BRGH = 0, BRG is 8-bit
         my $spbrg_00 = int(($f_osc / ($baud * 64)) - 1);
         my $cbaud_00 = $f_osc / (($spbrg_00 + 1) * 64);
         my $error_00 = (($cbaud_00 - $baud) * 100) / $baud;
         my $hh_00 = { SPBRG => $spbrg_00, error => $error_00, actual => $cbaud_00,
-                      BRG16 => 0, BRGH => 0, baud => $baud };
-        # BRG16 = 0, BRGH = 1
+                      BRG16 => 0, BRGH => 0, baud => $baud } if $spbrg_00 < 0x100;
+        # BRG16 = 0, BRGH = 1, BRG is 8-bit
         my $spbrg_01 = int(($f_osc / ($baud * 16)) - 1);
         my $cbaud_01 = $f_osc / (($spbrg_01 + 1) * 16);
         my $error_01 = (($cbaud_01 - $baud) * 100) / $baud;
         my $hh_01 = { SPBRG => $spbrg_01, error => $error_01, actual => $cbaud_01,
-                      BRG16 => 0, BRGH => 1, baud => $baud };
-        # BRG16 = 1, BRGH = 0
+                      BRG16 => 0, BRGH => 1, baud => $baud } if $spbrg_01 < 0x100;
+        # BRG16 = 1, BRGH = 0, BRG is 16-bit
         my $spbrg_10 = int(($f_osc / ($baud * 16)) - 1);
         my $cbaud_10 = $f_osc / (($spbrg_10 + 1) * 16);
         my $error_10 = (($cbaud_10 - $baud) * 100) / $baud;
         my $hh_10 = { SPBRG => $spbrg_10, error => $error_10, actual => $cbaud_10,
-                      BRG16 => 1, BRGH => 0, baud => $baud };
-        # BRG16 = 1, BRGH = 1
+                      BRG16 => 1, BRGH => 0, baud => $baud } if $spbrg_10 < 0x10000;
+        # BRG16 = 1, BRGH = 1, BRG is 16-bit
         my $spbrg_11 = int(($f_osc / ($baud * 4)) - 1);
         my $cbaud_11 = $f_osc / (($spbrg_11 + 1) * 4);
         my $error_11 = (($cbaud_11 - $baud) * 100) / $baud;
         my $hh_11 = { SPBRG => $spbrg_11, error => $error_11, actual => $cbaud_11,
-                      BRG16 => 1, BRGH => 1, baud => $baud };
+                      BRG16 => 1, BRGH => 1, baud => $baud } if $spbrg_11 < 0x10000;
         ## sort based on error in ascending order and remove NaN
-        my @sorted = sort { $a->{error} <=> $b->{error} } grep { $_->{error} == $_->{error} } ($hh_00, $hh_01, $hh_10, $hh_11);
-        return $sorted[0];
+        my @sorted = sort { $a->{error} <=> $b->{error} }
+                     grep { defined $_ and $_->{error} == $_->{error} } ($hh_00, $hh_01, $hh_10, $hh_11);
+        unless (@sorted) {
+            carp "Cannot seem to find appropriate baud generator values for $baud";
+            return;
+        }
+        return wantarray ? @sorted : $sorted[0];
     }
 }
 
