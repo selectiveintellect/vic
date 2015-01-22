@@ -344,8 +344,9 @@ sub got_declaration {
         if ($rhs =~ /^-?\d+$/) {
             # we just use the got_assign_expr. this should never be called in
             # reality but is here in case the grammar rules change
-            $self->update_intermetdiate("SET::ASSIGN::${lhs}::${rhs}");
+            $self->update_intermediate("SET::ASSIGN::${lhs}::${rhs}");
         } else {
+            #VIKAS: check this!
             # handle strings here
             $self->ast->{variables}->{$lhs}->{type} = 'string';
             $self->ast->{variables}->{$lhs}->{data} = $rhs;
@@ -721,7 +722,13 @@ sub got_boolean {
 sub got_string {
     my $self = shift;
     my $str = shift;
-    return '@' . $str;
+    my $stref = {
+        string => $str,
+        block => $self->ast->{block_stack}->[-1],
+    };
+    $self->global_collections->{"$stref"} = $stref;
+    return $stref;
+    #return '@' . $str;
 }
 
 sub got_number {

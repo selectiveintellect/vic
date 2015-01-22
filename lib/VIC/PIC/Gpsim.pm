@@ -54,6 +54,9 @@ $freq
 sub _gen_led {
     my $self = shift;
     my ($id, $x, $y, $name, $port, $color) = @_;
+    if (defined $color and ref $color eq 'HASH') {
+        $color = $color->{string};
+    }
     $color = 'red' unless defined $color;
     $color = 'red' unless $color =~ /red|orange|green|yellow|blue/i;
     $color = lc $color;
@@ -193,6 +196,10 @@ sub attach_led7seg {
     my @simpins = ();
     my $color = 'red';
     foreach my $p (@pins) {
+        if (defined $p and ref $p eq 'HASH') {
+            $p = $p->{string};
+            next unless defined $p;
+        }
         if (exists $self->pic->pins->{$p}) {
             push @simpins, $p;
         } elsif (exists $self->pic->registers->{$p}) {
@@ -244,6 +251,9 @@ sub stop_after {
 sub logfile {
     my ($self, $file) = @_;
     $file = "vicsim.log" unless defined $file;
+    if (ref $file eq 'HASH') {
+        $file = $file->{string} || 'vicsim.log';
+    }
     $file = substr($file, 1) if $file =~ /^@/;
     return "\t.sim \"log lxt $file\"\n" if $file =~ /\.lxt/i;
     return "\t.sim \"log on $file\"\n";
@@ -354,11 +364,20 @@ sub sim_assert {
             $condition = "$lhs $op2 $rhs";
         }
         #TODO: handle more complex expressions
+        if (defined $msg and ref $msg eq 'HASH') {
+            $msg = $msg->{string};
+        }
         $msg  = "$condition is false" unless $msg;
         $msg = substr($msg, 1) if $msg =~ /^@/;
         $condition = substr($condition, 1) if $condition =~ /^@/;
         $assert_msg = qq{$condition, \\\"$msg\\\"};
     } else {
+        if (defined $msg and ref $msg eq 'HASH') {
+            $msg = $msg->{string};
+        }
+        if (defined $condition and ref $condition eq 'HASH') {
+            $condition = $condition->{string};
+        }
         if (defined $condition and defined $msg) {
             $msg = substr($msg, 1) if $msg =~ /^@/;
             $condition = substr($condition, 1) if $condition =~ /^@/;

@@ -206,6 +206,9 @@ sub pwm_halfbridge {
 sub pwm_fullbridge {
     my ($self, $direction, $pwm_frequency, $duty, @pins) = @_;
     return unless $self->doesrole('ECCP');
+    if (defined $direction and ref $direction eq 'HASH') {
+        $direction = $direction->{string};
+    }
     my $type = 'full_forward';
     $type = 'full_reverse' if $direction =~ /reverse|backward|no?|0/i;
     if (exists $self->eccp_pins->{P1A} and exists $self->eccp_pins->{P1B} and

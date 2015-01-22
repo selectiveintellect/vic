@@ -185,7 +185,8 @@ sub analog_input {
 }
 
 sub write {
-    my ($self, $outp, $val) = @_;
+    my $self = shift;
+    my ($outp, $val) = @_;
     return unless $self->doesroles(qw(CodeGen Operations Chip GPIO));
     return unless defined $outp;
     if (exists $self->io_ports->{$outp} and
@@ -248,7 +249,7 @@ sub write {
         return $code;
     } else {
         if ($self->doesrole('USART') and exists $self->usart_pins->{$outp}) {
-            return $self->usart_write($outp, $val);
+            return $self->usart_write(@_);
         }
         carp "Cannot find $outp in the list of ports, register or pins to write to";
         return;

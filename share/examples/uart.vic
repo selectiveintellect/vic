@@ -7,4 +7,7 @@ Main {
     write UART, "Hello World!";
     write UART, "100";
     write UART, 100;
+    write UART, 0x12345678;
+    $ss = "Hello World!";
+    write UART, $ss;
 }

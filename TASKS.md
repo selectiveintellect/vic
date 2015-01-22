@@ -9,6 +9,7 @@
 
 ## Code Generation Features
 
+- String tables (read-only data)
 - ASCII conversion of numbers and alphabets
 - Sleep/Wake-up of processor
 - EEPROM read/write and storage of large data blobs such as music files or
