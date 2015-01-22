@@ -26,6 +26,7 @@ has ast => {
     tmp_variables => {},
     conditionals => 0,
     tmp_stack_size => 0,
+    strings => 0,
     asserts => 0,
 };
 has intermediate_inline => undef;
@@ -725,8 +726,10 @@ sub got_string {
     my $stref = {
         string => $str,
         block => $self->ast->{block_stack}->[-1],
+        name => sprintf("_vic_str_%02d", $self->ast->{strings}),
     };
     $self->global_collections->{"$stref"} = $stref;
+    $self->ast->{strings}++;
     return $stref;
     #return '@' . $str;
 }
