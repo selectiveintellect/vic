@@ -156,22 +156,31 @@ sub _usart_write_loop {
 sub usart_write {
     my ($self, $outp, $data) = @_;
     return unless $self->doesroles(qw(USART GPIO CodeGen Chip));
-    return unless $outp =~ /UART|USART/;
+    return unless $outp =~ /US?ART/;
     return unless defined $data;
-    my $code = '';
+    my ($code, $funcs, $macros, $tables) = ('', {}, {}, []);
     # check if $data is a string or value or variable
     my @bytearr = ();
+    my $nstr;
     if (ref $data eq 'HASH') {
         # this ia a string
-        my $str = $data->{string};
-        $str = substr($str, 1) if $str =~ /^@/;
-        $code .= ";;; sending the string '$str' to $outp\n";
-        @bytearr = split //, $str;
+        $nstr = $data->{string};
+        $nstr = substr($nstr, 1) if $nstr =~ /^@/;
+        $code .= ";;; sending the string '$nstr' to $outp\n";
+        @bytearr = split //, $nstr;
+        push @$tables, {
+            bytes => [@bytearr],
+            name => $data->{name},
+        };
     } else {
         if (looks_like_number($data) and $data !~ /^@/) {
             $code .= ";;; sending the number '$data' to $outp in big-endian mode\n";
             my $nstr = pack "N", $data;
             @bytearr = split //, $nstr;
+            push @$tables, {
+                bytes => [@bytearr],
+                name => sprintf("_vic_bytes_0x%02X", $data),
+            };
         } else {
             $code .= ";;; sending the variable '$data' to $outp\n";
         }
@@ -192,12 +201,11 @@ sub usart_write {
     }
     my $len = scalar(@bytearr) < 256 ? scalar(@bytearr) : 0xFF;
     $len = sprintf "0x%02X", $len;
-    my ($funcs, $macros) = ({}, {});
     $macros->{m_usart_write} = $self->_usart_write_loop;
     $code .= <<"...";
 ;;;; byte array has length $len
 ...
-    return wantarray ? ($code, $funcs, $macros) : $code;
+    return wantarray ? ($code, $funcs, $macros, $tables) : $code;
 }
 
 1;

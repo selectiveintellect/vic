@@ -27,6 +27,7 @@ has ast => {
     conditionals => 0,
     tmp_stack_size => 0,
     strings => 0,
+    tables => [],
     asserts => 0,
 };
 has intermediate_inline => undef;
@@ -791,6 +792,23 @@ sub _update_funcs {
     1;
 }
 
+sub _update_tables {
+    my ($self, $tables) = @_;
+    if (ref $tables eq 'HASH') {
+        $tables = [ $tables ];
+    }
+    unless (ref $tables eq 'ARRAY') {
+        return $self->parser->throw_error(
+        "Code generation error. PIC methods should return strings as a HASH or ARRAY");
+    }
+    foreach my $s (@$tables) {
+        next unless defined $s->{bytes};
+        next unless defined $s->{name};
+        push @{$self->ast->{tables}}, $s;
+    }
+    1;
+}
+
 ## assert handling is special for now
 sub got_assert_comparison {
     my ($self, $list) = @_;
@@ -842,11 +860,12 @@ sub generate_code_instruction {
         next unless exists $self->global_collections->{$_};
         $_ = $self->global_collections->{$_};
     }
-    my ($code, $funcs, $macros) = $self->pic->$method(@ins);
+    my ($code, $funcs, $macros, $tables) = $self->pic->$method(@ins);
     return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
     push @code, "\t;; $line" if $self->intermediate_inline;
     push @code, $code if $code;
     $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
+    $self->_update_tables($tables) if $tables;
     return @code;
 }
 
@@ -860,11 +879,12 @@ sub generate_code_unary_expr {
     # check if temporary variable or not
     if (exists $ast->{variables}->{$varname}) {
         my $nvar = $ast->{variables}->{$varname}->{name} || $varname;
-        my ($code, $funcs, $macros) = $self->pic->$method($nvar);
+        my ($code, $funcs, $macros, $tables) = $self->pic->$method($nvar);
         return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
         push @code, "\t;; $line" if $self->intermediate_inline;
         push @code, $code if $code;
         $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
+        $self->_update_tables($tables) if $tables;
     } else {
         return $self->parser->throw_error("Error in intermediate code '$line'");
     }
@@ -905,10 +925,11 @@ sub generate_code_operations {
     $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless
         ($method and $self->pic->can($method));
     push @code, "\t;; $line" if $self->intermediate_inline;
-    my ($code, $funcs, $macros) = $self->pic->$method($var1, $var2, %extra);
+    my ($code, $funcs, $macros, $tables) = $self->pic->$method($var1, $var2, %extra);
     return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
     push @code, $code if $code;
     $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
+    $self->_update_tables($tables) if $tables;
     return @code;
 }
 
@@ -1031,11 +1052,12 @@ sub generate_code_assign_expr {
             my $method = $self->pic->validate_operator($op);
             $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
             my $nvar = $ast->{variables}->{$varname}->{name} || $varname;
-            my ($code, $funcs, $macros) = $self->pic->$method($nvar, $rhs);
+            my ($code, $funcs, $macros, $tables) = $self->pic->$method($nvar, $rhs);
             return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
             push @code, "\t;; $line" if $self->intermediate_inline;
             push @code, $code if $code;
             $self->_update_funcs($funcs, $macros) if ($funcs or $macros);
+            $self->_update_tables($tables) if $tables;
         }
     } else {
         return $self->parser->throw_error(
