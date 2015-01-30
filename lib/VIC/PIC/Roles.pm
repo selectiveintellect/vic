@@ -23,7 +23,7 @@ package VIC::PIC::Roles::Operators;
       op_inc op_dec op_add op_sub op_mul op_div op_mod op_bxor
       op_band op_bor op_eq op_lt op_ge op_ne op_le op_gt op_and
       op_or op_sqrt break continue store_array store_string
-      store_table op_tblidx op_stridx op_arridx
+      store_table op_tblidx op_stridx op_arridx store_bytes
     );
 }
 

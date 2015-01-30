@@ -1399,7 +1399,12 @@ sub final {
             $funcs .= "\n";
         }
     }
+    foreach my $tbl (@{$ast->{tables}}) {
+        my $dt = $tbl->{bytes};
+        my $dn = $tbl->{name};
+    }
     $funcs .= join ("\n", @tables) if scalar @tables;
+    $funcs .= $self->pic->store_bytes($ast->{tables});
     if (length $isr_code) {
         my $isr_entry = $self->pic->isr_entry;
         my $isr_exit = $self->pic->isr_exit;

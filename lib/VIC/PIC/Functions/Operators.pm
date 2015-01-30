@@ -1579,6 +1579,28 @@ sub op_stridx {
     #XXX { string => $string, index => $idx, %extra };
 }
 
+sub store_bytes {
+    my ($self, $tables) = @_;
+    return unless defined $tables;
+    return unless $self->doesrole('Chip');
+
+    unless (ref $tables eq 'ARRAY') {
+        $tables = [ $tables ];
+    }
+    my $code = "\n_vic_bytes_table:\n";
+    foreach (@$tables) {
+        my $name = $_->{name};
+        next unless defined $name;
+        next unless exists $_->{bytes};
+        next unless ref $_->{bytes} eq 'ARRAY';
+        my $bytes = join(',', @{$_->{bytes}});
+        $code .= $_->{comment} . "\n" if defined $_->{comment};
+        my $row = "$name:\tdt $bytes\n";
+        $code .= $row;
+    }
+    return $code;
+}
+
 1;
 __END__
 

@@ -169,17 +169,20 @@ sub usart_write {
         $code .= ";;; sending the string '$nstr' to $outp\n";
         @bytearr = split //, $nstr;
         push @$tables, {
-            bytes => [@bytearr],
+            bytes => [map { sprintf "0x%02X", ord($_) } @bytearr],
             name => $data->{name},
+            comment => "\t;;storing string '$nstr'",
         };
     } else {
         if (looks_like_number($data) and $data !~ /^@/) {
             $code .= ";;; sending the number '$data' to $outp in big-endian mode\n";
             my $nstr = pack "N", $data;
+            $nstr =~ s/^\x00{1,3}//g; # remove the beginning nulls
             @bytearr = split //, $nstr;
             push @$tables, {
-                bytes => [@bytearr],
+                bytes => [map { sprintf "0x%02X", ord($_) } @bytearr],
                 name => sprintf("_vic_bytes_0x%02X", $data),
+                comment => "\t;;storing number $data",
             };
         } else {
             $code .= ";;; sending the variable '$data' to $outp\n";
