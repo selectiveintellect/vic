@@ -148,8 +148,33 @@ EUSARTCODE
     }
 }
 
-sub _usart_write_loop {
+sub _usart_write_byte_var {
+    return <<'...';
+;;;;;;; USART WRITE VARS ;;;;;;
+VIC_VAR_USART_UDATA udata
+VIC_VAR_USART_LEN res 1
+VIC_VAR_USART_WIDX res 1
+...
+}
+
+sub _usart_write_byte {
     return <<'....';
+m_usart_write_byte macro tblentry
+    local _usart_write_byte_loop_0
+    clrf VIC_VAR_USART_WIDX
+_usart_write_byte_loop_0:
+    movf VIC_VAR_USART_WIDX, W
+    call tblentry
+    movwf TXREG
+    btfss TXSTA, TRMT
+    goto $ - 1
+    incf VIC_VAR_USART_WIDX, F
+    movf VIC_VAR_USART_WIDX, W
+    bcf STATUS, Z
+    xorlw VIC_VAR_USART_LEN
+    btfss STATUS, Z
+    goto _usart_write_byte_loop_0
+    endm
 ....
 }
 
@@ -162,6 +187,7 @@ sub usart_write {
     # check if $data is a string or value or variable
     my @bytearr = ();
     my $nstr;
+    my $table_entry = '';
     if (ref $data eq 'HASH') {
         # this ia a string
         $nstr = $data->{string};
@@ -173,19 +199,23 @@ sub usart_write {
             name => $data->{name},
             comment => "\t;;storing string '$nstr'",
         };
+        $table_entry = $data->{name};
     } else {
         if (looks_like_number($data) and $data !~ /^@/) {
             $code .= ";;; sending the number '$data' to $outp in big-endian mode\n";
             my $nstr = pack "N", $data;
             $nstr =~ s/^\x00{1,3}//g; # remove the beginning nulls
             @bytearr = split //, $nstr;
+            $table_entry = sprintf("_vic_bytes_0x%02X", $data);
             push @$tables, {
                 bytes => [map { sprintf "0x%02X", ord($_) } @bytearr],
-                name => sprintf("_vic_bytes_0x%02X", $data),
+                name => $table_entry,
                 comment => "\t;;storing number $data",
             };
         } else {
             $code .= ";;; sending the variable '$data' to $outp\n";
+            carp 'USART write not implemented for variables!';
+            return;
         }
     }
     ## length has to be 1 byte only
@@ -204,9 +234,13 @@ sub usart_write {
     }
     my $len = scalar(@bytearr) < 256 ? scalar(@bytearr) : 0xFF;
     $len = sprintf "0x%02X", $len;
-    $macros->{m_usart_write} = $self->_usart_write_loop;
+    $macros->{m_usart_write_byte} = $self->_usart_write_byte;
+    $macros->{m_usart_write_var} = $self->_usart_write_byte_var;
     $code .= <<"...";
 ;;;; byte array has length $len
+    movlw $len
+    movwf VIC_VAR_USART_LEN
+    m_usart_write_byte $table_entry
 ...
     return wantarray ? ($code, $funcs, $macros, $tables) : $code;
 }

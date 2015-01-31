@@ -1,13 +1,13 @@
 PIC P16F690;
 
-pragma UART baud = 300; # set baud rate
+pragma UART baud = 9600; # set baud rate
 
 Main {
     digital_output UART; # set up USART for transmit
     write UART, "Hello World!";
-    write UART, "100";
-    write UART, 100;
-    write UART, 0x12345678;
-    $ss = "Hello World!";
-    write UART, $ss;
+    #write UART, "100";
+    #write UART, 100;
+    #write UART, 0x12345678;
+    #$ss = "Hello World!";
+    #write UART, $ss;
 }

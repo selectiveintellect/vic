@@ -1587,7 +1587,8 @@ sub store_bytes {
     unless (ref $tables eq 'ARRAY') {
         $tables = [ $tables ];
     }
-    my $code = "\n_vic_bytes_table:\n";
+    return '' unless scalar @$tables;
+    my $code = '';
     foreach (@$tables) {
         my $name = $_->{name};
         next unless defined $name;
@@ -1595,7 +1596,7 @@ sub store_bytes {
         next unless ref $_->{bytes} eq 'ARRAY';
         my $bytes = join(',', @{$_->{bytes}});
         $code .= $_->{comment} . "\n" if defined $_->{comment};
-        my $row = "$name:\tdt $bytes\n";
+        my $row = "$name:\n\taddwf PCL, F\n\tdt $bytes\n";
         $code .= $row;
     }
     return $code;
