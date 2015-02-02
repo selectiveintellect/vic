@@ -68,6 +68,7 @@ share/examples/pwm2.vic
 share/examples/reversible.vic
 share/examples/rotater.vic
 share/examples/timer.vic
+share/examples/uart.vic
 share/examples/varrotate.vic
 share/rebuild-grammar
 share/rebuild-grammar.PL
@@ -98,4 +99,5 @@ t/21_delaysim.t
 t/22_pwm.t
 t/23_pwm2.t
 t/24_gputils.t
+t/25_uart.t
 t/TestVIC.pm
