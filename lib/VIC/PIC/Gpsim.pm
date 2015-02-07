@@ -463,6 +463,12 @@ sub stopwatch {
     return $code;
 }
 
+sub attach_uart {
+    my ($self, $pin) = @_;
+    # TX - connect to UART
+    # RX - connect to UART but also send it data
+}
+
 1;
 
 =encoding utf8

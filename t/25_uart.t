@@ -6,7 +6,7 @@ PIC P16F690;
 pragma UART baud = 9600; # set baud rate
 
 Main {
-    digital_output UART; # set up USART for transmit
+    setup UART, 9600; # set up USART for transmit
     write UART, "Hello World!";
 }
 ...
@@ -72,12 +72,17 @@ _start:
 	movwf SPBRG
 
 	banksel TXSTA
-	bcf TXSTA, SYNC ;; asynchronous operation
-	bsf TXSTA, TXEN ;; transmit enable
+    ;; asynchronous operation
+	bcf TXSTA, SYNC
+    ;; transmit enable
+	bsf TXSTA, TXEN
 	banksel RCSTA
-	bsf RCSTA, SPEN ;; serial port enable
-
-
+    ;; serial port enable
+	bsf RCSTA, SPEN
+    ;; continuous receive enable
+    bsf RCSTA, CREN
+    banksel ANSELH
+    bcf ANSELH, ANS11
 
 ;;; sending the string 'Hello World!' to UART
 ;;;; byte array has length 0x0C

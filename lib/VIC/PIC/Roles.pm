@@ -50,7 +50,7 @@ package VIC::PIC::Roles::GPIO;
     # analog_pins are a list of analog_pins
     requires qw(input_pins output_pins io_ports
       analog_pins get_input_pin get_output_pin);
-    requires qw(digital_output digital_input analog_input write);
+    requires qw(digital_output digital_input analog_input write read setup);
 }
 
 package VIC::PIC::Roles::ADC;

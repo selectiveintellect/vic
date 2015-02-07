@@ -9,15 +9,10 @@ use Scalar::Util qw(looks_like_number);
 use Moo::Role;
 
 sub usart_setup {
-    my ($self, $io, $ad, $outp) = @_;
+    my ($self, $outp, $baudr) = @_;
     return unless $self->doesroles(qw(USART GPIO CodeGen Chip));
     return unless $outp =~ /UART|USART/;
-    ## we do not check for defined values since this is called internally and
-    #not directly by the user
-    if ($ad =~ /analog/i) {
-        carp "$outp cannot have analog I/O";
-        return;
-    }
+    my $io = 'output';#FIXME
     $io = 0 if $io =~ /output/i; #transmit
     $io = 1 if $io =~ /input/i; #receive
     return unless ($io == 0 or $io == 1);
@@ -42,7 +37,8 @@ sub usart_setup {
         my ($baud_code, $io_code, $an_code) = ('', '', '');
         my $key = $sync ? 'usart' : 'uart';
         ## calculate the Baud rate
-        my $baudrate = $self->code_config->{$key}->{baud};
+        my $baudrate = $baudr;
+        $baudrate = $self->code_config->{$key}->{baud} unless defined $baudr;
         # find closest approximation of baud-rate
         # if baud-rate not given assume 9600
         my $f_osc = $self->code_config->{$key}->{f_osc} || $self->f_osc;
@@ -82,22 +78,37 @@ $baudctl_code
 \tmovwf SPBRG
 ...
         if (exists $self->registers->{ANSEL}) {
-            my $iopin = ($io == 1) ? $ipin : $opin;
-            my $pin_no = $self->pins->{$iopin};
-            my $allpins = $self->pins->{$pin_no};
-            unless (ref $allpins eq 'ARRAY') {
-                carp "Invalid data for pin $pin_no";
+            my $ipin_no = $self->pins->{$ipin};
+            my $opin_no = $self->pins->{$opin};
+            my $iallpins = $self->pins->{$ipin_no};
+            my $oallpins = $self->pins->{$opin_no};
+            unless (ref $iallpins eq 'ARRAY') {
+                carp "Invalid data for pin $ipin_no";
                 return;
             }
-            foreach my $anpin (@$allpins) {
-                next unless exists $self->analog_pins->{$anpin};
-                my ($pno, $pbit) = @{$self->analog_pins->{$anpin}};
+            unless (ref $oallpins eq 'ARRAY') {
+                carp "Invalid data for pin $opin_no";
+                return;
+            }
+            my @anpins = ();
+            foreach (@$iallpins) {
+                push @anpins, $_ if exists $self->analog_pins->{$_};
+            }
+            foreach (@$oallpins) {
+                push @anpins, $_ if exists $self->analog_pins->{$_};
+            }
+            my $pansel = '';
+            foreach (sort @anpins) {
+                my ($pno, $pbit) = @{$self->analog_pins->{$_}};
                 my $ansel = 'ANSEL';
                 if (exists $self->registers->{ANSELH}) {
                     $ansel = ($pbit >= 8) ? 'ANSELH' : 'ANSEL';
                 }
-                $an_code = "\tbanksel $ansel\n\tbcf $ansel, ANS$pbit";
-                last;
+                if ($ansel ne $pansel) {
+                    $an_code .= "\tbanksel $ansel\n";
+                    $pansel = $ansel;
+                }
+                $an_code .= "\tbcf $ansel, ANS$pbit\n";
             }
         }
         unless (exists $self->registers->{TXSTA} and
@@ -105,37 +116,24 @@ $baudctl_code
             carp "Register TXSTA & RCSTA are required for operations for $outp";
             return;
         }
-        if ($io) {
-            # receive
-            if ($sync) {
-                #TODO
-                carp "Synchronous operations not implemented\n";
-                return;
-            }
-            $io_code .= <<"...";
-\tbanksel TXSTA
-\tbcf TXSTA, SYNC ;; asynchronous operation
-\tbanksel RCSTA
-\tbsf RCSTA, SPEN ;; serial port enable
-\tbsf RCSTA, CREN ;; continuous receive enable
-$an_code
-...
-        } else {
-            # transmit
-            if ($sync) {
-                #TODO
-                carp "Synchronous operations not implemented\n";
-                return;
-            }
-            $io_code .= <<"...";
-\tbanksel TXSTA
-\tbcf TXSTA, SYNC ;; asynchronous operation
-\tbsf TXSTA, TXEN ;; transmit enable
-\tbanksel RCSTA
-\tbsf RCSTA, SPEN ;; serial port enable
-$an_code
-...
+        if ($sync) {
+            #TODO
+            carp "Synchronous operations not implemented\n";
+            return;
         }
+        $io_code .= <<"...";
+\tbanksel TXSTA
+\t;; asynchronous operation
+\tbcf TXSTA, SYNC
+\t;; transmit enable
+\tbsf TXSTA, TXEN
+\tbanksel RCSTA
+\t;; serial port enable
+\tbsf RCSTA, SPEN
+\t;; continuous receive enable
+\tbsf RCSTA, CREN
+$an_code
+...
         return <<"EUSARTCODE";
 $baud_code
 $io_code

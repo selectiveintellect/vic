@@ -156,9 +156,6 @@ sub _gpio_select {
             $port_code = "\tbanksel $port";
         }
     } else {
-        if ($self->doesrole('USART') and exists $self->usart_pins->{$outp}) {
-            return $self->usart_setup(@_);
-        }
         carp "Cannot find $outp in the list of registers or pins supporting GPIO";
         return;
     }
@@ -182,6 +179,18 @@ sub digital_input {
 sub analog_input {
     my $self = shift;
     return $self->_gpio_select(input => 'analog', @_);
+}
+
+sub setup {
+    my $self = shift;
+    my ($outp) = @_;
+    if ($outp =~ /US?ART/) {
+        if ($self->doesrole('USART') and exists $self->usart_pins->{$outp}) {
+            return $self->usart_setup(@_);
+        }
+    }
+    carp "The 'setup' function is not valid for $outp. Use something else.";
+    return;
 }
 
 sub write {
@@ -254,6 +263,10 @@ sub write {
         carp "Cannot find $outp in the list of ports, register or pins to write to";
         return;
     }
+}
+
+sub read {
+    # unimplemented
 }
 
 1;
