@@ -159,19 +159,32 @@ sub _usart_write_byte {
     return <<'....';
 m_usart_write_byte macro tblentry
     local _usart_write_byte_loop_0
+    local _usart_write_byte_loop_1
+    banksel VIC_VAR_USART_WIDX
     clrf VIC_VAR_USART_WIDX
 _usart_write_byte_loop_0:
     movf VIC_VAR_USART_WIDX, W
     call tblentry
+    banksel TXREG
     movwf TXREG
+    banksel TXSTA
     btfss TXSTA, TRMT
     goto $ - 1
+    banksel VIC_VAR_USART_WIDX
     incf VIC_VAR_USART_WIDX, F
-    movf VIC_VAR_USART_WIDX, W
     bcf STATUS, Z
-    xorlw VIC_VAR_USART_LEN
-    btfss STATUS, Z
+    bcf STATUS, C
+    movf VIC_VAR_USART_WIDX, W
+    subwf VIC_VAR_USART_LEN, W
+    ;; W == 0
+    btfsc STATUS, Z
+    goto _usart_write_byte_loop_1
     goto _usart_write_byte_loop_0
+_usart_write_byte_loop_1:
+    ;; finish the sending
+    banksel TXSTA
+    btfss TXSTA, TRMT
+    goto $ - 1
     endm
 ....
 }
@@ -193,7 +206,7 @@ sub usart_write {
         $code .= ";;; sending the string '$nstr' to $outp\n";
         @bytearr = split //, $nstr;
         push @$tables, {
-            bytes => [map { sprintf "0x%02X", ord($_) } @bytearr],
+            bytes => [(map { sprintf "0x%02X", ord($_) } @bytearr), "0x00"],
             name => $data->{name},
             comment => "\t;;storing string '$nstr'",
         };
@@ -206,7 +219,7 @@ sub usart_write {
             @bytearr = split //, $nstr;
             $table_entry = sprintf("_vic_bytes_0x%02X", $data);
             push @$tables, {
-                bytes => [map { sprintf "0x%02X", ord($_) } @bytearr],
+                bytes => [(map { sprintf "0x%02X", ord($_) } @bytearr), "0x00"],
                 name => $table_entry,
                 comment => "\t;;storing number $data",
             };
@@ -236,6 +249,7 @@ sub usart_write {
     $macros->{m_usart_write_var} = $self->_usart_write_byte_var;
     $code .= <<"...";
 ;;;; byte array has length $len
+    banksel VIC_VAR_USART_LEN
     movlw $len
     movwf VIC_VAR_USART_LEN
     m_usart_write_byte $table_entry

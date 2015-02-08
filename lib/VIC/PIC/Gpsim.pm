@@ -14,7 +14,7 @@ has include => 'coff.inc';
 
 has pic => undef; # refer to the PIC object
 
-has led_count => 0;
+has node_count => 0;
 
 has scope_channels => 0;
 
@@ -165,9 +165,9 @@ sub attach_led {
     $count = 1 if int($count) < 1;
     my $code = '';
     if ($count == 1) {
-        my $c = $self->led_count;
+        my $c = $self->node_count;
         my $node = lc $port . 'led';
-        $self->led_count($c + 1);
+        $self->node_count($c + 1);
         my $x = ($c >= 4) ? 400 : 100;
         my $y = 50 + 50 * $c;
         # use the default pin 0 here
@@ -177,14 +177,14 @@ sub attach_led {
         $count--;
         if ($self->pic) {
             for (0 .. $count) {
-                my $c = $self->led_count + $_;
+                my $c = $self->node_count + $_;
                 my $x = ($_ >= 4) ? 400 : 100;
                 my $y = 50 + 50 * $c;
                 my $node = lc $port . $c . 'led';
                 my $simport = $self->_get_simport($port, $_);
                 $code .= $self->_gen_led($c, $x, $y, $node, $simport, $color);
             }
-            $self->led_count($self->led_count + $count + 1);
+            $self->node_count($self->node_count + $count + 1);
         }
     }
     return $code;
@@ -217,8 +217,8 @@ sub attach_led7seg {
         }
     }
     return unless scalar @simpins;
-    my $id = $self->led_count;
-    $self->led_count($id + 1);
+    my $id = $self->node_count;
+    $self->node_count($id + 1);
     my $x = 500;
     my $y = 50 + 50 * $id;
     $code .= << "...";
@@ -263,12 +263,24 @@ sub log {
     my $self = shift;
     my $code = '';
     foreach my $port (@_) {
-        my $reg = $self->_get_simreg($port);
-        next unless $reg;
-        $code .= << "...";
+        if ($port =~ /US?ART/) {
+            next unless $self->pic->doesrole('USART');
+            my $ipin = $self->pic->usart_pins->{async_in};
+            my $opin = $self->pic->usart_pins->{async_out};
+            if (defined $ipin and defined $opin) {
+                my $ireg = $self->_get_simreg($ipin);
+                my $oreg = $self->_get_simreg($opin);
+                $code .= $self->log($ipin);
+                $code .= $self->log($opin) if $ireg ne $oreg;
+            }
+        } else {
+            my $reg = $self->_get_simreg($port);
+            next unless $reg;
+            $code .= << "...";
 \t.sim "log r $reg"
 \t.sim "log w $reg"
 ...
+        }
     }
     return $code;
 }
@@ -304,7 +316,15 @@ sub scope {
     my $self = shift;
     my $code = '';
     foreach my $port (@_) {
-        $code .= $self->_set_scope($port);
+        if ($port =~ /US?ART/) {
+            next unless $self->pic->doesrole('USART');
+            my $ipin = $self->pic->usart_pins->{async_in};
+            my $opin = $self->pic->usart_pins->{async_out};
+            $code .= $self->_set_scope($ipin) if defined $opin;
+            $code .= $self->_set_scope($opin) if defined $opin;
+        } else {
+            $code .= $self->_set_scope($port);
+        }
     }
     return $code;
 }
@@ -463,10 +483,42 @@ sub stopwatch {
     return $code;
 }
 
-sub attach_uart {
-    my ($self, $pin) = @_;
-    # TX - connect to UART
-    # RX - connect to UART but also send it data
+sub attach {
+    my $self = shift;
+    return unless @_;
+    my $pin = shift;
+    my $code = '';
+    if ($pin =~ /US?ART/) {
+        # TX - connect to UART
+        # RX - connect to UART but also send it data
+        unless ($self->pic->doesrole('USART')) {
+            carp "PIC ", $self->pic->type, " does not do USART";
+            return;
+        }
+        my $baudrate = shift if @_;
+        my $key = ($pin =~ /^UART/) ? 'uart' : 'usart';
+        $baudrate = $self->pic->code_config->{$key}->{baud} unless defined
+        $baudrate;
+        $baudrate = 9600 unless defined $baudrate;
+        my $id = $self->node_count;
+        $self->node_count($id + 1);
+        my $ipin = $self->pic->usart_pins->{async_in};
+        my $rxport = $self->_get_simport($ipin);
+        my $opin = $self->pic->usart_pins->{async_out};
+        my $txport = $self->_get_simport($opin);
+        return unless (exists $self->pic->pins->{$ipin} and exists $self->pic->pins->{$opin});
+        $code .= qq{\t.sim "module load usart U$id"\n};
+        $code .= qq{\t.sim "node TX_U$id"\n};
+        $code .= qq{\t.sim "node RX_U$id"\n};
+        $code .= qq{\t.sim "attach TX_U$id $txport U$id.RXPIN"\n};
+        $code .= qq{\t.sim "attach RX_U$id $rxport U$id.TXPIN"\n};
+        $code .= qq{\t.sim "U$id.txbaud = $baudrate"\n};
+        $code .= qq{\t.sim "U$id.rxbaud = $baudrate"\n};
+        my $x = 500;
+        my $y = 50 + 50 * $id;
+        $code .= qq{\t.sim "U$id.xpos = $x"\n};
+        $code .= qq{\t.sim "U$id.ypos = $y"\n};
+    }
 }
 
 1;

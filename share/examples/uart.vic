@@ -9,3 +9,10 @@ Main {
     #$ss = "Hello World!";
     #write UART, $ss;
 }
+
+Simulator {
+    attach UART, 9600;
+    stop_after 2s;
+    log UART;
+    scope UART;
+}
