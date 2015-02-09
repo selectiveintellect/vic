@@ -7,7 +7,7 @@ pragma UART baud = 9600; # set baud rate
 
 Main {
     setup UART, 9600; # set up USART for transmit
-    write UART, "Hello World!";
+    write UART, "Hello World!\n";
 }
 
 Simulator {
@@ -123,10 +123,10 @@ _start:
     banksel ANSELH
     bcf ANSELH, ANS11
 
-;;; sending the string 'Hello World!' to UART
-;;;; byte array has length 0x0C
+;;; sending the string 'Hello World!\n' to UART
+;;;; byte array has length 0x0D
     banksel VIC_VAR_USART_LEN
-    movlw 0x0C
+    movlw 0x0D
     movwf VIC_VAR_USART_LEN
     m_usart_write_byte _vic_str_00
 
@@ -135,10 +135,10 @@ _end_start:
 	goto $	;;;; end of Main
 
 ;;;; generated code for functions
-	;;storing string 'Hello World!'
+	;;storing string 'Hello World!\n'
 _vic_str_00:
 	addwf PCL, F
-	dt 0x48,0x65,0x6C,0x6C,0x6F,0x20,0x57,0x6F,0x72,0x6C,0x64,0x21,0x00
+	dt 0x48,0x65,0x6C,0x6C,0x6F,0x20,0x57,0x6F,0x72,0x6C,0x64,0x21,0x0A,0x00
 
 ;;;; generated code for end-of-file
 	end

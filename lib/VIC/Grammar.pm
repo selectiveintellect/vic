@@ -10,7 +10,7 @@ extends 'Pegex::Grammar';
 
 use constant file => './share/vic.pgx';
 
-sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.57)
+sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.60)
   {
     '+grammar' => 'vic',
     '+toprule' => 'program',

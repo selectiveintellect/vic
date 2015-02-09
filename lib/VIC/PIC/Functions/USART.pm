@@ -203,12 +203,15 @@ sub usart_write {
         # this ia a string
         $nstr = $data->{string};
         $nstr = substr($nstr, 1) if $nstr =~ /^@/;
-        $code .= ";;; sending the string '$nstr' to $outp\n";
+        my $nstr2 = $nstr;
+        $nstr2 =~ s/[\n]/\\n/gs;
+        $nstr2 =~ s/[\r]/\\r/gs;
+        $code .= ";;; sending the string '$nstr2' to $outp\n";
         @bytearr = split //, $nstr;
         push @$tables, {
             bytes => [(map { sprintf "0x%02X", ord($_) } @bytearr), "0x00"],
             name => $data->{name},
-            comment => "\t;;storing string '$nstr'",
+            comment => "\t;;storing string '$nstr2'",
         };
         $table_entry = $data->{name};
     } else {

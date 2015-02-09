@@ -721,6 +721,26 @@ sub got_boolean {
     return 0; # default boolean is false
 }
 
+sub got_double_quoted_string {
+    my $self = shift;
+    my $str = pop;
+    ## Ripped from Ingy's pegex-json-pm Pegex::JSON::Data
+    ## Unicode support not implemented yet but available in Pegex::JSON::Data
+    my %escapes = (
+        '"' => '"',
+        '/' => '/',
+        "\\" => "\\",
+        b => "\b",
+        f => "\x12",
+        n => "\n",
+        r => "\r",
+        t => "\t",
+        0 => "\0",
+    );
+    $str =~ s/\\(["\/\\bfnrt0])/$escapes{$1}/ge;
+    return $str;
+}
+
 sub got_string {
     my $self = shift;
     my $str = shift;

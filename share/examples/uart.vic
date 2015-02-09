@@ -2,7 +2,7 @@ PIC P16F690;
 
 Main {
     setup UART, 9600; # set up USART for transmit
-    write UART, "Hello World!";
+    write UART, "Hello World!\n";
     write UART, "100";
     write UART, 100;
     write UART, 0x12345678;
@@ -12,7 +12,7 @@ Main {
 
 Simulator {
     attach UART, 9600;
-    stop_after 2s;
+    stop_after 1s;
     log UART;
     scope UART;
 }
