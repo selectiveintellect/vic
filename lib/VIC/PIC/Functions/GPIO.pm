@@ -266,7 +266,38 @@ sub write {
 }
 
 sub read {
-    # unimplemented
+    my $self = shift;
+    my ($inp, $var) = @_;
+    return unless $self->doesroles(qw(CodeGen Chip GPIO));
+    my ($port, $portbit);
+    if (exists $self->pins->{$inp}) {
+        my $ipin = $self->get_input_pin($inp);
+        unless (defined $ipin) {
+            carp "Cannot find $inp in the list of GPIO ports or pins";
+            return;
+        } else {
+            my $tris;
+            ($port, $tris, $portbit) = @{$self->input_pins->{$inp}};
+        }
+    } else {
+        carp "Cannot find $inp in the list of ports or pins";
+        return;
+    }
+    if ($var =~ /^\d+$/) {
+        carp "Cannot read from $inp into a constant $var";
+        return;
+    }
+    $var = uc $var;
+    my $code = <<"...";
+;;; reading from $inp into $var
+\tclrw
+\tbanksel $port
+\tbtfsc $port, $portbit
+\taddlw 0x01
+\tbanksel $var
+\tmovwf $var
+...
+    return wantarray ? ($code, {}, {}) : $code;
 }
 
 1;
