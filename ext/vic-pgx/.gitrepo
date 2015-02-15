@@ -1,0 +1,11 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:selectiveintellect/vic-pgx
+	branch = master
+	commit = 7c6f38a0ace43942323cd5ff2d75c9613e066e44
+	parent = 2d3c769348eed7d3212ea42f1dc3ecd444d449d1
+	cmdver = 0.1.0

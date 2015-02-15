@@ -8,7 +8,7 @@ $VERSION = eval $VERSION;
 use Pegex::Base;
 extends 'Pegex::Grammar';
 
-use constant file => './share/vic.pgx';
+use constant file => './ext/vic-pgx/vic.pgx';
 
 sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.60)
   {
