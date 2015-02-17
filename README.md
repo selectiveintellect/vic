@@ -159,7 +159,7 @@ All of the above do the same thing.
 
 ##Contributors
 
-- Ingy [@ingydotnet](https://github.com/ingydotnet/)
+- Ingy döt Net [@ingydotnet](https://github.com/ingydotnet/)
 
 ##Copyright
 
