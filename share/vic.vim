@@ -16,7 +16,7 @@ syn keyword vicStatement    debounce digital_output write read ror rol timer_ena
 syn keyword vicStatement    timer shl shr pwm_single pwm_halfbridge pwm_fullbridge pwm_update
 syn keyword vicStatement    setup attach
 syn keyword vicBlock        Main Loop Action True False ISR Simulator
-syn keyword vicModifier     sqrt high low int char hex hang every wave table array
+syn keyword vicModifier     sqrt high low int char hex hang every wave table array shift
 syn keyword vicConditional  if while else break continue
 " contained is needed to show that the color highlighting is only valid when
 " part of another match

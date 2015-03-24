@@ -51,7 +51,7 @@ expr-value: - (number | array-element | variable | number-units | complement |
                 modifier-variable | nested-expr-value) -
 rhs-expr: expr-value+ % rhs-operator
 assign-expr: - variable - assign-operator - rhs-expr
-declaration: - variable - / EQUAL / - (constant | modifier-constant)
+declaration: - variable - / EQUAL / - (constant | modifier-constant | parameter)
 array-element: variable start-array rhs-expr end-array
 
 comparison: expr-value compare-operator expr-value
@@ -97,6 +97,7 @@ real-number: /('-'? DIGIT* '.' DIGIT+)/ | /('-'? DIGIT+ '.' DIGIT*)/
 units: /([mu]?'s'|[kM]?'Hz' | '%')/
 boolean: /('TRUE'|'FALSE'|'true'|'false'|'0'|'1')/
 
+parameter: /'shift'/
 validated-variable: identifier-without-keyword /([+-]?)/
 modifier-variable: identifier-without-keyword - variable
 modifier-constant: identifier-without-keyword - constant

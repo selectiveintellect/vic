@@ -65,6 +65,7 @@ share/examples/loopbreak.vic
 share/examples/math8bit.vic
 share/examples/pwm.vic
 share/examples/pwm2.vic
+share/examples/reader.vic
 share/examples/reversible.vic
 share/examples/rotater.vic
 share/examples/timer.vic

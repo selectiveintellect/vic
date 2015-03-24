@@ -6,7 +6,7 @@ use POSIX ();
 use List::Util qw(max);
 use List::MoreUtils qw(any firstidx indexes);
 
-our $VERSION = '0.23';
+our $VERSION = '0.24';
 $VERSION = eval $VERSION;
 
 use Pegex::Base;
@@ -123,10 +123,12 @@ sub handle_named_block {
     $self->ast->{block_mapping}->{$name} = {
         label => $expected_label,
         block => $anon_block,
+        params => 0,
     };
     $self->ast->{block_mapping}->{$anon_block} = {
         label => $expected_label,
         block => $name,
+        params => 0,
     };
     # make sure the anon-block and named-block refer to the same block
     $self->ast->{$name} = $self->ast->{$anon_block};
@@ -316,6 +318,14 @@ sub got_array_element {
         "Unable to create intermediary variable '$varname'") unless $varname;
 }
 
+sub got_parameter {
+    my $self = shift;
+    ## ok the target variable needs a parameter here
+    ## this works only in block scope so we want to check which block we are in
+    my $block = $self->ast->{block_stack}->[-1];
+    return "PARAM::$block";
+}
+
 sub got_declaration {
     my ($self, $list) = @_;
     my $lhs = shift @$list;
@@ -341,6 +351,12 @@ sub got_declaration {
         } else {
             return $self->parser->throw_error("Variable '$lhs' doesn't exist");
         }
+    } elsif ($rhs =~ /PARAM::(\w+)/) {
+        ## ok now we push this as our statement and handle the rest during
+        ## code generation
+        ## this is of the format PARAM::op::block_name::variable
+        my $block = $1;
+        $self->update_intermediate("PARAM::ASSIGN::${block}::${lhs}");
     } else {
         # var = number | string etc.
         if ($rhs =~ /^-?\d+$/) {
@@ -1301,6 +1317,26 @@ sub generate_code {
             push @code, $self->generate_code_unary_expr($line);
         } elsif ($line =~ /^SET::\w+/) {
             push @code, $self->generate_code_assign_expr($line);
+        } elsif ($line =~ /^PARAM::(\w+)::(\w+)::(\w+)/) {
+            if (exists $ast->{block_mapping}->{$block_name}) {
+                my $op = $1;
+                my $pblock = $2;
+                my $pvar = $3;
+                my $mapping = $ast->{block_mapping}->{$pblock};
+                my $param_idx = $mapping->{params};
+                $mapping->{params} = $param_idx + 1;
+                # map the param index back to the other mapping too
+                if ($pblock ne $block_name and $mapping->{block} eq $block_name) {
+                    my $mapping2 = $ast->{block_mapping}->{$block_name};
+                    $mapping2->{params} = $mapping->{params};
+                }
+                my $pline = "SET::${op}::${pvar}::${block_name}_Param${param_idx}";
+                #YYY [$pblock, $pvar, $block_name, $param_idx, $pline];
+                push @code, $self->generate_code_assign_expr($pline);
+            } else {
+                $self->parser->throw_error("Intermediate code '$line' in block "
+                    . "$block_name cannot be handled");
+            }
         } elsif ($line =~ /^LABEL::(\w+)/) {
             my $lbl = $1;
             push @code, ";; $line" if $self->intermediate_inline;

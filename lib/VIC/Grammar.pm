@@ -2,7 +2,7 @@ package VIC::Grammar;
 use strict;
 use warnings;
 
-our $VERSION = '0.23';
+our $VERSION = '0.24';
 $VERSION = eval $VERSION;
 
 use Pegex::Base;
@@ -413,6 +413,9 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.60)
             },
             {
               '.ref' => 'modifier_constant'
+            },
+            {
+              '.ref' => 'parameter'
             }
           ]
         }
@@ -653,6 +656,9 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.60)
           '.ref' => 'units'
         }
       ]
+    },
+    'parameter' => {
+      '.rgx' => qr/\Gshift/
     },
     'pragma_expression' => {
       '.all' => [

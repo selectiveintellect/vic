@@ -4,19 +4,43 @@
 
 - Indirect addressing or pointer addressing
 - Optimize memory usage and detect availability of RAM
+- Parameter passing in Action/ISR blocks
 - User-defined blocks/functions
+
+        MyFunc {
+            $pin = shift;
+            return $result;
+        }
+        Main {
+            $value = MyFunc RC0;
+        }
+
 - Data flow analysis for reusing existing scratch memory space
 - Improve error messages
 
 ## Code Generation Features
 
-- String tables (read-only data)
-- ASCII conversion of numbers and alphabets
+- String tables (read-only data) - DONE for UART
+- String buffers for writing
+
+    $value = "";
+    read UART0, Action {
+        $value += shift;
+    };
+
+- ASCII conversion of numbers and alphabets - DONE for UART
 - Sleep/Wake-up of processor
 - EEPROM read/write and storage of large data blobs such as music files or
   images
 - Verify PWM implementation on Oscilloscope - (example is verified)
 - UART
+
+    # does this store the incoming bytes in a buffer ?
+    read UART0, $value; # a single byte
+    read UART0, Action/ISR {
+        $value = shift; # a single byte
+    };
+
 - I2C
 - SPI
 - USB
@@ -24,9 +48,17 @@
 - Watchdog Timer
 - Power management
 - Interrupt on Change for reads (Event based reading)
+
+        read RC0, Action/ISR {
+            $value = $1;
+            ## or
+            $value = shift;
+        };
+
 - Code protection features if allowed by chip
 - Oscillator selection and modification
 - Usage of Comparators with examples
+- In-Circuit Serial Programming example
 - 16-bit arithmetic
 - fixed-point arithmetic
 
