@@ -4,6 +4,7 @@
 
 - Indirect addressing or pointer addressing
 - Optimize memory usage and detect availability of RAM
+- User-defined blocks/functions
 - Data flow analysis for reusing existing scratch memory space
 - Improve error messages
 
@@ -14,7 +15,7 @@
 - Sleep/Wake-up of processor
 - EEPROM read/write and storage of large data blobs such as music files or
   images
-- Verify PWM implementation on Oscilloscope
+- Verify PWM implementation on Oscilloscope - (example is verified)
 - UART
 - I2C
 - SPI

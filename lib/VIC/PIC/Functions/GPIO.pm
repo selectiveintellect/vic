@@ -6,6 +6,7 @@ our $VERSION = '0.23';
 $VERSION = eval $VERSION;
 use Carp;
 use POSIX ();
+use Scalar::Util qw(looks_like_number);
 use Moo::Role;
 
 sub get_output_pin {
@@ -265,12 +266,52 @@ sub write {
     }
 }
 
+sub _macro_read_var {
+    return << "...";
+;;;;;;; VIC_VAR_READ VARIABLES ;;;;;;
+VIC_VAR_READ_UDATA udata
+VIC_VAR_READ res 1
+...
+}
+
 sub read {
     my $self = shift;
-    my ($inp, $var) = @_;
+    my $inp = shift;
+    my $var = undef;
+    my %action = ();
+    if (scalar(@_) == 1) {
+        $var = shift;
+    } else {
+        %action = @_;
+    }
     return unless $self->doesroles(qw(CodeGen Chip GPIO));
+    my ($code, $funcs, $macros, $tables) = ('', {}, {}, []);
+
+    if (defined $var) {
+        if (looks_like_number($var) or ref $var eq 'HASH') {
+            carp "Cannot read from $inp into a constant $var";
+            return;
+        }
+        $var = uc $var;
+    } else {
+        $macros->{m_read_var} = $self->_macro_read_var;
+        $var = 'VIC_VAR_READ';
+    }
+    my $bits = $self->address_bits($var);
     my ($port, $portbit);
-    if (exists $self->pins->{$inp}) {
+    if (exists $self->io_ports->{$inp} and
+        exists $self->registers->{$inp}) {
+        # this is a port like PORT[A-Z]
+        # we may end up reading from all pins on a port
+        $port = $self->io_ports->{$inp};
+        $code = <<"...";
+;;; instant reading from $port into $var
+\tbanksel $port
+\tmovf $port, W
+\tbanksel $var
+\tmovwf $var
+...
+    } elsif (exists $self->pins->{$inp}) {
         my $ipin = $self->get_input_pin($inp);
         unless (defined $ipin) {
             carp "Cannot find $inp in the list of GPIO ports or pins";
@@ -278,26 +319,24 @@ sub read {
         } else {
             my $tris;
             ($port, $tris, $portbit) = @{$self->input_pins->{$inp}};
-        }
-    } else {
-        carp "Cannot find $inp in the list of ports or pins";
-        return;
-    }
-    if ($var =~ /^\d+$/) {
-        carp "Cannot read from $inp into a constant $var";
-        return;
-    }
-    $var = uc $var;
-    my $code = <<"...";
-;;; reading from $inp into $var
+            $code = <<"....";
+;;; instant reading from $inp into $var
 \tclrw
 \tbanksel $port
 \tbtfsc $port, $portbit
 \taddlw 0x01
 \tbanksel $var
 \tmovwf $var
-...
-    return wantarray ? ($code, {}, {}) : $code;
+....
+        }
+    } else {
+        if ($self->doesrole('USART') and exists $self->usart_pins->{$inp}) {
+            return $self->usart_read(@_);
+        }
+        carp "Cannot find $inp in the list of ports or pins to read from";
+        return;
+    }
+    return wantarray ? ($code, $funcs, $macros, $tables) : $code;
 }
 
 1;

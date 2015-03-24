@@ -260,5 +260,16 @@ sub usart_write {
     return wantarray ? ($code, $funcs, $macros, $tables) : $code;
 }
 
+sub usart_read {
+    my $self = shift;
+    my ($inp, $var) = @_;
+    return unless $self->doesroles(qw(USART GPIO CodeGen Chip));
+    return unless $inp =~ /US?ART/;
+    return unless defined $var;
+    carp "Not implemented\n";
+    my ($code, $funcs, $macros, $tables) = ('', {}, {}, []);
+    return wantarray ? ($code, $funcs, $macros, $tables) : $code;
+}
+
 1;
 __END__

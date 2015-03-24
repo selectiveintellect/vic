@@ -1,0 +1,9 @@
+PIC P16F690;
+
+Main {
+    digital_input RC0;
+    read RC0, $value;
+#    read RC0, Action {
+#        $value = $arg0;
+#    };
+}
