@@ -267,10 +267,12 @@ sub write {
 }
 
 sub _macro_read_var {
+    my $v = $_[1];
+    $v = uc $v;
     return << "...";
-;;;;;;; VIC_VAR_READ VARIABLES ;;;;;;
-VIC_VAR_READ_UDATA udata
-VIC_VAR_READ res 1
+;;;;;;; $v VARIABLES ;;;;;;
+$v\_UDATA udata
+$v res 1
 ...
 }
 
@@ -294,8 +296,17 @@ sub read {
         }
         $var = uc $var;
     } else {
-        $macros->{m_read_var} = $self->_macro_read_var;
-        $var = 'VIC_VAR_READ';
+        ## we need only 1 variable here
+        if (defined $action{PARAM}) {
+            $var = $action{PARAM} . '0';
+        } else {
+            carp "Implementation errors implementing the Action block";
+            return undef;
+        }
+        $var = uc $var;
+        $macros->{m_read_var} = $self->_macro_read_var($var);
+        return unless defined $action{ACTION};
+        return unless defined $action{END};
     }
     my $bits = $self->address_bits($var);
     my ($port, $portbit);
@@ -335,6 +346,15 @@ sub read {
         }
         carp "Cannot find $inp in the list of ports or pins to read from";
         return;
+    }
+    if (%action) {
+        my $action_label = $action{ACTION};
+        my $end_label = $action{END};
+        $code .= <<"...";
+;;; invoking $action_label
+\tgoto $action_label
+$end_label:\n
+...
     }
     return wantarray ? ($code, $funcs, $macros, $tables) : $code;
 }

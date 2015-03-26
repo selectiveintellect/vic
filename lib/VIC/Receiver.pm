@@ -101,19 +101,21 @@ sub handle_named_block {
     my ($self, $name, $anon_block, $parent) = @_;
     my $id = $1 if $anon_block =~ /_anonblock(\d+)/;
     $id = $self->ast->{block_count} unless defined $id;
-    my $expected_label;
+    my ($expected_label, $expected_param) = ('', '');
     if ($name eq 'Main') {
         $expected_label = "_start";
     } elsif ($name =~ /^Loop/) {
         $expected_label = "_loop_${id}";
     } elsif ($name =~ /^Action/) {
         $expected_label = "_action_${id}";
+        $expected_param = "action${id}_param";
     } elsif ($name =~ /^True/) {
         $expected_label = "_true_${id}";
     } elsif ($name =~ /^False/) {
         $expected_label = "_false_${id}";
     } elsif ($name =~ /^ISR/) {
         $expected_label = "_isr_${id}";
+        $expected_param = "isr${id}_param";
     } elsif ($name eq 'Simulator') {
         $expected_label = '_vic_simulator';
     } else {
@@ -123,12 +125,14 @@ sub handle_named_block {
     $self->ast->{block_mapping}->{$name} = {
         label => $expected_label,
         block => $anon_block,
-        params => 0,
+        params => [],
+        param_prefix => $expected_param,
     };
     $self->ast->{block_mapping}->{$anon_block} = {
         label => $expected_label,
         block => $name,
-        params => 0,
+        params => [],
+        param_prefix => $expected_param,
     };
     # make sure the anon-block and named-block refer to the same block
     $self->ast->{$name} = $self->ast->{$anon_block};
@@ -162,6 +166,7 @@ sub handle_named_block {
                 $slabel = "_start_conditional_$ccount";
             }
             $block_label .= "::$elabel";
+            $block_label .= "::$expected_param" if length $expected_param;
             push @{$self->ast->{$parent}}, $block_label;
         }
         # save this for referencing when we need to know what the parent of
@@ -246,10 +251,8 @@ sub got_instruction {
     my @args = ();
     while (scalar @$list) {
         my $a = shift @$list;
-        if ($a =~ /BLOCK::(\w+)::Action\w+::.*::(_end_\w+)$/) {
-            push @args, "ACTION::$1::END::$2";
-        } elsif ($a =~ /BLOCK::(\w+)::ISR\w+::.*::(_end_\w+)$/) {
-            push @args, "ISR::$1::END::$2";
+        if ($a =~ /BLOCK::(\w+)::(Action|ISR)\w+::.*::(_end_\w+)::(\w+)$/) {
+            push @args, uc($2) . "::$1::END::$3::PARAM::$4";
         } else {
             push @args, $a;
         }
@@ -1040,7 +1043,7 @@ sub generate_code_assign_expr {
     my @code = ();
     my $ast = $self->ast;
     my ($tag, $op, $varname, $rhs) = split /::/, $line;
-    push @code, ";;; $line\n";
+    push @code, ";;; $line\n" if $self->intermediate_inline;
     if (exists $ast->{variables}->{$varname}) {
         if (exists $ast->{tmp_variables}->{$rhs}) {
             my $tmp_code = $ast->{tmp_variables}->{$rhs};
@@ -1310,7 +1313,8 @@ sub generate_code {
         my $line = shift @$blocks;
         next unless defined $line;
         if ($line =~ /^BLOCK::\w+/) {
-            push @code, $self->generate_code_blocks($line, $block_name);
+            my $blockparams = $ast->{block_mapping}->{$block_name}->{params} || [];
+            push @code, $self->generate_code_blocks($line, $block_name, $blockparams);
         } elsif ($line =~ /^INS::\w+/) {
             push @code, $self->generate_code_instruction($line);
         } elsif ($line =~ /^UNARY::\w+/) {
@@ -1323,15 +1327,17 @@ sub generate_code {
                 my $pblock = $2;
                 my $pvar = $3;
                 my $mapping = $ast->{block_mapping}->{$pblock};
-                my $param_idx = $mapping->{params};
-                $mapping->{params} = $param_idx + 1;
+                my $param_idx = scalar @{$mapping->{params}};
+                my $paramvar = $mapping->{param_prefix} || lc($block_name . '_param');
+                $paramvar .= $param_idx;
+                push @{$mapping->{params}}, $paramvar;
                 # map the param index back to the other mapping too
                 if ($pblock ne $block_name and $mapping->{block} eq $block_name) {
                     my $mapping2 = $ast->{block_mapping}->{$block_name};
                     $mapping2->{params} = $mapping->{params};
                 }
-                my $pline = "SET::${op}::${pvar}::${block_name}_Param${param_idx}";
-                #YYY [$pblock, $pvar, $block_name, $param_idx, $pline];
+                my $pline = "SET::${op}::${pvar}::${paramvar}";
+                #YYY [$pblock, $pvar, $block_name, $param_idx, $pline, $paramvar];
                 push @code, $self->generate_code_assign_expr($pline);
             } else {
                 $self->parser->throw_error("Intermediate code '$line' in block "
