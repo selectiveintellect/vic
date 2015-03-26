@@ -217,6 +217,7 @@ sub write {
                 return;
             }
         }
+        # this handles the variable to port assigning
         return $self->op_assign($outp, $val);
     } elsif (exists $self->pins->{$outp}) {
         my $iopin = $self->get_output_pin($outp);
