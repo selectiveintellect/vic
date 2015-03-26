@@ -428,8 +428,8 @@ sub stimulate {
         %hh = (%hh, %$href);
     }
     my $period = '';
-    $period = $hh{EVERY} if defined $hh{EVERY};
-    $period = qq{\t.sim "period $period"} if defined $period;
+    $period = $hh{EVERY} if (defined $hh{EVERY} and length $hh{EVERY});
+    $period = qq{\t.sim "period $period"} if (defined $period and length $period);
     my $wave = '';
     my $wave_type = 'digital';
     if (exists $hh{WAVE} and ref $hh{WAVE} eq 'ARRAY') {

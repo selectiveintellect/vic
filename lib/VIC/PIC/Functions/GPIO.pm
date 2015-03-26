@@ -247,6 +247,15 @@ sub write {
                     "Only a pin can be written to a pin.\n";
                 return;
             }
+        } elsif ($self->is_variable($val)) {
+            $val = uc $val;
+            return << "...";
+;;;; assigning $val to a pin => using the last bit
+\tbtfss $val, 0
+\tbcf $port, $outp
+\tbtfsc $val, 0
+\tbsf $port, $outp
+...
         } else {
             carp "$val is a port or unknown pin and cannot be written to a pin $outp. ".
             "Only a pin can be written to a pin.\n";

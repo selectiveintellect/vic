@@ -101,5 +101,14 @@ sub address_bits {
     return $bits;
 }
 
+sub is_variable {
+    my ($self, $varname) = @_;
+    return unless $varname;
+    return unless $self->doesrole('CodeGen');
+    return 1 if defined $self->code_config->{lc $varname};
+    return 0;
+}
+
+
 1;
 __END__
