@@ -60,6 +60,10 @@
 - 16-bit arithmetic
 - fixed-point arithmetic
 
+## FIXME
+
+- update the other chip `timer_pins` and `ioc_pins` structures
+
 ## Examples
 
 - XOR encoding of data
