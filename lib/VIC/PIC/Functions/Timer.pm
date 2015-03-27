@@ -58,14 +58,19 @@ sub timer_enable {
 \tbanksel $tmr
 \tclrf $tmr
 ...
+    my $th = $self->timer_pins->{$tmr};
+    unless (ref $th eq 'HASH') {
+        carp "$tmr does not have a HASH ref as its value";
+        return;
+    }
     if (%isr) {
-        $code .= $self->isr_timer();
+        $code .= $self->isr_timer($th);
     }
     $code .= "\n$end_code\n";
     my $funcs = {};
     my $macros = {};
     if (%isr) {
-        $funcs->{isr_timer} = $self->isr_timer(%isr);
+        $funcs->{isr_timer} = $self->isr_timer($th, %isr);
     }
     return wantarray ? ($code, $funcs, $macros) : $code;
 }

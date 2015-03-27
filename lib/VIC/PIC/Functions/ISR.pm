@@ -67,33 +67,55 @@ _isr_exit:
 sub isr_timer {
     my $self = shift;
     return unless $self->doesroles(qw(Chip ISR));
-    unless (exists $self->registers->{INTCON}) {
-        carp $self->pic->type, " has no register named INTCON";
+    my $th = shift;
+    return unless (defined $th and ref $th eq 'HASH');
+    my $freg = $th->{freg};
+    my $ereg = $th->{ereg};
+    unless (exists $self->registers->{$freg} and exists $self->registers->{$ereg}) {
+        carp $self->pic->type, " has no register named $freg or $ereg";
         return;
     }
+    my $tflag = $th->{flag};
+    my $tenable = $th->{enable};
+    my $treg = (ref $th->{reg} eq 'ARRAY') ? $th->{reg}->[0] : $th->{reg};
     my %isr = @_;
     if (%isr) {
         my $action_label = $isr{ISR};
         my $end_label = $isr{END};
         return unless $action_label;
         return unless $end_label;
+        my $isr_label = '_isr_' . lc($treg);
         return  << "..."
-_isr_timer:
-\tbtfss INTCON, T0IF
+$isr_label:
+\tbtfss $freg, $tflag
 \tgoto $end_label
-\tbcf   INTCON, T0IF
+\tbcf   $freg, $tflag
 \tgoto $action_label
 $end_label:
 ...
     } else {
-        return << "...";
-;; enable interrupt servicing
-\tbanksel INTCON
-\tbcf INTCON, T0IF
+        if ($freg eq 'INTCON' and $ereg eq 'INTCON') {
+            return << "...";
+;; enable interrupt servicing for $treg
+\tbanksel $freg
 \tbsf INTCON, GIE
-\tbsf INTCON, T0IE
+\tbcf $freg, $tflag
+\tbsf $ereg, $tenable
 ;; end of interrupt servicing
 ...
+        } else {
+            return << "...";
+;; enable interrupt servicing for $treg
+\tbanksel INTCON
+\tbsf INTCON, GIE
+\tbanksel $freg
+\tbcf $freg, $tflag
+\tbanksel $ereg
+\tbsf $ereg, $tenable
+;; end of interrupt servicing
+...
+
+        }
     }
 }
 

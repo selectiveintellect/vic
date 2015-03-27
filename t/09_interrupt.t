@@ -209,7 +209,7 @@ _isr_entry:
 	movf STATUS, W
 	movwf ISR_STATUS
 
-_isr_timer:
+_isr_tmr0:
 	btfss INTCON, T0IF
 	goto _end_isr_1
 	bcf   INTCON, T0IF
@@ -293,8 +293,8 @@ _start:
 
 ;; enable interrupt servicing
 	banksel INTCON
-	bcf INTCON, T0IF
 	bsf INTCON, GIE
+	bcf INTCON, T0IF
 	bsf INTCON, T0IE
 
 
