@@ -324,7 +324,6 @@ has timer_pins => (is => 'ro', default => sub {
         #reg     #reg      #ireg #flag  #enable
         TMR0 => { reg => 'TMR0', freg => 'INTCON', flag => 'T0IF', enable => 'T0IE', ereg => 'INTCON' },
         TMR1 => { reg => ['TMR1H', 'TMR1L'], freg => 'PIR1', ereg => 'PIE1', flag => 'TMR1IF', enable => 'TMR1E' },
-        TMR2 => 'TMR2',
         TMR2 => { reg => 'TMR2', freg => 'PIR1', flag => 'TMR2IF', enable => 'TMR2IE', ereg => 'PIE1' },
         T0CKI => 17,
         T1CKI => 2,

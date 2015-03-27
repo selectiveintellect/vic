@@ -12,7 +12,9 @@ use namespace::clean;
 
 sub doesrole {
     my $a = $_[0]->does('VIC::PIC::Roles::' . $_[1]);
-    carp ref($_[0]) . " does not do role $_[1]" unless $a;
+    unless ($_[1]) { # no logging
+        carp ref($_[0]) . " does not do role $_[1]" unless $a;
+    }
     return $a;
 }
 
