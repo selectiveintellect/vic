@@ -324,7 +324,7 @@ sub read {
         exists $self->registers->{$inp}) {
         # this is a port like PORT[A-Z]
         # we may end up reading from all pins on a port
-        $port = $self->io_ports->{$inp};
+        $port = $inp;
         $code = <<"...";
 ;;; instant reading from $port into $var
 \tbanksel $port
