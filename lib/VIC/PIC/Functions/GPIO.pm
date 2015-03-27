@@ -314,8 +314,8 @@ sub read {
             return undef;
         }
         $var = uc $var;
-        $macros->{m_read_var} = $self->_macro_read_var($var);
-        return unless defined $action{ACTION};
+        $macros->{lc("m_read_$var")} = $self->_macro_read_var($var);
+        return unless (defined $action{ACTION} or defined $action{ISR});
         return unless defined $action{END};
     }
     my $bits = $self->address_bits($var);
@@ -358,13 +358,43 @@ sub read {
         return;
     }
     if (%action) {
-        my $action_label = $action{ACTION};
-        my $end_label = $action{END};
-        $code .= <<"...";
+        if (exists $action{ACTION}) {
+            my $action_label = $action{ACTION};
+            my $end_label = $action{END};
+            $code .= <<"...";
 ;;; invoking $action_label
 \tgoto $action_label
 $end_label:\n
 ...
+        } elsif (exists $action{ISR}) {
+            ## ok we can read from a port too, so let's do that as well
+            if (defined $portbit) {
+                # if we are a pin, then find the right pin
+                $inp = $self->get_input_pin($inp);
+            }
+            ## reset the code here since we have to check IOC pins
+            my ($ioc_bit, $ioc_reg, $ioc_flag, $ioc_enable);
+            if (exists $self->ioc_pins->{$inp}) {
+                my $apin;
+                ($apin, $ioc_bit, $ioc_reg) = @{$self->ioc_pins->{$inp}};
+            } elsif (exists $self->ioc_ports->{$inp}) {
+                $ioc_reg = $self->ioc_ports->{$inp};
+            } else {
+                carp "Reading using interrupt-on-change has to be for a pin ".
+                        "that supports it, $inp does not support it or is not a pin.";
+                return;
+            }
+            $ioc_flag = $self->ioc_ports->{FLAG};
+            $ioc_enable = $self->ioc_ports->{ENABLE};
+            my $ioch = { bit => $ioc_bit, reg => $ioc_reg, flag =>
+                    $ioc_flag, enable => $ioc_enable };
+            $code = $self->isr_ioc($ioch, $inp);
+            my $isr_label = 'isr_' . ((defined $ioc_bit) ? lc($ioc_bit) : lc($ioc_reg));
+            $funcs->{$isr_label} = $self->isr_ioc($ioch, $inp, $var, $port, $portbit, %action);
+        } else {
+            carp "Unknown action requested. Probably a bug in implementation";
+            return;
+        }
     }
     return wantarray ? ($code, $funcs, $macros, $tables) : $code;
 }

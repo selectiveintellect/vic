@@ -293,7 +293,7 @@ _start:
 
 ;; enable interrupt servicing
 	banksel INTCON
-	clrf INTCON
+	bcf INTCON, T0IF
 	bsf INTCON, GIE
 	bsf INTCON, T0IE
 

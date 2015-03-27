@@ -349,16 +349,27 @@ has eint_pins => (is => 'ro', default => sub {
 
 has ioc_pins => (is => 'ro', default => sub {
     {
-        RA0 => 19,
-        RA1 => 18,
-        RA2 => 17,
-        RA3 => 4,
-        RA4 => 3,
-        RA5 => 2,
-        RB4 => 13,
-        RB5 => 12,
-        RB6 => 11,
-        RB7 => 10,
+               #pin #ioc-bit #ioc-reg
+        RA0 => [19, 'IOCA0', 'IOCA'],
+        RA1 => [18, 'IOCA1', 'IOCA'],
+        RA2 => [17, 'IOCA2', 'IOCA'],
+        RA3 => [4,  'IOCA3', 'IOCA'],
+        RA4 => [3,  'IOCA4', 'IOCA'],
+        RA5 => [2,  'IOCA5', 'IOCA'],
+        RB4 => [13, 'IOCB4', 'IOCB'],
+        RB5 => [12, 'IOCB5', 'IOCB'],
+        RB6 => [11, 'IOCB6', 'IOCB'],
+        RB7 => [10, 'IOCB7', 'IOCB'],
+    }
+});
+
+has ioc_ports => (is => 'ro', default => sub {
+    {
+        # for ports to be used as well
+        PORTA => 'IOCA',
+        PORTB => 'IOCB',
+        FLAG => 'RABIF',
+        ENABLE => 'RABIE',
     }
 });
 

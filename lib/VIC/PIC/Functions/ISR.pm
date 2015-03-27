@@ -89,13 +89,75 @@ $end_label:
         return << "...";
 ;; enable interrupt servicing
 \tbanksel INTCON
-\tclrf INTCON
+\tbcf INTCON, T0IF
 \tbsf INTCON, GIE
 \tbsf INTCON, T0IE
 ;; end of interrupt servicing
 ...
     }
 }
+
+sub isr_ioc {
+    my $self = shift;
+    return unless $self->doesroles(qw(Chip ISR));
+    unless (exists $self->registers->{INTCON}) {
+        carp $self->pic->type, " has no register named INTCON";
+        return;
+    }
+    my $ioch = shift;
+    my $ipin = shift;
+    return unless (defined $ioch and ref $ioch eq 'HASH');
+    my $ioc_reg = $ioch->{reg};
+    return unless (defined $ioc_reg and defined $ipin);
+    my $ioc_bit = $ioch->{bit};
+    my $ioc_flag = $ioch->{flag};
+    my $ioc_enable = $ioch->{enable};
+    if (@_) {
+        my ($var, $port, $portbit, %isr) = @_;
+        my $action_label = $isr{ISR};
+        my $end_label = $isr{END};
+        return unless $action_label;
+        return unless $end_label;
+        my $isr_label = '_isr_' . ((defined $ioc_bit) ? lc($ioc_bit) : lc($ioc_reg));
+        my $code_ioc = '';
+        if (defined $portbit) {
+            $code_ioc = "\tbtfsc $port, $portbit\n\taddlw 0x01";
+        } else {
+            $code_ioc = "\tmovf $port, W";
+        }
+        return  << "..."
+$isr_label:
+\tbtfss INTCON, $ioc_flag
+\tgoto $end_label
+\tbcf   INTCON, $ioc_flag
+\tbanksel $port
+$code_ioc
+\tbanksel $var
+\tmovwf $var
+\tgoto $action_label
+$end_label:
+...
+
+    } else {
+        my $code_en = '';
+        if (defined $ioc_bit) {
+            $code_en = "\tbsf $ioc_reg, $ioc_bit";
+        } else {
+            $code_en = "\tclrf $ioc_reg\n\tcomf $ioc_reg, F";
+        }
+        return << "...";
+;; enable interrupt-on-change setup for $ipin
+\tbanksel INTCON
+\tbcf INTCON, $ioc_flag
+\tbsf INTCON, GIE
+\tbsf INTCON, $ioc_enable
+\tbanksel $ioc_reg
+$code_en
+;; end of interrupt-on-change setup
+...
+    }
+}
+
 
 1;
 __END__

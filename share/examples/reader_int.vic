@@ -1,0 +1,12 @@
+PIC P16F690;
+
+Main {
+    digital_input RA0;
+    digital_input PORTB;
+    read RA0, ISR {
+        $value = shift;
+    };
+    read PORTB, ISR {
+        $value = shift;
+    };
+}

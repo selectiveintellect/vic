@@ -50,8 +50,6 @@
 - Interrupt on Change for reads (Event based reading)
 
         read RC0, Action/ISR {
-            $value = $1;
-            ## or
             $value = shift;
         };
 

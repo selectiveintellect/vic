@@ -74,7 +74,7 @@ package VIC::PIC::Roles::ISR;
     use Moo::Role;
 
     requires qw(eint_pins ioc_pins);
-    requires qw(isr_entry isr_exit isr_var isr_timer);
+    requires qw(isr_entry isr_exit isr_var isr_timer isr_ioc);
 }
 
 package VIC::PIC::Roles::CCP;
