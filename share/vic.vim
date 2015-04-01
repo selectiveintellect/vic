@@ -14,7 +14,7 @@ syn keyword vicStatement    delay analog_input digital_input digital_output
 syn keyword vicStatement    adc_enable adc_disable adc_read delay_ms delay_us delay_s
 syn keyword vicStatement    debounce digital_output write read ror rol timer_enable
 syn keyword vicStatement    timer shl shr pwm_single pwm_halfbridge pwm_fullbridge pwm_update
-syn keyword vicStatement    setup attach
+syn keyword vicStatement    setup attach sleep
 syn keyword vicBlock        Main Loop Action True False ISR Simulator
 syn keyword vicModifier     sqrt high low int char hex hang every wave table array shift
 syn keyword vicConditional  if while else break continue

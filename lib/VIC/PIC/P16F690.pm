@@ -502,7 +502,7 @@ has chip_config => (is => 'ro', default => sub {
 });
 
 my @rolenames = qw(CodeGen Operators Chip GPIO ADC ISR Timer Operations ECCP
-                    USART SPI I2C Comparator);
+                    USART SPI I2C Comparator Power);
 my @roles = map (("VIC::PIC::Roles::$_", "VIC::PIC::Functions::$_"), @rolenames);
 with @roles;
 

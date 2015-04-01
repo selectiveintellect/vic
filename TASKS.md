@@ -16,7 +16,7 @@
         }
 
 - Data flow analysis for reusing existing scratch memory space
-- Improve error messages
+- Improve error messages (each AST node can be tagged with a line number)
 
 ## Code Generation Features
 
@@ -47,7 +47,7 @@
 - Ethernet
 - Watchdog Timer
 - Power management
-- Interrupt on Change for reads (Event based reading)
+- Interrupt on Change for reads (Event based reading) - DONE for P16F690
 
         read RC0, Action/ISR {
             $value = shift;

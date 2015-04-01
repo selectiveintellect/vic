@@ -137,5 +137,11 @@ package VIC::PIC::Roles::USB;
     requires qw(usb_pins);
 }
 
+package VIC::PIC::Roles::Power;
+{
+    use Moo::Role;
+    requires qw(sleep);
+}
+
 1;
 __END__

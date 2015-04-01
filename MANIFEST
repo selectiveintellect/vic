@@ -17,6 +17,7 @@ lib/VIC/PIC/Functions/I2C.pm
 lib/VIC/PIC/Functions/ISR.pm
 lib/VIC/PIC/Functions/Operations.pm
 lib/VIC/PIC/Functions/Operators.pm
+lib/VIC/PIC/Functions/Power.pm
 lib/VIC/PIC/Functions/PSP.pm
 lib/VIC/PIC/Functions/SPI.pm
 lib/VIC/PIC/Functions/SRLatch.pm
