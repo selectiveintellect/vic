@@ -231,9 +231,9 @@ has wdt_prescaler => (is => 'ro', default => sub {
 
 has timer_pins => (is => 'ro', default => sub {
     {
-        TMR0 => 'TMR0',
-        TMR1 => ['TMR1H', 'TMR1L'],
-        TMR2 => 'TMR2',
+        TMR0 => { reg => 'TMR0', flag => 'T0IF', enable => 'T0IE', freg => 'INTCON', ereg => 'INTCON' },
+        TMR1 => { reg => ['TMR1H', 'TMR1L'], freg => 'PIR1', ereg => 'PIE1', flag => 'TMR1IF', enable => 'TMR1E' },
+        TMR2 => { reg => 'TMR2', freg => 'PIR1', flag => 'TMR2IF', enable => 'TMR2IE', ereg => 'PIE1' },
         T0CKI => 5,
         T1CKI => 2,
         T1G => 3,
@@ -255,12 +255,20 @@ has eint_pins => (is => 'ro', default => sub {
 
 has ioc_pins => (is => 'ro', default => sub {
     {
-        GP0 => 7,
-        GP1 => 6,
-        GP2 => 5,
-        GP3 => 4,
-        GP4 => 3,
-        GP5 => 2,
+        GP0 => [7, 'IOC0', 'IOC'],
+        GP1 => [6, 'IOC1', 'IOC'],
+        GP2 => [5, 'IOC2', 'IOC'],
+        GP3 => [4, 'IOC3', 'IOC'],
+        GP4 => [3, 'IOC4', 'IOC'],
+        GP5 => [2, 'IOC5', 'IOC'],
+    }
+});
+
+has ioc_ports => (is => 'ro', default => sub {
+    {
+        GPIO => 'IOC',
+        FLAG => 'GPIF',
+        ENABLE => 'GPIE',
     }
 });
 

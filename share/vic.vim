@@ -29,7 +29,7 @@ syn keyword vicBoolean      TRUE FALSE true false
 syn match   vicComment      "#.*"
 syn match   vicPIC          "\<PIC\s\+\%(\w\)*" contains=vicPICStatement
 syn match   vicVariable     "\$\w*"
-syn match   vicValidVars    "\<\%(\%(PORT\|TRIS\)\w\w*\)\|\%([RA][A-Z][0-9]\)\>"
+syn match   vicValidVars    "\<\%(\%(PORT\|GP\|TRIS\)\w\w*\)\|\%([RAGP][A-Z][0-9]\)\>"
 syn match   vicValidVars    "\<\%(\w\+CON[0-9]*\)\|\%(TMR[0-9HL]*\)\|\%(ANSEL\w*\)\>"
 syn match   vicValidVars    "\<\%(ADRES\w*\)\|\%(\w\+REG\w?\)\|\%(PCL\w*\)\>"
 syn match   vicValidVars    "\<\%(UART\|USART\|FSR\|STATUS\|OPTION_REG\|IND\)\w*\>"
