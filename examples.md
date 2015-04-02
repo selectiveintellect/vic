@@ -610,7 +610,79 @@ added by the user.
         stop_after 30s;
         autorun;
     }
-    
+
+
+## Reading From Pins
+
+The reading from pins examples are in the files `share/examples/reader.vic`,
+`share/examples/reader_pin.vic` and `share/examples/reader_port.vic`.
+
+Reading is also supported in the simulator by simulating an input read. Each of
+these examples demonstrate the various ways of reading from a pin or a port
+using direct read, `Action` block read or `ISR` read.
+
+### Direct Read
+
+This example reads from pin `RC0` and writes to pin `RC1` the value it has read.
+The wave stimulus can be seen in the simulator's scope as well.
+
+    PIC P16F690;
+
+    Main {
+        digital_input RC0;
+        digital_output RC1;
+        read RC0, $value;
+        read RC0, Action {
+            $value = shift;
+            write RC1, $value;
+        };
+        sim_assert $value == 1;
+    }
+
+    Simulator {
+        attach_led RC1;
+        log RC1, RC0;
+        scope RC1, RC0;
+        # a simple 100us high
+        stimulate RC0, wave [
+            1, 1, 101, 0
+        ];
+        stop_after 100ms;
+        autorun;
+    }
+
+### Interrupt-on-Change Read
+
+This example demonstrates using the interrupt-on-change feature of MCU P16F690's
+pin `RA0`. We simulate a wave after a few microseconds that lasts about 2000
+microseconds and then see on the scope if the wave has been replicated on pin
+`RC0` with a delay. This example is in `share/examples/reader_pin.vic`. A
+similar example is in `share/examples/reader_port.vic`.
+
+
+    PIC P16F690;
+
+    Main {
+        digital_output RC0;
+        digital_input RA0;
+        read RA0, ISR {
+            $value = shift;
+            write RC0, $value;
+        };
+    }
+
+    Simulator {
+        attach_led RC0;
+        log RA0, RC0;
+        scope RA0, RC0;
+        # a simple 100us high
+        stimulate RA0, wave [
+            100, 1, 2000, 0
+        ];
+        stop_after 10ms;
+        autorun;
+    }
+
 ## Pulse Width Modulation (PWM)
 
 ### Single PWM

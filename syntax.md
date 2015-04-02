@@ -396,8 +396,21 @@ the block and they get executed. Variables outside of the `Action` block can be
 accessed in the `Action` block and those inside the block can be accessed
 outside it as well.
 
+Some `Action` blocks pass inputs in for the user to use. Such inputs depend on
+the function being invoked. An example is the [`read`
+function](functions.html#piniofunctions).
+
+    read RC0, Action {
+        # read the first argument
+        $value = shift;
+    };
+
+Since the `Action` block for `read` has only _one_ argument, it needs a single
+call to the `shift` keyword. For functions that have more than one argument,
+multiple calls to the `shift` keyword may be used.
+
 Refer the [function reference](functions.html) to see which functions support
-`Action` blocks.
+`Action` blocks with or without parameters.
 
 ### Interrupt Service Routines
 

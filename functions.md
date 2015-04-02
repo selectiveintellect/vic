@@ -58,6 +58,59 @@ your scenario. Hence, we provide such an option.
         write RC0, RA0;
         write PORTA, PORTC;
 
+- `read`
+
+    Syntax:
+
+        read <port | pin>, variable;
+        read <port | pin>, Action {
+            $variable = shift;
+            # .. do something ..
+        };
+        read <port | pin>, ISR {
+            $variable = shift;
+            # .. do something ..
+        };
+
+    This function _reads_ values from an MCU pin or a port register that
+supports the _digital input_ mode. It has two ways of reading as suggested by
+the syntax: an instant read into a variable, an `Action` block read into a
+variable followed by any other instructions the user wants to provide in the
+block, and an **interrupt-on-change** read using the `ISR` block where if there
+is a change in the input then the `ISR` block is invoked using an interrupt.
+
+    The **interrupt-on-change** is a special feature supported by only a few
+pins of the MCU and the user has to read the data sheet to see which pins
+support it, or use the `vic` command-line tool to list such pins.
+
+    **NOTE**:When the user uses this feature, only a single pin/port can be
+supported for the whole program. This may change in the future as we improve our
+code generation.
+
+    Only a **single** parameter is passed into the `ISR` or `Action` block.
+
+    Examples:
+
+        digital_input RC0;
+        read RC0, $value;
+        ## another way ##
+        read RC0, Action {
+            $value = shift;
+            ## .. doing something here ..
+            if ($value == 1) {
+                $value = 0;
+            }
+        };
+
+        ## Using Interrupt-on-change pin for P16F690 MCU
+        digital_input RA0;
+        digital_output RC0;
+        read RA0, ISR {
+            $value = shift;
+            write RC0, $value;
+        };
+
+
 - `analog_input`
 
     Syntax:
