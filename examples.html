@@ -666,6 +666,78 @@ Simulator {
 }
 </code></pre>
 
+<h2 id="readingfrompins">Reading From Pins</h2>
+
+<p>The reading from pins examples are in the files <code>share/examples/reader.vic</code>,
+<code>share/examples/reader_pin.vic</code> and <code>share/examples/reader_port.vic</code>.</p>
+
+<p>Reading is also supported in the simulator by simulating an input read. Each of
+these examples demonstrate the various ways of reading from a pin or a port
+using direct read, <code>Action</code> block read or <code>ISR</code> read.</p>
+
+<h3 id="directread">Direct Read</h3>
+
+<p>This example reads from pin <code>RC0</code> and writes to pin <code>RC1</code> the value it has read.
+The wave stimulus can be seen in the simulator&#8217;s scope as well.</p>
+
+<pre><code>PIC P16F690;
+
+Main {
+    digital_input RC0;
+    digital_output RC1;
+    read RC0, $value;
+    read RC0, Action {
+        $value = shift;
+        write RC1, $value;
+    };
+    sim_assert $value == 1;
+}
+
+Simulator {
+    attach_led RC1;
+    log RC1, RC0;
+    scope RC1, RC0;
+    # a simple 100us high
+    stimulate RC0, wave [
+        1, 1, 101, 0
+    ];
+    stop_after 100ms;
+    autorun;
+}
+</code></pre>
+
+<h3 id="interrupt-on-changeread">Interrupt-on-Change Read</h3>
+
+<p>This example demonstrates using the interrupt-on-change feature of MCU P16F690&#8217;s
+pin <code>RA0</code>. We simulate a wave after a few microseconds that lasts about 2000
+microseconds and then see on the scope if the wave has been replicated on pin
+<code>RC0</code> with a delay. This example is in <code>share/examples/reader_pin.vic</code>. A
+similar example is in <code>share/examples/reader_port.vic</code>.</p>
+
+<pre><code>PIC P16F690;
+
+Main {
+    digital_output RC0;
+    digital_input RA0;
+    read RA0, ISR {
+        $value = shift;
+        write RC0, $value;
+    };
+}
+
+Simulator {
+    attach_led RC0;
+    log RA0, RC0;
+    scope RA0, RC0;
+    # a simple 100us high
+    stimulate RA0, wave [
+        100, 1, 2000, 0
+    ];
+    stop_after 10ms;
+    autorun;
+}
+</code></pre>
+
 <h2 id="pulsewidthmodulationpwm">Pulse Width Modulation (PWM)</h2>
 
 <h3 id="singlepwm">Single PWM</h3>
@@ -734,7 +806,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-12-02 10:21:28 -0500.
+        This page was last updated on 2015-04-02 16:10:35 -0400.
     </p>
     </div>
     </section>

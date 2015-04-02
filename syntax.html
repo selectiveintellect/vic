@@ -469,8 +469,22 @@ the block and they get executed. Variables outside of the <code>Action</code> bl
 accessed in the <code>Action</code> block and those inside the block can be accessed
 outside it as well.</p>
 
+<p>Some <code>Action</code> blocks pass inputs in for the user to use. Such inputs depend on
+the function being invoked. An example is the <a href="functions.html#piniofunctions"><code>read</code>
+function</a>.</p>
+
+<pre><code>read RC0, Action {
+    # read the first argument
+    $value = shift;
+};
+</code></pre>
+
+<p>Since the <code>Action</code> block for <code>read</code> has only <em>one</em> argument, it needs a single
+call to the <code>shift</code> keyword. For functions that have more than one argument,
+multiple calls to the <code>shift</code> keyword may be used.</p>
+
 <p>Refer the <a href="functions.html">function reference</a> to see which functions support
-<code>Action</code> blocks.</p>
+<code>Action</code> blocks with or without parameters.</p>
 
 <h3 id="interruptserviceroutines">Interrupt Service Routines</h3>
 
@@ -547,7 +561,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-12-02 10:39:14 -0500.
+        This page was last updated on 2015-04-02 16:10:35 -0400.
     </p>
     </div>
     </section>

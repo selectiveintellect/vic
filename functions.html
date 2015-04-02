@@ -105,6 +105,59 @@ write PORTC, $display; # $display is a variable
 write RC0, RA0;
 write PORTA, PORTC;
 </code></pre></li>
+<li><p><code>read</code></p>
+
+<p>Syntax:</p>
+
+<pre><code>read &lt;port | pin&gt;, variable;
+read &lt;port | pin&gt;, Action {
+    $variable = shift;
+    # .. do something ..
+};
+read &lt;port | pin&gt;, ISR {
+    $variable = shift;
+    # .. do something ..
+};
+</code></pre>
+
+<p>This function <em>reads</em> values from an MCU pin or a port register that
+supports the <em>digital input</em> mode. It has two ways of reading as suggested by
+the syntax: an instant read into a variable, an <code>Action</code> block read into a
+variable followed by any other instructions the user wants to provide in the
+block, and an <strong>interrupt-on-change</strong> read using the <code>ISR</code> block where if there
+is a change in the input then the <code>ISR</code> block is invoked using an interrupt.</p>
+
+<p>The <strong>interrupt-on-change</strong> is a special feature supported by only a few
+pins of the MCU and the user has to read the data sheet to see which pins
+support it, or use the <code>vic</code> command-line tool to list such pins.</p>
+
+<p><strong>NOTE</strong>:When the user uses this feature, only a single pin/port can be
+supported for the whole program. This may change in the future as we improve our
+code generation.</p>
+
+<p>Only a <strong>single</strong> parameter is passed into the <code>ISR</code> or <code>Action</code> block.</p>
+
+<p>Examples:</p>
+
+<pre><code>digital_input RC0;
+read RC0, $value;
+## another way ##
+read RC0, Action {
+    $value = shift;
+    ## .. doing something here ..
+    if ($value == 1) {
+        $value = 0;
+    }
+};
+
+## Using Interrupt-on-change pin for P16F690 MCU
+digital_input RA0;
+digital_output RC0;
+read RA0, ISR {
+    $value = shift;
+    write RC0, $value;
+};
+</code></pre></li>
 <li><p><code>analog_input</code></p>
 
 <p>Syntax:</p>
@@ -690,7 +743,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2014-10-30 12:28:08 -0400.
+        This page was last updated on 2015-04-02 16:10:35 -0400.
     </p>
     </div>
     </section>
