@@ -389,7 +389,9 @@ $end_label:\n
             my $ioch = { bit => $ioc_bit, reg => $ioc_reg, flag =>
                     $ioc_flag, enable => $ioc_enable };
             $code = $self->isr_ioc($ioch, $inp);
-            my $isr_label = 'isr_' . ((defined $ioc_bit) ? lc($ioc_bit) : lc($ioc_reg));
+            my $isr_label = 'isr_' . ((defined $ioc_bit) ? lc($ioc_bit) :
+                                     ((defined $ioc_reg) ? lc($ioc_reg) :
+                                       lc($inp)));
             $funcs->{$isr_label} = $self->isr_ioc($ioch, $inp, $var, $port, $portbit, %action);
         } else {
             carp "Unknown action requested. Probably a bug in implementation";

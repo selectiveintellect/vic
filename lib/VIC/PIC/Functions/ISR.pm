@@ -129,8 +129,8 @@ sub isr_ioc {
     my $ioch = shift;
     my $ipin = shift;
     return unless (defined $ioch and ref $ioch eq 'HASH');
+    return unless defined $ipin;
     my $ioc_reg = $ioch->{reg};
-    return unless (defined $ioc_reg and defined $ipin);
     my $ioc_bit = $ioch->{bit};
     my $ioc_flag = $ioch->{flag};
     my $ioc_enable = $ioch->{enable};
@@ -140,7 +140,14 @@ sub isr_ioc {
         my $end_label = $isr{END};
         return unless $action_label;
         return unless $end_label;
-        my $isr_label = '_isr_' . ((defined $ioc_bit) ? lc($ioc_bit) : lc($ioc_reg));
+        my $isr_label;
+        if (defined $ioc_bit) {
+            $isr_label = '_isr_' . lc($ioc_bit);
+        } elsif (defined $ioc_reg) {
+            $isr_label = '_isr_' .lc($ioc_reg);
+        } else {
+            $isr_label = '_isr_' . lc($ipin);
+        }
         my $code_ioc = '';
         if (defined $portbit) {
             $code_ioc = "\tbtfsc $port, $portbit\n\taddlw 0x01";
@@ -162,10 +169,12 @@ $end_label:
 
     } else {
         my $code_en = '';
-        if (defined $ioc_bit) {
-            $code_en = "\tbsf $ioc_reg, $ioc_bit";
+        if (defined $ioc_bit and defined $ioc_reg) {
+            $code_en = "\tbanksel $ioc_reg\n\tbsf $ioc_reg, $ioc_bit";
+        } elsif (defined $ioc_reg) {
+            $code_en = "\tbanksel $ioc_reg\n\tclrf $ioc_reg\n\tcomf $ioc_reg, F";
         } else {
-            $code_en = "\tclrf $ioc_reg\n\tcomf $ioc_reg, F";
+            # if ioc_reg/ioc_bit is not defined just move on
         }
         return << "...";
 ;; enable interrupt-on-change setup for $ipin
@@ -173,7 +182,6 @@ $end_label:
 \tbcf INTCON, $ioc_flag
 \tbsf INTCON, GIE
 \tbsf INTCON, $ioc_enable
-\tbanksel $ioc_reg
 $code_en
 ;; end of interrupt-on-change setup
 ...
