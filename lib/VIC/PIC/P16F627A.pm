@@ -263,6 +263,7 @@ has eint_pins => (is => 'ro', default => sub {
 
 has ioc_pins => (is => 'ro', default => sub {
     {
+        ## there is no special IOC register, so use nothing
         RB4 => [10],
         RB5 => [11],
         RB6 => [12],

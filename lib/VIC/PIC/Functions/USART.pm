@@ -141,7 +141,7 @@ EUSARTCODE
     } elsif (exists $self->registers->{SPBRG}) {
         ## USART (8-bit)
     } else {
-        carp "$outp for chip ", $self->pic->type, " is not supported";
+        carp "$outp for chip ", $self->type, " is not supported";
         return;
     }
 }

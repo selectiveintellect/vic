@@ -311,7 +311,7 @@ sub debounce {
     my ($self, $inp, %action) = @_;
     return unless $self->doesroles(qw(Operations Chip CodeGen GPIO));
     unless (exists $self->registers->{STATUS}) {
-        carp $self->pic->type, " does not have the STATUS register";
+        carp $self->type, " does not have the STATUS register";
         return;
     }
     my $action_label = $action{ACTION};

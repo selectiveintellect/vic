@@ -1533,7 +1533,7 @@ sub store_table {
     my ($self, $table, $label, $tblsz, $tblszvar) = @_;
     return unless $self->doesrole('Chip');
     unless (exists $self->registers->{PCL}) {
-        carp $self->pic->type, " does not have the PCL register";
+        carp $self->type, " does not have the PCL register";
         return;
     }
     my $code = "$label:\n";

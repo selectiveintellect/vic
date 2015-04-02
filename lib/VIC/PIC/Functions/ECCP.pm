@@ -13,7 +13,7 @@ sub _pwm_details {
     my ($self, $pwm_frequency, $duty, $type, @pins) = @_;
     return unless $self->doesrole('Chip');
     unless (exists $self->registers->{CCP1CON}) {
-        carp $self->pic->type, " does not have CCP1CON for ECCP features";
+        carp $self->type, " does not have CCP1CON for ECCP features";
         return;
     }
     no bigint;

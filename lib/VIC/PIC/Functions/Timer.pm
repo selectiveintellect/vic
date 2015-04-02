@@ -42,7 +42,7 @@ sub timer_enable {
         return;
     }
     unless (exists $self->registers->{OPTION_REG}) {
-        carp $self->pic->type, " does not have the register OPTION_REG";
+        carp $self->type, " does not have the register OPTION_REG";
         return;
     }
     my $psx = $self->_get_timer_prescaler($freq);
@@ -84,12 +84,15 @@ sub timer_disable {
     }
     unless (exists $self->registers->{OPTION_REG} and
         exists $self->registers->{INTCON}) {
-        carp $self->pic->type, " does not have the register OPTION_REG/INTCON";
+        carp $self->type, " does not have the register OPTION_REG/INTCON";
         return;
     }
+    my $th = $self->timer_pins->{$tmr};
+    my $tm_en = $th->{enable} || 'T0IE';
+    my $tm_ereg = $th->{ereg} || 'INTCON';
     return << "...";
-\tbanksel INTCON
-\tbcf INTCON, T0IE ;; disable only the timer bit
+\tbanksel $tm_ereg
+\tbcf $tm_ereg, $tm_en ;; disable only the timer bit
 \tbanksel OPTION_REG
 \tmovlw B'00001000'
 \tmovwf OPTION_REG
@@ -100,18 +103,21 @@ sub timer_disable {
 }
 
 sub timer {
-    my ($self, %action) = @_;
+    my ($self, $tmr, %action) = @_;
     return unless exists $action{ACTION};
     return unless $self->doesroles(qw(Timer Chip));
     return unless exists $action{END};
     unless (exists $self->registers->{INTCON}) {
-        carp $self->pic->type, " does not have the register INTCON";
+        carp $self->type, " does not have the register INTCON";
         return;
     }
+    my $th = $self->timer_pins->{$tmr};
+    my $tm_f = $th->{flag} || 'T0IF';
+    my $tm_freg = $th->{freg} || 'INTCON';
     return << "...";
-\tbtfss INTCON, T0IF
+\tbtfss $tm_freg, $tm_f
 \tgoto $action{END}
-\tbcf INTCON, T0IF
+\tbcf $tm_freg, $tm_f
 \tgoto $action{ACTION}
 $action{END}:
 ...

@@ -372,10 +372,14 @@ has wdt_prescaler => (is => 'ro', default => sub {
 
 has timer_pins => (is => 'ro', default => sub {
     {
-        TMR0 => ['TMR0H', 'TMR0L'],
-        TMR1 => ['TMR1H', 'TMR1L'],
-        TMR2 => 'TMR2',
-        TMR3 => ['TMR3H', 'TMR3L'],
+        TMR0 => { reg => ['TMR0H', 'TMR0L'], flag => 'TMR0IF',
+                  enable => 'TMR0IE', freg => 'INTCON', ereg => 'INTCON' },
+        TMR1 => { reg => ['TMR1H', 'TMR1L'], flag => 'TMR1IF',
+                    enable => 'TMR1IE', freg => 'PIR1', ereg => 'PIE1' },
+        TMR2 => { reg => 'TMR2', flag => 'TMR2IF',
+                    enable => 'TMR2IE', freg => 'PIR1', ereg => 'PIE1' },
+        TMR3 => { reg => ['TMR3H', 'TMR3L'], flag => 'TMR3IF',
+                    enable => 'TMR3IE', freg => 'PIR2', ereg => 'PIE2' },
         T0CKI => 5,
         T13CKI => 8,
         T1OSCI => 8,
@@ -404,15 +408,24 @@ has eint_pins => (is => 'ro', default => sub {
 
 has ioc_pins => (is => 'ro', default => sub {
     {
-        IOCA0 => 19,
-        IOCA1 => 18,
-        IOCA3 => 4,
-        IOCA4 => 3,
-        IOCA5 => 2,
-        IOCB4 => 13,
-        IOCB5 => 12,
-        IOCB6 => 11,
-        IOCB7 => 10,
+        RA0 => [19, 'IOCA0', 'IOCA'],
+        RA1 => [18, 'IOCA1', 'IOCA'],
+        RA3 => [4,  'IOCA3', 'IOCA'],
+        RA4 => [3,  'IOCA4', 'IOCA'],
+        RA5 => [2,  'IOCA5', 'IOCA'],
+        RB4 => [13, 'IOCB4', 'IOCB'],
+        RB5 => [12, 'IOCB5', 'IOCB'],
+        RB6 => [11, 'IOCB6', 'IOCB'],
+        RB7 => [10, 'IOCB7', 'IOCB'],
+    }
+});
+
+has ioc_ports => (is => 'ro', default => sub {
+    {
+        PORTA => 'IOCA',
+        PORTB => 'IOCB',
+        FLAG => 'RABIF',
+        ENABLE => 'RABIE',
     }
 });
 

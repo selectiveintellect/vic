@@ -10,7 +10,11 @@ use Moo::Role;
 sub isr_var {
     my $self = shift;
     return unless $self->doesroles(qw(Chip ISR));
-    my ($cb_start, $cb_end) = @{$self->banks->{common}};
+    my @common = @{$self->banks->{common}};
+    my ($cb_start, $cb_end) = @common;
+    if (ref $cb_start eq 'ARRAY') {
+        ($cb_start, $cb_end) = @$cb_start;
+    }
     $cb_start = 0x70 unless $cb_start;
     $cb_start = sprintf "0x%02X", $cb_start;
     return << "...";
@@ -25,7 +29,7 @@ sub isr_entry {
     my $self = shift;
     return unless $self->doesroles(qw(Chip ISR));
     unless (exists $self->registers->{STATUS}) {
-        carp $self->pic->type, " has no register named STATUS";
+        carp $self->type, " has no register named STATUS";
         return;
     }
     #TODO: high/low address ?
@@ -51,7 +55,7 @@ sub isr_exit {
     my $self = shift;
     return unless $self->doesroles(qw(Chip ISR));
     unless (exists $self->registers->{STATUS}) {
-        carp $self->pic->type, " has no register named STATUS";
+        carp $self->type, " has no register named STATUS";
         return;
     }
     return << "...";
@@ -72,7 +76,7 @@ sub isr_timer {
     my $freg = $th->{freg};
     my $ereg = $th->{ereg};
     unless (exists $self->registers->{$freg} and exists $self->registers->{$ereg}) {
-        carp $self->pic->type, " has no register named $freg or $ereg";
+        carp $self->type, " has no register named $freg or $ereg";
         return;
     }
     my $tflag = $th->{flag};
@@ -123,7 +127,7 @@ sub isr_ioc {
     my $self = shift;
     return unless $self->doesroles(qw(Chip ISR));
     unless (exists $self->registers->{INTCON}) {
-        carp $self->pic->type, " has no register named INTCON";
+        carp $self->type, " has no register named INTCON";
         return;
     }
     my $ioch = shift;

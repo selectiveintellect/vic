@@ -5,7 +5,7 @@ Main {
     $display = 0;
     timer_enable TMR0, 4kHz;
     Loop {
-        timer Action {
+        timer TMR0, Action {
             ++$display;
             write PORTC, $display;
         };
