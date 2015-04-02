@@ -421,7 +421,7 @@ It takes the timer port as an argument.</p>
 
 <p>Syntax:</p>
 
-<pre><code>timer Action {
+<pre><code>timer &lt;timer port&gt;, Action {
     # .. do something ..
 };
 </code></pre>
@@ -436,7 +436,7 @@ pre-scale value given in the <code>timer_enable</code> function.</p>
 <pre><code>Main {
     timer_enable TMR0, 8kHz;
     Loop {
-        timer Action {
+        timer TMR0, Action {
             # ... do something ...
         };
     }

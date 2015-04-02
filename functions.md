@@ -356,7 +356,7 @@ It takes the timer port as an argument.
 
     Syntax:
 
-        timer Action {
+        timer <timer port>, Action {
             # .. do something ..
         };
 
@@ -370,7 +370,7 @@ pre-scale value given in the `timer_enable` function.
         Main {
             timer_enable TMR0, 8kHz;
             Loop {
-                timer Action {
+                timer TMR0, Action {
                     # ... do something ...
                 };
             }
