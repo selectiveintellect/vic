@@ -345,10 +345,10 @@ has wdt_prescaler => (is => 'ro', default => sub {
 
 has timer_pins => (is => 'ro', default => sub {
     {
-        TMR0 => 'TMR0',
-        TMR1 => ['TMR1H', 'TMR1L'],
-        TMR2 => 'TMR2',
-        TMR3 => ['TMR3H', 'TMR3L'],
+        TMR0 => { reg => 'TMR0', freg => 'INTCON', flag => 'TMR0IF', enable => 'TMR0IE', ereg => 'INTCON' },
+        TMR1 => { reg => ['TMR1H', 'TMR1L'], freg => 'PIR1', ereg => 'PIE1', flag => 'TMR1IF', enable => 'TMR1E' },
+        TMR2 => { reg => 'TMR2', freg => 'PIR1', flag => 'TMR2IF', enable => 'TMR2IE', ereg => 'PIE1' },
+        TMR3 => { reg => ['TMR3H', 'TMR3L'], freg => 'PIR2', ereg => 'PIE2', flag => 'TMR3IF', enable => 'TMR3E' },
         T0CKI => 6,
         T1OSO => 11,
         T1CKI => 11,
@@ -375,10 +375,17 @@ has eint_pins => (is => 'ro', default => sub {
 
 has ioc_pins => (is => 'ro', default => sub {
     {
-        RB4 => 25,
-        RB5 => 26,
-        RB6 => 27,
-        RB7 => 28,
+        RB4 => [25],
+        RB5 => [26],
+        RB6 => [27],
+        RB7 => [28],
+    }
+});
+
+has ioc_ports => (is => 'ro', default => sub {
+    {
+        FLAG => 'RBIF',
+        ENABLE => 'RBIE',
     }
 });
 
