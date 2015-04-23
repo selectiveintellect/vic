@@ -62,7 +62,6 @@
 
 ## FIXME
 
-- update the other chip `timer_pins` and `ioc_pins` structures
 - P18F13K50 code generation has bugs
 
 ## Examples

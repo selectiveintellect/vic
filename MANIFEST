@@ -79,6 +79,7 @@ share/rebuild-grammar.PL
 share/vic.pgx
 share/vic.vim
 t/00_use.t
+t/00_verify.t
 t/01_helloworld.t
 t/02_blinker.t
 t/03_rotater.t

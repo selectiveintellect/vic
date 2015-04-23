@@ -75,8 +75,10 @@ sub new_simulator {
     my $stype = 'Gpsim';
     if (exists $hh{type}) {
         $stype = SIMS->{lc $hh{type}};
-        carp "No simulator of type $hh{type}\n" unless $stype;
-        return;
+        unless (defined $stype) {
+            carp "No simulator of type $hh{type}";
+            return;
+        }
     }
     $class =~ s/::Any/::$stype/g;
     $hh{type} = lc $stype;
