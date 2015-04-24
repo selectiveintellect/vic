@@ -33,6 +33,60 @@ foreach my $chip (@$chips) {
         isa_ok($self->program_pins, ref {});
         isnt($self->program_pins->{clock}, undef);
         isnt($self->program_pins->{data}, undef);
+        if ($self->doesrole('Timer')) {
+            my $tp = $self->timer_pins;
+            isnt($tp, undef);
+            isa_ok($tp, ref {});
+            my @ep = sort qw(reg flag enable freg ereg);
+            foreach (keys %$tp) {
+                if (/^TMR\d+/) {
+                    my $p = $tp->{$_};
+                    isnt($p, undef);
+                    isa_ok($p, ref {});
+                    my @kp = sort (keys %$p);
+                    is_deeply(\@kp, \@ep);
+                }
+            }
+        }
+        if ($self->doesrole('GPIO')) {
+            my $ioc = $self->ioc_ports;
+            isnt($ioc, undef);
+            isa_ok($ioc, ref {});
+            isnt($ioc->{FLAG}, undef);
+            isnt($ioc->{ENABLE}, undef);
+        }
+        if ($self->doesrole('USART')) {
+            my $usart = $self->usart_pins;
+            isnt($usart, undef);
+            isa_ok($usart, ref {});
+            my @ep = sort qw(async_in async_out sync_clock sync_data UART USART);
+            my @kp = sort (keys %$usart);
+            is_deeply(\@kp, \@ep);
+        }
+        if ($self->doesroles('SPI')) {
+            my $ss = $self->selector_pins;
+            isnt($ss, undef);
+            isa_ok($ss, ref {});
+            isnt($ss->{spi_or_i2c}, undef);
+            my $spi = $self->spi_pins;
+            isnt($spi, undef);
+            isa_ok($spi, ref {});
+            my @ep = sort qw(data_in data_out clock);
+            my @kp = sort (keys %$spi);
+            is_deeply(\@kp, \@ep);
+        }
+        if ($self->doesroles('I2C')) {
+            my $ss = $self->selector_pins;
+            isnt($ss, undef);
+            isa_ok($ss, ref {});
+            isnt($ss->{spi_or_i2c}, undef);
+            my $i2c = $self->i2c_pins;
+            isnt($i2c, undef);
+            isa_ok($i2c, ref {});
+            my @ep = sort qw(data clock);
+            my @kp = sort (keys %$i2c);
+            is_deeply(\@kp, \@ep);
+        }
         done_testing();
     };
 }
