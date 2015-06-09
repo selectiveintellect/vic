@@ -21,7 +21,9 @@ Slides for the most recent demo of VIC&trade; are available
 [here](presentations/index.html).
 
 Slides for developers who want to learn how to write a compiler in Perl such as
-VIC&trade; are available [here](presentations/development.html).
+VIC&trade; are available [here](presentations/development.html). Our [YAPC::NA
+2015](http://yapcna.org) talk is available
+[here](presentations/YAPCNA2015VikasKumar.pdf).
 
 You will need a modern HTML5 supporting
 browser, such as the latest versions of Mozilla Firefox, Google Chrome,
