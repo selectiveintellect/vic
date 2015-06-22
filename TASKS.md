@@ -25,7 +25,7 @@
 
     $value = "";
     read UART0, Action {
-        $value += shift;
+        $value .= shift;
     };
 
 - ASCII conversion of numbers and alphabets - DONE for UART

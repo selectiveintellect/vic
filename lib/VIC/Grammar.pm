@@ -10,11 +10,11 @@ extends 'Pegex::Grammar';
 
 use constant file => './share/vic.pgx';
 
-sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.59)
+sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.60)
   {
     '+grammar' => 'vic',
     '+toprule' => 'program',
-    '+version' => '0.2.6',
+    '+version' => '0.2.7',
     'COMMA' => {
       '.rgx' => qr/\G,/
     },
@@ -232,7 +232,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.59)
     'assign_operator' => {
       '.any' => [
         {
-          '.rgx' => qr/\G([\+\-%\^\*\|&\/]?=)/
+          '.rgx' => qr/\G([\+\-%\^\*\|&\/\.]?=)/
         },
         {
           '.ref' => 'shift_assign_operator'
@@ -413,9 +413,6 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.59)
             },
             {
               '.ref' => 'modifier_constant'
-            },
-            {
-              '.ref' => 'parameter'
             }
           ]
         }
@@ -440,6 +437,9 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.59)
         },
         {
           '.any' => [
+            {
+              '.ref' => 'parameter'
+            },
             {
               '.ref' => 'number'
             },

@@ -8,6 +8,10 @@ Main {
     write UART, 0x12345678;
     #$ss = "Hello World!";
     #write UART, $ss;
+    $str = "";
+    read UART, Action {
+        $str .= shift;
+    };
 }
 
 Simulator {

@@ -283,7 +283,15 @@ sub got_assign_expr {
     my $op = shift @$list;
     my $rhsx = $self->got_expr_value($list);
     my $rhs = ref $rhsx eq 'ARRAY' ? join ("::", @$rhsx) : $rhsx;
-    $self->update_intermediate("SET::${op}::${varname}::${rhs}");
+    if ($rhs =~ /PARAM::(\w+)/) {
+        ## ok now we push this as our statement and handle the rest during
+        ## code generation
+        ## this is of the format PARAM::op::block_name::variable
+        my $block = $1;
+        $self->update_intermediate("PARAM::${op}::${block}::${varname}");
+    } else {
+        $self->update_intermediate("SET::${op}::${varname}::${rhs}");
+    }
     return;
 }
 
@@ -354,12 +362,6 @@ sub got_declaration {
         } else {
             return $self->parser->throw_error("Variable '$lhs' doesn't exist");
         }
-    } elsif ($rhs =~ /PARAM::(\w+)/) {
-        ## ok now we push this as our statement and handle the rest during
-        ## code generation
-        ## this is of the format PARAM::op::block_name::variable
-        my $block = $1;
-        $self->update_intermediate("PARAM::ASSIGN::${block}::${lhs}");
     } else {
         # var = number | string etc.
         if ($rhs =~ /^-?\d+$/) {
@@ -632,6 +634,7 @@ sub got_assign_operator {
     return 'BAND_ASSIGN' if $op eq '&=';
     return 'SHL_ASSIGN' if $op eq '<<=';
     return 'SHR_ASSIGN' if $op eq '>>=';
+    return 'CAT_ASSIGN' if $op eq '.=';
     return $self->parser->throw_error("Assignment operator '$op' is not supported");
 }
 
@@ -672,6 +675,9 @@ sub got_modifier_constant {
     } elsif ($modifier eq 'ARRAY') {
         return $value if ref $value eq 'ARRAY';
         return [$value];
+    } elsif ($modifier eq 'STRING') {
+        return { STRING => $value } if ref $value eq 'ARRAY';
+        return { STRING => [$value] };
     }
     $self->parser->throw_error("Modifying operator '$modifier' not supported") unless $method;
 }

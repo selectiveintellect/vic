@@ -352,7 +352,7 @@ sub read {
         }
     } else {
         if ($self->doesrole('USART') and exists $self->usart_pins->{$inp}) {
-            return $self->usart_read(@_);
+            return $self->usart_read($inp, @_);
         }
         carp "Cannot find $inp in the list of ports or pins to read from";
         return;

@@ -1,5 +1,5 @@
 %grammar vic
-%version 0.2.6
+%version 0.2.7
 #COPYRIGHT: 2014-2015 Vikas N Kumar <vikas@cpan.org>. All Rights Reserved
 
 # mcu-select is necessary.
@@ -47,11 +47,11 @@ unary-rhs: - variable - unary-operator -
 unary-expr: unary-lhs | unary-rhs
 complement: - complement-operator - rhs-expr -
 nested-expr-value: start-nested-expr rhs-expr end-nested-expr
-expr-value: - (number | array-element | variable | number-units | complement |
+expr-value: - (parameter | number | array-element | variable | number-units | complement |
                 modifier-variable | nested-expr-value) -
 rhs-expr: expr-value+ % rhs-operator
 assign-expr: - variable - assign-operator - rhs-expr
-declaration: - variable - / EQUAL / - (constant | modifier-constant | parameter)
+declaration: - variable - / EQUAL / - (constant | modifier-constant)
 array-element: variable start-array rhs-expr end-array
 
 comparison: expr-value compare-operator expr-value
@@ -73,7 +73,7 @@ assert-statement: name assert-condition - assert-message? - line-ending
 
 complement-operator: /( TILDE | BANG )/
 unary-operator: /( PLUS PLUS | DASH DASH)/
-assign-operator: /([ PLUS DASH PERCENT CARET STAR PIPE AMP SLASH]? EQUAL)/ | shift-assign-operator
+assign-operator: /([ PLUS DASH PERCENT CARET STAR PIPE AMP SLASH DOT]? EQUAL)/ | shift-assign-operator
 compare-operator: /([ BANG EQUAL LANGLE RANGLE] EQUAL | (: LANGLE | RANGLE ))/
 logic-operator: /([ AMP PIPE]{2})/
 math-operator: /([ PLUS DASH STAR SLASH PERCENT])/

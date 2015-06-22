@@ -1602,6 +1602,17 @@ sub store_bytes {
     return $code;
 }
 
+sub string_concat {
+    return ';;; NOT IMPLEMENTED';
+}
+
+sub op_cat_assign {
+    my $self = shift;
+    my $var = shift;
+    my ($code, $funcs, $macros) = $self->string_concat($var, $var, @_);
+    return wantarray ? ($code, $funcs, $macros) : $code;
+}
+
 1;
 __END__
 

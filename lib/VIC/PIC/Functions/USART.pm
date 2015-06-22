@@ -267,7 +267,7 @@ sub usart_read {
     return unless $inp =~ /US?ART/;
     return unless defined $var;
     carp "Not implemented\n";
-    my ($code, $funcs, $macros, $tables) = ('', {}, {}, []);
+    my ($code, $funcs, $macros, $tables) = (';;NOT IMPLEMENTED', {}, {}, []);
     return wantarray ? ($code, $funcs, $macros, $tables) : $code;
 }
 
