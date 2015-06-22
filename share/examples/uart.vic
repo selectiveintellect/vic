@@ -1,22 +1,26 @@
 PIC P16F690;
 
+pragma variable export;
+
 Main {
     setup UART, 9600; # set up USART for transmit
     write UART, "Hello World!\n";
     write UART, "100";
     write UART, 100;
     write UART, 0x12345678;
-    #$ss = "Hello World!";
-    #write UART, $ss;
-    $str = "";
+    #$myvar = "Hello World!";
+    $myvar = 100;
+    write UART, $myvar;
     read UART, Action {
-        $str .= shift;
+        $myvar = shift;
     };
+    write UART, $myvar;
 }
 
 Simulator {
-    attach UART, 9600;
-    stop_after 1s;
+    attach UART, 9600, 'loopback';
+    stop_after 500ms;
     log UART;
     scope UART;
+    autorun;
 }

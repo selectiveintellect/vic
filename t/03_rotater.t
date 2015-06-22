@@ -155,6 +155,7 @@ _start:
     banksel PORTC
     clrf    PORTC
 
+    banksel DISPLAY
     movlw  0x08
     movwf DISPLAY
 _loop_1:

@@ -225,6 +225,7 @@ _start:
 	clrf PORTC
 
 	;; moves 8 (0x08) to DISPLAY
+    banksel DISPLAY
 	movlw 0x08
 	movwf DISPLAY
 	.assert "DISPLAY == 0x08, \"$display should be 0x08\""

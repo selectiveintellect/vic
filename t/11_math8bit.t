@@ -298,10 +298,12 @@ _start:
 
 	;; moves 12345 (0x3039) to VAR1
 	;; 12345 doesn't fit in 8-bits. Using 57 (0x39)
+    banksel VAR1
 	movlw 0x39
 	movwf VAR1
 
 	;; moves 113 (0x71) to VAR2
+    banksel VAR2
 	movlw 0x71
 	movwf VAR2
 
@@ -346,6 +348,7 @@ _start:
 	incf VAR3, F
 
 	;; moves 64 (0x40) to VAR4
+    banksel VAR4
 	movlw 0x40
 	movwf VAR4
 
@@ -367,6 +370,7 @@ _start:
 	movwf VAR4
 
 	;; moves 64 (0x40) to VAR4
+    banksel VAR4
 	movlw 0x40
 	movwf VAR4
 

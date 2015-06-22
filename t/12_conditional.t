@@ -69,6 +69,7 @@ _start:
 	clrf PORTC
 
 	;; moves 1 (0x01) to VAR1
+    banksel VAR1
 	movlw 0x01
 	movwf VAR1
 
@@ -178,6 +179,7 @@ _end_conditional_0_3:
 
 _end_conditional_0:
 	;; moves 255 (0xFF) to VAR3
+    banksel VAR3
 	movlw 0xFF
 	movwf VAR3
 
@@ -200,6 +202,7 @@ _end_start:
 _false_6:
 
 	;; moves 8 (0x08) to PORTC
+    banksel PORTC
 	movlw 0x08
 	movwf PORTC
 
@@ -219,6 +222,7 @@ _false_6:
 _true_2:
 
 	;; moves 1 (0x01) to PORTC
+    banksel PORTC
 	movlw 0x01
 	movwf PORTC
 
@@ -238,6 +242,7 @@ _true_2:
 _true_3:
 
 	;; moves 2 (0x02) to PORTC
+    banksel PORTC
 	movlw 0x02
 	movwf PORTC
 
@@ -251,6 +256,7 @@ _true_3:
 _true_4:
 
 	;; moves 4 (0x04) to PORTC
+    banksel PORTC
 	movlw 0x04
 	movwf PORTC
 
@@ -270,6 +276,7 @@ _true_4:
 _true_5:
 
 	;; moves 4 (0x04) to PORTC
+    banksel PORTC
 	movlw 0x04
 	movwf PORTC
 

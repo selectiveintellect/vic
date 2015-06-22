@@ -496,6 +496,7 @@ sub attach {
             return;
         }
         my $baudrate = shift if @_;
+        my $loopback = shift if @_;
         my $key = ($pin =~ /^UART/) ? 'uart' : 'usart';
         $baudrate = $self->pic->code_config->{$key}->{baud} unless defined
         $baudrate;
@@ -518,7 +519,13 @@ sub attach {
         my $y = 50 + 50 * $id;
         $code .= qq{\t.sim "U$id.xpos = $x"\n};
         $code .= qq{\t.sim "U$id.ypos = $y"\n};
+        if (defined $loopback) {
+            if (ref $loopback eq 'HASH' and $loopback->{string} =~ /loopback/i) {
+                $code .= qq{\t.sim "U$id.loop = true"\n};
+            }
+        }
     }
+    return $code;
 }
 
 1;

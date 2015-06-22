@@ -221,6 +221,7 @@ _start:
 	movwf ADCON0
 
 	;; moves 8 to DISPLAY
+    banksel DISPLAY
 	movlw 0x08
 	movwf DISPLAY
 

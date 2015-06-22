@@ -70,6 +70,7 @@ _start:
 _loop_1:
 
 	;; moves 255 (0xFF) to DUMMY
+    banksel DUMMY
 	movlw 0xFF
 	movwf DUMMY
 
@@ -121,6 +122,7 @@ _end_start:
 _false_6:
 
 	;; moves 4 (0x04) to PORTC
+    banksel PORTC
 	movlw 0x04
 	movwf PORTC
 
@@ -140,6 +142,7 @@ _true_2:
 	movwf DUMMY
 
 	;; moves 1 (0x01) to PORTC
+    banksel PORTC
 	movlw 0x01
 	movwf PORTC
 
@@ -176,6 +179,7 @@ _true_4:
 	movwf DUMMY
 
 	;; moves 3 (0x03) to PORTC
+    banksel PORTC
 	movlw 0x03
 	movwf PORTC
 
@@ -188,6 +192,7 @@ _true_4:
 _true_5:
 
 	;; moves 2 (0x02) to PORTC
+    banksel PORTC
 	movlw 0x02
 	movwf PORTC
 
@@ -200,6 +205,7 @@ _true_5:
 _true_7:
 
 	;; moves 255 (0xFF) to PORTC
+    banksel PORTC
 	movlw 0xFF
 	movwf PORTC
 

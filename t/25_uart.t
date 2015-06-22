@@ -24,19 +24,21 @@ my $output = <<'...';
 
 ;;;; generated code for variables
 
-;;;;;;; USART WRITE VARS ;;;;;;
+;;;;;;; USART I/O VARS ;;;;;;
 VIC_VAR_USART_UDATA udata
-VIC_VAR_USART_LEN res 1
+VIC_VAR_USART_WLEN res 1
 VIC_VAR_USART_WIDX res 1
+VIC_VAR_USART_RLEN res 1
+VIC_VAR_USART_RIDX res 1
 
 
 ;;;; generated code for macros
-m_usart_write_byte macro tblentry
-    local _usart_write_byte_loop_0
-    local _usart_write_byte_loop_1
+m_usart_write_bytetbl macro tblentry
+    local _usart_write_bytetbl_loop_0
+    local _usart_write_bytetbl_loop_1
     banksel VIC_VAR_USART_WIDX
     clrf VIC_VAR_USART_WIDX
-_usart_write_byte_loop_0:
+_usart_write_bytetbl_loop_0:
     movf VIC_VAR_USART_WIDX, W
     call tblentry
     banksel TXREG
@@ -49,12 +51,12 @@ _usart_write_byte_loop_0:
     bcf STATUS, Z
     bcf STATUS, C
     movf VIC_VAR_USART_WIDX, W
-    subwf VIC_VAR_USART_LEN, W
+    subwf VIC_VAR_USART_WLEN, W
     ;; W == 0
     btfsc STATUS, Z
-    goto _usart_write_byte_loop_1
-    goto _usart_write_byte_loop_0
-_usart_write_byte_loop_1:
+    goto _usart_write_bytetbl_loop_1
+    goto _usart_write_bytetbl_loop_0
+_usart_write_bytetbl_loop_1:
     ;; finish the sending
     banksel TXSTA
     btfss TXSTA, TRMT
@@ -125,10 +127,10 @@ _start:
 
 ;;; sending the string 'Hello World!\n' to UART
 ;;;; byte array has length 0x0D
-    banksel VIC_VAR_USART_LEN
+    banksel VIC_VAR_USART_WLEN
     movlw 0x0D
-    movwf VIC_VAR_USART_LEN
-    m_usart_write_byte _vic_str_00
+    movwf VIC_VAR_USART_WLEN
+    m_usart_write_bytetbl _vic_str_00
 
 _end_start:
 

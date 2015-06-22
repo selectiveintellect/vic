@@ -29,6 +29,7 @@ sub _assign_literal {
         }
     } else {
         my $valbyte = $val & ((2 ** 8) - 1);
+        $code .= "\tbanksel $var\n";
         $code .= sprintf "\tmovlw 0x%02X\n\tmovwf $var\n", $valbyte if $valbyte > 0;
         $code .= "\tclrf $var\n" if $valbyte == 0;
         for (2 .. $bytes) {
