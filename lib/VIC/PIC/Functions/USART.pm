@@ -12,10 +12,6 @@ sub usart_setup {
     my ($self, $outp, $baudr) = @_;
     return unless $self->doesroles(qw(USART GPIO CodeGen Chip));
     return unless $outp =~ /UART|USART/;
-    my $io = 'output';#FIXME
-    $io = 0 if $io =~ /output/i; #transmit
-    $io = 1 if $io =~ /input/i; #receive
-    return unless ($io == 0 or $io == 1);
     my $sync = ($outp =~ /^UART/) ? 0 : 1; # the other is USART
     my $ipin = $self->usart_pins->{async_in};
     my $opin = $self->usart_pins->{async_out};
@@ -163,9 +159,12 @@ VIC_VAR_USART_RIDX res 1
 
 sub _usart_write_bytetbl {
     return <<"....";
-m_usart_write_bytetbl macro tblentry
+m_usart_write_bytetbl macro tblentry, wlen
 \tlocal _usart_write_bytetbl_loop_0
 \tlocal _usart_write_bytetbl_loop_1
+\tbanksel VIC_VAR_USART_WLEN
+\tmovlw wlen
+\tmovwf VIC_VAR_USART_WLEN
 \tbanksel VIC_VAR_USART_WIDX
 \tclrf VIC_VAR_USART_WIDX
 _usart_write_bytetbl_loop_0:
@@ -191,6 +190,9 @@ _usart_write_bytetbl_loop_1:
 \tbanksel TXSTA
 \tbtfss TXSTA, TRMT
 \tgoto \$ - 1
+\tbanksel VIC_VAR_USART_WIDX
+\tclrf VIC_VAR_USART_WIDX
+\tclrf VIC_VAR_USART_WLEN
 \tendm
 ....
 }
@@ -205,6 +207,47 @@ m_usart_write_byte macro wvar
 \tbanksel TXSTA
 \tbtfss TXSTA, TRMT
 \tgoto \$ - 1
+\tendm
+....
+}
+
+sub _usart_write_bytes {
+    return <<"....";
+m_usart_write_bytes macro wvar, wlen
+\tlocal _usart_write_bytes_loop_0
+\tlocal _usart_write_bytes_loop_1
+\tbanksel VIC_VAR_USART_WLEN
+\tmovlw (wlen - 1)
+\tmovwf VIC_VAR_USART_WLEN
+\tclrf VIC_VAR_USART_WIDX
+\tbanksel wvar
+\tmovlw (wvar - 1) ;; load address into FSR
+\tmovwf FSR
+_usart_write_bytes_loop_0:
+\tincf FSR, F  ;; increment the FSR pointer
+\tmovf INDF, W ;; load byte into register
+\tbanksel TXREG
+\tmovwf TXREG
+\tbanksel TXSTA
+\tbtfss TXSTA, TRMT
+\tgoto \$ - 1
+\tbanksel VIC_VAR_USART_WIDX
+\tincf VIC_VAR_USART_WIDX, F
+\tbcf STATUS, Z
+\tbcf STATUS, C
+\tmovf VIC_VAR_USART_WIDX, W
+\tsubwf VIC_VAR_USART_WLEN, W
+\t;; W == 0
+\tbtfsc STATUS, Z
+\tgoto _usart_write_bytes_loop_1
+\tgoto _usart_write_bytes_loop_0
+_usart_write_bytes_loop_1:
+\tbanksel TXSTA
+\tbtfss TXSTA, TRMT
+\tgoto \$ - 1
+\tbanksel VIC_VAR_USART_WIDX
+\tclrf VIC_VAR_USART_WIDX
+\tclrf VIC_VAR_USART_WLEN
 \tendm
 ....
 }
@@ -245,23 +288,34 @@ sub usart_write {
     my @bytearr = ();
     my $nstr;
     my $table_entry = '';
+    my $szvar;
     if (ref $data eq 'HASH') {
-        # this ia a string
-        $nstr = $data->{string};
-        $nstr = substr($nstr, 1) if $nstr =~ /^@/;
-        my $nstr2 = $nstr;
-        $nstr2 =~ s/[\n]/\\n/gs;
-        $nstr2 =~ s/[\r]/\\r/gs;
-        $code .= ";;; sending the string '$nstr2' to $outp\n";
-        @bytearr = split //, $nstr;
-        push @$tables, {
-            bytes => [(map { sprintf "0x%02X", ord($_) } @bytearr), "0x00"],
-            name => $data->{name},
-            comment => "\t;;storing string '$nstr2'",
-        };
-        $table_entry = $data->{name};
+        if (exists $data->{type}) {
+            # this is a variable with data
+            unless ($data->{type} eq 'string') {
+                carp "Only string variables can use this part of the code";
+                return;
+            }
+            $szvar = $data->{size};
+            $data = $data->{name};
+            $code .= ";;; sending contents of the variable '$data' of size '$szvar' to $outp\n";
+        } else {
+            # this is a string
+            $nstr = $data->{string};
+            my $nstr2 = $nstr;
+            $nstr2 =~ s/[\n]/\\n/gs;
+            $nstr2 =~ s/[\r]/\\r/gs;
+            $code .= ";;; sending the string '$nstr2' to $outp\n";
+            @bytearr = split //, $nstr;
+            push @$tables, {
+                bytes => [(map { sprintf "0x%02X", ord($_) } @bytearr), "0x00"],
+                name => $data->{name},
+                comment => "\t;;storing string '$nstr2'",
+            };
+            $table_entry = $data->{name};
+        }
     } else {
-        if (looks_like_number($data) and $data !~ /^@/) {
+        if (looks_like_number($data)) {
             $code .= ";;; sending the number '$data' to $outp in big-endian mode\n";
             my $nstr = pack "N", $data;
             $nstr =~ s/^\x00{1,3}//g; # remove the beginning nulls
@@ -296,10 +350,14 @@ sub usart_write {
         $macros->{m_usart_write_bytetbl} = $self->_usart_write_bytetbl;
         $code .= <<"...";
 ;;;; byte array has length $len
-\tbanksel VIC_VAR_USART_WLEN
-\tmovlw $len
-\tmovwf VIC_VAR_USART_WLEN
-\tm_usart_write_bytetbl $table_entry
+\tm_usart_write_bytetbl $table_entry, $len
+...
+    } elsif (defined $szvar) {
+        ## multiple bytes writing
+        $macros->{m_usart_write_bytes} = $self->_usart_write_bytes;
+        $data = uc $data;
+        $code .= <<"...";
+\tm_usart_write_bytes $data, $szvar
 ...
     } else {
         $macros->{m_usart_write_byte} = $self->_usart_write_byte;

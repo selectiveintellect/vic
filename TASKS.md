@@ -2,8 +2,8 @@
 
 ## Language Features
 
-- Indirect addressing or pointer addressing
-- Optimize memory usage and detect availability of RAM
+- Indirect addressing or pointer addressing - DONE for strings
+- Optimize memory usage and detect availability of RAM, Page faults etc.
 - Parameter passing in Action/ISR blocks
 - User-defined blocks/functions
 
@@ -21,11 +21,12 @@
 ## Code Generation Features
 
 - String tables (read-only data) - DONE for UART
-- String buffers for writing
+- String buffers for writing - DONE with auto-allocation of fixed size but needs
+  to understand "" since that size will be set as 0.
 
     $value = "";
     read UART0, Action {
-        $value .= shift;
+        $value .= shift; ## CONCAT operator not done yet
     };
 
 - ASCII conversion of numbers and alphabets - DONE for UART

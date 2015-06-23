@@ -33,9 +33,12 @@ VIC_VAR_USART_RIDX res 1
 
 
 ;;;; generated code for macros
-m_usart_write_bytetbl macro tblentry
+m_usart_write_bytetbl macro tblentry, wlen
     local _usart_write_bytetbl_loop_0
     local _usart_write_bytetbl_loop_1
+    banksel VIC_VAR_USART_WLEN
+    movlw wlen
+    movwf VIC_VAR_USART_WLEN
     banksel VIC_VAR_USART_WIDX
     clrf VIC_VAR_USART_WIDX
 _usart_write_bytetbl_loop_0:
@@ -61,6 +64,9 @@ _usart_write_bytetbl_loop_1:
     banksel TXSTA
     btfss TXSTA, TRMT
     goto $ - 1
+	banksel VIC_VAR_USART_WIDX
+	clrf VIC_VAR_USART_WIDX
+	clrf VIC_VAR_USART_WLEN
     endm
 
 
@@ -127,10 +133,7 @@ _start:
 
 ;;; sending the string 'Hello World!\n' to UART
 ;;;; byte array has length 0x0D
-    banksel VIC_VAR_USART_WLEN
-    movlw 0x0D
-    movwf VIC_VAR_USART_WLEN
-    m_usart_write_bytetbl _vic_str_00
+    m_usart_write_bytetbl _vic_str_00, 0x0D
 
 _end_start:
 

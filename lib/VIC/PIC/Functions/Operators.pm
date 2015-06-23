@@ -11,6 +11,11 @@ use Moo::Role;
 sub _assign_literal {
     my ($self, $var, $val) = @_;
     return unless $self->doesrole('Chip'); # needed for address_bits
+    if (ref $var eq 'HASH' and $var->{type} eq 'string') {
+        #YYY { lhs => $var, rhs => $var };
+        carp $var->{name}, " has been defined as a string and '$val' is not a string !";
+        return;
+    }
     my $bits = $self->address_bits($var);
     my $bytes = POSIX::ceil($bits / 8);
     my $nibbles = 2 * $bytes;
@@ -45,16 +50,84 @@ sub _assign_literal {
     return $code;
 }
 
+sub _op_assign_str_var {
+    return <<"....";
+;;;; for m_op_assign_str
+VIC_VAR_ASSIGN_STRIDX res 1
+VIC_VAR_ASSIGN_STRLEN res 1
+....
+}
+
+sub _op_assign_str {
+    return <<"...";
+m_op_assign_str macro dvar, dlen, cvar, clen
+\tlocal _op_assign_str_loop_0
+\tlocal _op_assign_str_loop_1
+\tbanksel VIC_VAR_ASSIGN_STRLEN
+if dlen > clen
+\tmovlw clen
+else
+\tmovlw dlen
+endif
+\tmovwf VIC_VAR_ASSIGN_STRLEN
+\tbanksel dvar
+\tmovlw (dvar - 1)
+\tmovwf FSR
+\tbanksel VIC_VAR_ASSIGN_STRIDX
+\tclrf VIC_VAR_ASSIGN_STRIDX
+_op_assign_str_loop_0:
+\tmovf VIC_VAR_ASSIGN_STRIDX, W
+\tcall cvar
+\tincf FSR, F
+\tmovwf INDF
+\tbanksel VIC_VAR_ASSIGN_STRIDX
+\tincf VIC_VAR_ASSIGN_STRIDX, F
+\tbcf STATUS, Z
+\tbcf STATUS, C
+\tmovf VIC_VAR_ASSIGN_STRIDX, W
+\tsubwf VIC_VAR_ASSIGN_STRLEN, W
+\t;; W == 0
+\tbtfsc STATUS, Z
+\tgoto _op_assign_str_loop_1
+\tgoto _op_assign_str_loop_0
+_op_assign_str_loop_1:
+\tnop
+\tendm
+...
+}
+
 sub op_assign {
     my ($self, $var1, $var2, %extra) = @_;
     return unless $self->doesrole('Operators');
     my $literal = qr/^\d+$/;
     return $self->_assign_literal($var1, $var2) if $var2 =~ $literal;
+    my $code = '';
+    if (ref $var1 eq 'HASH') {
+        if ($var1->{type} eq 'string') {
+            if (ref $var2 eq 'HASH' && exists $var2->{string}) {
+                # allocate the constant string into the variable location
+                my $cvar = $var2->{name};# constant var location
+                my $clen = sprintf "0x%02X", $var2->{size};# constant length definition
+                my $dlen = $var1->{size};# destination length definition
+                my $dvar = $var1->{name};
+                my $macros = {};
+                $macros->{m_op_assign_str} = $self->_op_assign_str;
+                $macros->{m_op_assign_var} = $self->_op_assign_str_var;
+                $code .= "\t;;;; moving contents of $cvar into $dvar with bounds checking\n";
+                $code .= "\tm_op_assign_str $dvar, $dlen, $cvar, $clen\n";
+                return wantarray ? ($code, {}, $macros, []) : $code;
+            } else {
+                #YYY { lhs => $var1, rhs => $var2 };
+                carp $var1->{name}, " has been defined as a string and '$var2' is not a string !";
+                return;
+            }
+        }
+    }
     my $b1 = POSIX::ceil($self->address_bits($var1) / 8);
     my $b2 = POSIX::ceil($self->address_bits($var2) / 8);
     $var2 = uc $var2;
     $var1 = uc $var1;
-    my $code = "\t;; moving $var2 to $var1\n";
+    $code = "\t;; moving $var2 to $var1\n";
     if ($b1 == $b2) {
         $code .= "\tmovf $var2, W\n\tmovwf $var1\n";
         for (2 .. $b1) {
@@ -1509,12 +1582,22 @@ sub break { return 'BREAK'; }
 sub continue { return 'CONTINUE'; }
 
 sub store_string {
-    my ($self, $str, $strvar, $len, $lenvar) = @_;
-    $len = sprintf "0x%02X", $len;
-    return << "...";
-$strvar data "$str" ; $strvar is a string
-$lenvar equ $len ; $lenvar is length of $strvar
-...
+    my ($self, $str, $strvar, $lenvar) = @_;
+    my $nstr = $str;
+    $nstr = $str->{string} if ref $str eq 'HASH';
+    my $label = $strvar;
+    $label = $str->{name} if ref $str eq 'HASH';
+    my @bytearr = split //, $nstr;
+    my $bytes = [(map { sprintf "0x%02X", ord($_) } @bytearr), "0x00"];
+    my $len = sprintf "0x%02X", scalar(@$bytes) + 1;
+    my $slen = sprintf "0x%02X", scalar(@$bytes);
+    my $nstr2 = $nstr;
+    $nstr2 =~ s/[\n]/\\n/gs;
+    $nstr2 =~ s/[\r]/\\r/gs;
+    my $code = "\t;; storing string '$nstr2'\n";
+    $code .= "$label:\n\taddwf PCL, F\n\tdt " . join(',', @$bytes) . "\n";
+    my $szdecl = "$strvar res $len; allocate memory for $strvar\n$lenvar equ $slen; $lenvar is length of $label\n";
+    return wantarray ? ($code, $szdecl) : $code;
 }
 
 sub store_array {
@@ -1524,6 +1607,7 @@ sub store_array {
     my $arrstr = join (",", @$arr) if scalar @$arr;
     $arrstr = '0' unless $arrstr;
     $sz = sprintf "0x%02X", $sz;
+    ### FIXME: this is not correct. you need to do like the string stuff
     return << "..."
 $arrvar db $arr ; array stored as accessible bytes
 $szvar equ $sz   ; length of array $arrvar is a constant

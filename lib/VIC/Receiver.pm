@@ -348,7 +348,10 @@ sub got_declaration {
     }
     # TODO: generate intermediate code here
     if (ref $rhs eq 'HASH' or ref $rhs eq 'ARRAY') {
-        if (exists $self->ast->{variables}->{$lhs}) {
+        if (not exists $self->ast->{variables}->{$lhs}) {
+            return $self->parser->throw_error("Variable '$lhs' doesn't exist");
+        }
+        if (exists $rhs->{TABLE} or ref $rhs eq 'ARRAY') {
             my $label = lc "_table_$lhs" if ref $rhs eq 'HASH' and exists $rhs->{TABLE};
             my $szpref = "VIC_TBLSZ_" if ref $rhs eq 'HASH' and exists $rhs->{TABLE};
             $szpref = "VIC_ARRSZ_" if ref $rhs eq 'ARRAY';
@@ -359,8 +362,15 @@ sub got_declaration {
                 $self->ast->{variables}->{$lhs}->{size} = $szpref .
                     $self->ast->{variables}->{$lhs}->{name};
             }
+        } elsif (exists $rhs->{string}) {
+            # handle variable that are strings here
+            $self->ast->{variables}->{$lhs}->{data} = $rhs;
+            $self->ast->{variables}->{$lhs}->{type} = 'string';
+            $self->ast->{variables}->{$lhs}->{size} = "VIC_STRSZ_" .
+                    $self->ast->{variables}->{$lhs}->{name};
+            $self->update_intermediate("SET::ASSIGN::${lhs}::${rhs}");
         } else {
-            return $self->parser->throw_error("Variable '$lhs' doesn't exist");
+            return $self->parser->throw_error("We should not be here");
         }
     } else {
         # var = number | string etc.
@@ -769,10 +779,17 @@ sub got_double_quoted_string {
 sub got_string {
     my $self = shift;
     my $str = shift;
+    ##TODO: handle empty strings as initializers
+    # store only unique strings otherwise re-use them
+    foreach (%{$self->global_collections}) {
+        my $h = $self->global_collections->{$_};
+        return $h if ($h->{string} eq $str);
+    }
     my $stref = {
         string => $str,
         block => $self->ast->{block_stack}->[-1],
         name => sprintf("_vic_str_%02d", $self->ast->{strings}),
+        size => length($str) + 1, # trailing null byte
     };
     $self->global_collections->{"$stref"} = $stref;
     $self->ast->{strings}++;
@@ -901,9 +918,21 @@ sub generate_code_instruction {
     my $method = shift @ins;
     my @code = ();
     foreach (@ins) {
-        next unless /HASH|ARRAY/;
-        next unless exists $self->global_collections->{$_};
-        $_ = $self->global_collections->{$_};
+        if (exists $self->global_collections->{$_}) {
+            $_ = $self->global_collections->{$_};
+            next;
+        }
+        if (exists $self->ast->{variables}->{$_}) {
+            my $vhref = $self->ast->{variables}->{$_};
+            if ($vhref->{type} eq 'string') {
+                # send the string variable information to the method
+                # and hope that the method knows how to handle it
+                # this is useful for I/O methods and operator methods
+                # other methods should outright fail to use this and it should
+                # make sense there.#TODO: make better error messages for that.
+                $_ = $vhref;
+            }
+        }
     }
     my ($code, $funcs, $macros, $tables) = $self->pic->$method(@ins);
     return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
@@ -1094,9 +1123,25 @@ sub generate_code_assign_expr {
                 }
             }
         } else {
+            my $nvar = $ast->{variables}->{$varname}->{name} || $varname;
+            if ($rhs =~ /HASH|ARRAY/) {
+                if (exists $self->global_collections->{$rhs}) {
+                    $rhs = $self->global_collections->{$rhs};
+                }
+            }
+            if (exists $self->ast->{variables}->{$varname}) {
+                my $vhref = $self->ast->{variables}->{$varname};
+                if ($vhref->{type} eq 'string') {
+                    # send the string variable information to the method
+                    # and hope that the method knows how to handle it
+                    # this is useful for I/O methods and operator methods
+                    # other methods should outright fail to use this and it should
+                    # make sense there.#TODO: make better error messages for that.
+                    $nvar = $vhref;
+                }
+            }
             my $method = $self->pic->validate_operator($op);
             $self->parser->throw_error("Invalid operator '$op' in intermediate code") unless $self->pic->can($method);
-            my $nvar = $ast->{variables}->{$varname}->{name} || $varname;
             my ($code, $funcs, $macros, $tables) = $self->pic->$method($nvar, $rhs);
             return $self->parser->throw_error("Error in intermediate code '$line'") unless $code;
             push @code, "\t;; $line" if $self->intermediate_inline;
@@ -1395,11 +1440,12 @@ sub final {
         my $label = $vhref->{$var}->{label} || $name;
         my $szvar = $vhref->{$var}->{size};
         if ($typ eq 'string') {
-            ##TODO: this may need to be stored in a different location
+            ##this may need to be stored in a different location
             $data = '' unless defined $data;
             ## different PICs may have different string handling
-            push @init_vars, $self->pic->store_string($data, $label,
-                            length($data), $szvar);
+            my ($scode, $szdecl)= $self->pic->store_string($data, $label, $szvar);
+            push @tables, $scode;
+            $variables .= $szdecl if $szdecl;
         } elsif ($typ eq 'ARRAY') {
             $data = [] unless defined $data;
             push @init_vars, $self->pic->store_array($data, $label,
