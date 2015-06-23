@@ -105,6 +105,7 @@ t/22_pwm.t
 t/23_pwm2.t
 t/24_gputils.t
 t/25_uart.t
+t/25_uart2.t
 t/26_reader.t
 t/27_reader_pin.t
 t/27_reader_port.t
