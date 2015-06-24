@@ -24,6 +24,9 @@ has code_config => (is => 'rw', default => sub {
                 bits => 8, # bits. same as register_size
                 export => 0, # do not export variables
             },
+            string => {
+                size => 32, # character allocation of null strings
+            },
             uart => {
                 baud => 9600, # baud rate
                 bit9 => 0, # allow 9 bits

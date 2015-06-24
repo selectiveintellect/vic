@@ -1,16 +1,16 @@
 use t::TestVIC tests => 1, debug => 0;
 
 my $input = <<'...';
+
 PIC P16F690;
 
 Main {
     setup UART, 9600; # set up USART for transmit
-    write UART, "Hello World!\n";
-    write UART, "100";
-    write UART, 100;
-    $myvar = "Bye World!\n";
-    write UART, $myvar;
-    $myvar2 = 100;
+    write UART, "Hello World!";
+    $myvar2 = "";
+    read UART, ISR {
+        $myvar2 .= shift;
+    };
     write UART, $myvar2;
 }
 
@@ -31,11 +31,11 @@ my $output = <<'...';
 
 ;;;; generated code for variables
 GLOBAL_VAR_UDATA udata
-MYVAR res 0x0D; allocate memory for MYVAR
-VIC_STRSZ_MYVAR equ 0x0C; VIC_STRSZ_MYVAR is length of _vic_str_02
-MYVAR2 res 1
+MYVAR2 res 0x20; allocate memory for MYVAR2
+MYVAR2_IDX res 1; index for accessing MYVAR2 elements
+VIC_STRSZ_MYVAR2 equ 0x20; VIC_STRSZ_MYVAR2 is length of MYVAR2
 
-;;;; for m_op_assign_str
+;;;; for m_op_assign_str/m_op_nullify_str/m_op_concat_byte
 VIC_VAR_ASSIGN_STRIDX res 1
 VIC_VAR_ASSIGN_STRLEN res 1
 
@@ -46,6 +46,12 @@ VIC_VAR_USART_WLEN res 1
 VIC_VAR_USART_WIDX res 1
 VIC_VAR_USART_RLEN res 1
 VIC_VAR_USART_RIDX res 1
+
+
+cblock 0x70 ;; unbanked RAM that is common across all banks
+ISR_STATUS
+ISR_W
+endc
 
 
 ;;;; generated code for macros
@@ -83,6 +89,38 @@ _op_assign_str_loop_1:
 	nop
 	endm
 
+m_op_concat_bytev macro dvar, dlen, didx, bvar
+	local _op_concat_bytev_end
+	;;;; check for space first and then add byte
+	banksel didx
+	movf didx, W
+	banksel VIC_VAR_ASSIGN_STRIDX
+	movwf VIC_VAR_ASSIGN_STRIDX
+	movlw dlen
+	movwf VIC_VAR_ASSIGN_STRLEN
+	bcf STATUS, Z
+	bcf STATUS, C
+	movf VIC_VAR_ASSIGN_STRIDX, W
+	subwf VIC_VAR_ASSIGN_STRLEN, W
+	;; W == 0
+	btfsc STATUS, Z
+	goto _op_concat_bytev_end
+	;; we have space, let's add byte
+	banksel dvar
+	movlw (dvar - 1)
+	movwf FSR
+	banksel didx
+	movf didx, W
+	addwf FSR, F
+	banksel bvar
+	movf bvar, W
+	movwf INDF
+	banksel didx
+	incf didx, F
+_op_concat_bytev_end:
+	nop ;; no space left
+	endm
+
 m_op_nullify_str macro dvar, dlen, didx
 	local _op_nullify_str_loop_0
 	local _op_nullify_str_loop_1
@@ -113,14 +151,29 @@ _op_nullify_str_loop_1:
 	clrf didx
 	endm
 
-m_usart_write_byte macro wvar
-	banksel wvar 
-	movf wvar, W
-	banksel TXREG
-	movwf TXREG
-	banksel TXSTA
-	btfss TXSTA, TRMT
+;;;;;;; ISR1_PARAM0 VARIABLES ;;;;;;
+ISR1_PARAM0_UDATA udata
+ISR1_PARAM0 res 1
+
+m_usart_read_byte macro rvar
+	local _usart_read_byte_0
+	banksel VIC_VAR_USART_RIDX
+	clrf VIC_VAR_USART_RIDX
+	banksel PIR1
+	btfss PIR1, RCIF
 	goto $ - 1
+	btfsc RCSTA, OERR
+	bcf RCSTA, CREN
+	btfsc RCSTA, FERR
+	bcf RCSTA, CREN
+_usart_read_byte_0:
+	banksel RCREG
+	movf RCREG, W
+	banksel rvar
+	movwf rvar
+	banksel RCSTA
+	btfss RCSTA, CREN
+	bsf RCSTA, CREN
 	endm
 
 m_usart_write_bytes macro wvar, wlen
@@ -233,6 +286,54 @@ _usart_write_bytetbl_loop_1:
 	.sim "run"
 
 
+	goto _start
+	nop
+	nop
+	nop
+
+	org 4
+ISR:
+_isr_entry:
+	movwf ISR_W
+	movf STATUS, W
+	movwf ISR_STATUS
+
+_isr_rx_uart:
+	banksel PIE1
+	btfss PIE1, RCIF
+	goto _end_isr_1
+	btfsc RCSTA, OERR
+	bcf RCSTA, CREN
+	btfsc RCSTA, FERR
+	bcf RCSTA, CREN
+	banksel RCREG
+	movf RCREG, W
+	banksel ISR1_PARAM0
+	movwf ISR1_PARAM0
+
+	banksel RCSTA
+	btfss RCSTA, CREN
+	bsf RCSTA, CREN
+	goto _isr_1
+_end_isr_1:
+
+	goto _isr_exit
+
+;;;; generated code for ISR1
+_isr_1:
+
+	m_op_concat_bytev MYVAR2, VIC_STRSZ_MYVAR2, MYVAR2_IDX, ISR1_PARAM0
+
+	goto _end_isr_1 ;; go back to end of block
+
+;;;; end of _isr_1
+_isr_exit:
+	movf ISR_STATUS, W
+	movwf STATUS
+	swapf ISR_W, F
+	swapf ISR_W, W
+	retfie
+
 
 
 ;;;; generated code for Main
@@ -269,53 +370,34 @@ _start:
 
 
 
-;;; sending the string 'Hello World!\n' to UART
-;;;; byte array has length 0x0D
-	m_usart_write_bytetbl _vic_str_00, 0x0D
+;;; sending the string 'Hello World!' to UART
+;;;; byte array has length 0x0C
+	m_usart_write_bytetbl _vic_str_00, 0x0C
 
-;;; sending the string '100' to UART
-;;;; byte array has length 0x03
-	m_usart_write_bytetbl _vic_str_01, 0x03
+	;;;; storing an empty string in MYVAR2
+	m_op_nullify_str MYVAR2, VIC_STRSZ_MYVAR2, MYVAR2_IDX
 
-;;; sending the number '100' to UART in big-endian mode
-;;;; byte array has length 0x01
-	m_usart_write_bytetbl _vic_bytes_0x64, 0x01
+;;;; UART read is done using isr_rx_uart;;; enable interrupt servicing for UART
+	banksel INTCON
+	bsf INTCON, GIE
+	bsf INTCON, PEIE
+	banksel PIE1
+	bsf PIE1, RCIE
+;;; end of interrupt servicing for UART
 
-	;;;; moving contents of _vic_str_02 into MYVAR with bounds checking
-	m_op_assign_str MYVAR, VIC_STRSZ_MYVAR, _vic_str_02, 0x0C
-
-;;; sending contents of the variable 'MYVAR' of size 'VIC_STRSZ_MYVAR' to UART
-	m_usart_write_bytes MYVAR, VIC_STRSZ_MYVAR
-
-	;; moves 100 (0x64) to MYVAR2
-	banksel MYVAR2
-	movlw 0x64
-	movwf MYVAR2
-
-;;; sending the variable 'myvar2' to UART
-	m_usart_write_byte MYVAR2
+;;; sending contents of the variable 'MYVAR2' of size 'VIC_STRSZ_MYVAR2' to UART
+	m_usart_write_bytes MYVAR2, VIC_STRSZ_MYVAR2
 
 _end_start:
 
 	goto $	;;;; end of Main
 
 ;;;; generated code for functions
-	;; storing string 'Bye World!\n'
-_vic_str_02:
-	addwf PCL, F
-	dt 0x42,0x79,0x65,0x20,0x57,0x6F,0x72,0x6C,0x64,0x21,0x0A,0x00
-	;;storing string 'Hello World!\n'
+	;; not storing an empty string
+	;;storing string 'Hello World!'
 _vic_str_00:
 	addwf PCL, F
-	dt 0x48,0x65,0x6C,0x6C,0x6F,0x20,0x57,0x6F,0x72,0x6C,0x64,0x21,0x0A,0x00
-	;;storing string '100'
-_vic_str_01:
-	addwf PCL, F
-	dt 0x31,0x30,0x30,0x00
-	;;storing number 100
-_vic_bytes_0x64:
-	addwf PCL, F
-	dt 0x64,0x00
+	dt 0x48,0x65,0x6C,0x6C,0x6F,0x20,0x57,0x6F,0x72,0x6C,0x64,0x21,0x00
 
 ;;;; generated code for end-of-file
 	end

@@ -785,11 +785,13 @@ sub got_string {
         my $h = $self->global_collections->{$_};
         return $h if ($h->{string} eq $str);
     }
+    my $is_empty = 1 if $str eq '';
     my $stref = {
         string => $str,
         block => $self->ast->{block_stack}->[-1],
         name => sprintf("_vic_str_%02d", $self->ast->{strings}),
         size => length($str) + 1, # trailing null byte
+        empty => $is_empty, # required for variable allocation later
     };
     $self->global_collections->{"$stref"} = $stref;
     $self->ast->{strings}++;

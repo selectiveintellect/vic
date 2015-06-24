@@ -52,10 +52,44 @@ sub _assign_literal {
 
 sub _op_assign_str_var {
     return <<"....";
-;;;; for m_op_assign_str
+;;;; for m_op_assign_str/m_op_nullify_str/m_op_concat_byte
 VIC_VAR_ASSIGN_STRIDX res 1
 VIC_VAR_ASSIGN_STRLEN res 1
 ....
+}
+
+sub _op_nullify_str {
+    return << "...";
+m_op_nullify_str macro dvar, dlen, didx
+\tlocal _op_nullify_str_loop_0
+\tlocal _op_nullify_str_loop_1
+\tbanksel VIC_VAR_ASSIGN_STRLEN
+\tmovlw dlen
+\tmovwf VIC_VAR_ASSIGN_STRLEN
+\tbanksel dvar
+\tmovlw (dvar - 1)
+\tmovwf FSR
+\tbanksel VIC_VAR_ASSIGN_STRIDX
+\tclrf VIC_VAR_ASSIGN_STRIDX
+_op_nullify_str_loop_0:
+\tclrw
+\tincf FSR, F
+\tmovwf INDF
+\tbanksel VIC_VAR_ASSIGN_STRIDX
+\tincf VIC_VAR_ASSIGN_STRIDX, F
+\tbcf STATUS, Z
+\tbcf STATUS, C
+\tmovf VIC_VAR_ASSIGN_STRIDX, W
+\tsubwf VIC_VAR_ASSIGN_STRLEN, W
+\t;; W == 0
+\tbtfsc STATUS, Z
+\tgoto _op_nullify_str_loop_1
+\tgoto _op_nullify_str_loop_0
+_op_nullify_str_loop_1:
+\tbanksel didx
+\tclrf didx
+\tendm
+...
 }
 
 sub _op_assign_str {
@@ -96,6 +130,11 @@ _op_assign_str_loop_1:
 ...
 }
 
+sub _get_idx_var {
+    my ($self, $var) = @_;
+    return uc ($var . '_IDX');
+}
+
 sub op_assign {
     my ($self, $var1, $var2, %extra) = @_;
     return unless $self->doesrole('Operators');
@@ -113,8 +152,15 @@ sub op_assign {
                 my $macros = {};
                 $macros->{m_op_assign_str} = $self->_op_assign_str;
                 $macros->{m_op_assign_var} = $self->_op_assign_str_var;
-                $code .= "\t;;;; moving contents of $cvar into $dvar with bounds checking\n";
-                $code .= "\tm_op_assign_str $dvar, $dlen, $cvar, $clen\n";
+                $macros->{m_op_nullify_str} = $self->_op_nullify_str;
+                unless ($var2->{empty}) {
+                    $code .= "\t;;;; moving contents of $cvar into $dvar with bounds checking\n";
+                    $code .= "\tm_op_assign_str $dvar, $dlen, $cvar, $clen\n";
+                } else {
+                    $code .= "\t;;;; storing an empty string in $dvar\n";
+                    my $idxvar = $self->_get_idx_var($dvar);
+                    $code .= "\tm_op_nullify_str $dvar, $dlen, $idxvar\n";
+                }
                 return wantarray ? ($code, {}, $macros, []) : $code;
             } else {
                 #YYY { lhs => $var1, rhs => $var2 };
@@ -1587,16 +1633,29 @@ sub store_string {
     $nstr = $str->{string} if ref $str eq 'HASH';
     my $label = $strvar;
     $label = $str->{name} if ref $str eq 'HASH';
-    my @bytearr = split //, $nstr;
-    my $bytes = [(map { sprintf "0x%02X", ord($_) } @bytearr), "0x00"];
-    my $len = sprintf "0x%02X", scalar(@$bytes) + 1;
-    my $slen = sprintf "0x%02X", scalar(@$bytes);
-    my $nstr2 = $nstr;
-    $nstr2 =~ s/[\n]/\\n/gs;
-    $nstr2 =~ s/[\r]/\\r/gs;
-    my $code = "\t;; storing string '$nstr2'\n";
-    $code .= "$label:\n\taddwf PCL, F\n\tdt " . join(',', @$bytes) . "\n";
-    my $szdecl = "$strvar res $len; allocate memory for $strvar\n$lenvar equ $slen; $lenvar is length of $label\n";
+    my ($code, $szdecl) = ('', '');
+    if ($str->{empty}) {
+        $code = "\t;; not storing an empty string\n";
+        my $sz = $self->code_config->{string}->{size};
+        my $len = sprintf "0x%02X", $sz;
+        my $idxvar = $self->_get_idx_var($strvar);
+        $szdecl = << "...";
+$strvar res $len; allocate memory for $strvar
+$idxvar res 1; index for accessing $strvar elements
+$lenvar equ $len; $lenvar is length of $strvar
+...
+    } else {
+        my @bytearr = split //, $nstr;
+        my $bytes = [(map { sprintf "0x%02X", ord($_) } @bytearr), "0x00"];
+        my $len = sprintf "0x%02X", scalar(@$bytes) + 1;
+        my $slen = sprintf "0x%02X", scalar(@$bytes);
+        my $nstr2 = $nstr;
+        $nstr2 =~ s/[\n]/\\n/gs;
+        $nstr2 =~ s/[\r]/\\r/gs;
+        $code = "\t;; storing string '$nstr2'\n";
+        $code .= "$label:\n\taddwf PCL, F\n\tdt " . join(',', @$bytes) . "\n";
+        $szdecl = "$strvar res $len; allocate memory for $strvar\n$lenvar equ $slen; $lenvar is length of $label\n";
+    }
     return wantarray ? ($code, $szdecl) : $code;
 }
 
@@ -1688,14 +1747,73 @@ sub store_bytes {
 }
 
 sub string_concat {
-    return ';;; string concatenation NOT IMPLEMENTED';
+    return ";;;; string concatenation not implemented";
+}
+
+sub _op_concat_bytev {
+    return << "...";
+m_op_concat_bytev macro dvar, dlen, didx, bvar
+\tlocal _op_concat_bytev_end
+\t;;;; check for space first and then add byte
+\tbanksel didx
+\tmovf didx, W
+\tbanksel VIC_VAR_ASSIGN_STRIDX
+\tmovwf VIC_VAR_ASSIGN_STRIDX
+\tmovlw dlen
+\tmovwf VIC_VAR_ASSIGN_STRLEN
+\tbcf STATUS, Z
+\tbcf STATUS, C
+\tmovf VIC_VAR_ASSIGN_STRIDX, W
+\tsubwf VIC_VAR_ASSIGN_STRLEN, W
+\t;; W == 0
+\tbtfsc STATUS, Z
+\tgoto _op_concat_bytev_end
+\t;; we have space, let's add byte
+\tbanksel dvar
+\tmovlw (dvar - 1)
+\tmovwf FSR
+\tbanksel didx
+\tmovf didx, W
+\taddwf FSR, F
+\tbanksel bvar
+\tmovf bvar, W
+\tmovwf INDF
+\tbanksel didx
+\tincf didx, F
+_op_concat_bytev_end:
+\tnop ;; no space left
+\tendm
+...
+}
+
+sub byte_concat {
+    my $self = shift;
+    my $dvar = shift;
+    my $svar = shift;
+    $svar = uc $svar;
+    my ($code, $funcs, $macros) = ('', {}, {});
+    if (ref $dvar eq 'HASH' and $dvar->{type} eq 'string') {
+        my $dname = $dvar->{name};
+        my $idxvar = $self->_get_idx_var($dname);
+        my $dlen = $dvar->{size};
+        $macros->{m_op_assign_var} = $self->_op_assign_str_var;
+        $macros->{m_op_concat_bytev} = $self->_op_concat_bytev($dname, $dlen, $idxvar, $svar);
+        $code = "\tm_op_concat_bytev $dname, $dlen, $idxvar, $svar\n";
+    } else {
+        carp $dvar->{name} . " is not a string. Concatenation not valid\n";
+        return;
+    }
+    return wantarray ? ($code, $funcs, $macros) : $code;
 }
 
 sub op_cat_assign {
     my $self = shift;
-    my $var = shift;
-    my ($code, $funcs, $macros) = $self->string_concat($var, $var, @_);
-    return wantarray ? ($code, $funcs, $macros) : $code;
+    my ($var1, $var2) = @_;
+    if (ref $var2 eq 'HASH') {
+        return $self->string_concat(@_);
+    } else {
+        return $self->byte_concat(@_);
+    }
 }
 
 1;
