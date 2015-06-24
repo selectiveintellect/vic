@@ -1688,7 +1688,7 @@ sub store_bytes {
 }
 
 sub string_concat {
-    return ';;; NOT IMPLEMENTED';
+    return ';;; string concatenation NOT IMPLEMENTED';
 }
 
 sub op_cat_assign {

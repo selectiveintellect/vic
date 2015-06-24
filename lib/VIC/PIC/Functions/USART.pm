@@ -412,14 +412,92 @@ sub usart_read {
 $end_label:\n
 ...
         } elsif (exists $action{ISR}) {
-            carp "Interrupt reading for UART not implemented";
-            return;
+            my $pictype = $self->type;
+            unless ($self->doesrole('ISR')) {
+                carp "$pictype does not do the ISR role";
+                return;
+            }
+            my $rx_int = $self->usart_pins->{rx_int};
+            carp "rx_int not defined for $pictype" and return unless $rx_int;
+            my $isr_label = lc "isr_rx_$inp"; # required by receiver
+            $code = ";;;; $inp read is done using $isr_label";
+            $code .= $self->_usart_isr_setup($inp, $rx_int);
+            $funcs->{$isr_label} = $self->_usart_isr_read($inp, $rx_int, %action);
         } else {
             carp "Unknown action requested. Probably a bug in implementation";
             return;
         }
     }
     return wantarray ? ($code, $funcs, $macros, $tables) : $code;
+}
+
+sub _usart_isr_setup {
+    my $self = shift;
+    my $inp = shift;
+    my $href = shift;
+    return unless (defined $href and ref $href eq 'HASH');
+    unless (exists $self->registers->{INTCON}) {
+        carp $self->type, " has no register named INTCON";
+        return;
+    }
+    my $reg = $href->{reg};
+    my $enable = $href->{enable};
+    my $preg = $href->{preg};
+    my $penable = $href->{penable};
+    my $code = << "...";
+;;; enable interrupt servicing for $inp
+\tbanksel INTCON
+\tbsf INTCON, GIE
+...
+    if ($preg eq 'INTCON') {
+        $code .= "\tbsf $preg, $penable\n";
+    } else {
+        $code .= "\tbanksel $preg\n\tbsf $preg, $penable\n";
+    }
+    $code .= << "...";
+\tbanksel $reg
+\tbsf $reg, $enable
+;;; end of interrupt servicing for $inp
+...
+    return $code;
+}
+
+sub _usart_isr_read {
+    my $self = shift;
+    my $inp = shift;
+    my $href = shift;
+    my %isr = @_;
+    return unless (defined $href and ref $href eq 'HASH');
+    return unless (defined $isr{ISR} and $isr{END});
+    my $reg = $href->{reg};
+    my $enable = $href->{enable};
+    my $flag = $href->{flag};
+    my $begin_label = $isr{ISR};
+    my $end_label = $isr{END};
+    my $isr_var_code = '';
+    if (defined $isr{PARAM}) {
+        my $ivar = uc ($isr{PARAM} . '0');
+        $isr_var_code = "\tbanksel $ivar\n\tmovwf $ivar\n";
+    }
+    my $isr_label = lc "_isr_rx_$inp"; # required by receiver to be this way
+    return << "....";
+$isr_label:
+\tbanksel $reg
+\tbtfss $reg, $flag
+\tgoto $end_label
+\tbtfsc RCSTA, OERR
+\tbcf RCSTA, CREN
+\tbtfsc RCSTA, FERR
+\tbcf RCSTA, CREN
+\tbanksel RCREG
+\tmovf RCREG, W
+$isr_var_code
+\tbanksel RCSTA
+\tbtfss RCSTA, CREN
+\tbsf RCSTA, CREN
+\tgoto $begin_label
+$end_label:
+....
 }
 
 1;

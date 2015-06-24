@@ -34,7 +34,7 @@
 - EEPROM read/write and storage of large data blobs such as music files or
   images
 - Verify PWM implementation on Oscilloscope - (example is verified)
-- UART
+- UART: need to do interrupt-based read/write -  DONE READ
 
     # does this store the incoming bytes in a buffer ?
     read UART0, $value; # a single byte

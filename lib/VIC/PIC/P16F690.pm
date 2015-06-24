@@ -380,6 +380,10 @@ has usart_pins => (is => 'ro', default => sub {
         async_out => 'TX',
         sync_clock => 'CK',
         sync_data => 'DT',
+        rx_int => { reg => 'PIE1', flag => 'RCIF', enable => 'RCIE', preg =>
+            'INTCON', penable => 'PEIE' },
+        tx_int => { reg => 'PIR1', flag => 'TXIF', enable => 'TXIE', preg =>
+            'INTCON', penable => 'PEIE' },
         # this defines the port names that the user can use
         # validly. The port names define whether the user wants to use them in
         # synchronous or asynchronous mode

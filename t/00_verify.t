@@ -59,7 +59,7 @@ foreach my $chip (@$chips) {
             my $usart = $self->usart_pins;
             isnt($usart, undef);
             isa_ok($usart, ref {});
-            my @ep = sort qw(async_in async_out sync_clock sync_data UART USART);
+            my @ep = sort qw(async_in async_out sync_clock sync_data rx_int tx_int UART USART);
             my @kp = sort (keys %$usart);
             is_deeply(\@kp, \@ep);
         }

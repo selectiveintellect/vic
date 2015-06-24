@@ -284,6 +284,9 @@ has usart_pins => (is => 'ro', default => sub {
         async_out => 'TX',
         sync_clock => 'CK',
         sync_data => 'DT',
+        #TODO
+        rx_int => {},
+        tx_int => {},
         # this defines the port names that the user can use
         # validly. The port names define whether the user wants to use them in
         # synchronous or asynchronous mode
