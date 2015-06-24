@@ -21,13 +21,18 @@
 ## Code Generation Features
 
 - String tables (read-only data) - DONE for UART
-- String buffers for writing - DONE with auto-allocation of fixed size but needs
-  to understand "" since that size will be set as 0.
+- String buffers for writing - DONE with auto-allocation of fixed size and of a
+  configurable using pragma size of 32 bytes for empty string
 
     $value = "";
     read UART0, Action {
-        $value .= shift; ## CONCAT operator not done yet
+        $value .= shift; ## CONCAT operator done for single bytes only
     };
+
+    - concatenation of strings needs more work
+    - array access of string bytes
+    - printing to UART of string only till the index not the full length
+    - not all strings have indexes but should
 
 - ASCII conversion of numbers and alphabets - DONE for UART
 - Sleep/Wake-up of processor

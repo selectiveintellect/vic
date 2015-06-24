@@ -1770,7 +1770,7 @@ m_op_concat_bytev macro dvar, dlen, didx, bvar
 \tgoto _op_concat_bytev_end
 \t;; we have space, let's add byte
 \tbanksel dvar
-\tmovlw (dvar - 1)
+\tmovlw dvar
 \tmovwf FSR
 \tbanksel didx
 \tmovf didx, W

@@ -6,12 +6,11 @@ PIC P16F690;
 
 Main {
     setup UART, 9600; # set up USART for transmit
-    write UART, "Hello World!";
     $myvar2 = "";
     read UART, ISR {
         $myvar2 .= shift;
     };
-    write UART, $myvar2;
+    write UART, "Hello World!";
 }
 
 Simulator {
@@ -107,7 +106,7 @@ m_op_concat_bytev macro dvar, dlen, didx, bvar
 	goto _op_concat_bytev_end
 	;; we have space, let's add byte
 	banksel dvar
-	movlw (dvar - 1)
+	movlw dvar
 	movwf FSR
 	banksel didx
 	movf didx, W
@@ -174,43 +173,6 @@ _usart_read_byte_0:
 	banksel RCSTA
 	btfss RCSTA, CREN
 	bsf RCSTA, CREN
-	endm
-
-m_usart_write_bytes macro wvar, wlen
-	local _usart_write_bytes_loop_0
-	local _usart_write_bytes_loop_1
-	banksel VIC_VAR_USART_WLEN
-	movlw (wlen - 1)
-	movwf VIC_VAR_USART_WLEN
-	clrf VIC_VAR_USART_WIDX
-	banksel wvar
-	movlw (wvar - 1) ;; load address into FSR
-	movwf FSR
-_usart_write_bytes_loop_0:
-	incf FSR, F  ;; increment the FSR pointer
-	movf INDF, W ;; load byte into register
-	banksel TXREG
-	movwf TXREG
-	banksel TXSTA
-	btfss TXSTA, TRMT
-	goto $ - 1
-	banksel VIC_VAR_USART_WIDX
-	incf VIC_VAR_USART_WIDX, F
-	bcf STATUS, Z
-	bcf STATUS, C
-	movf VIC_VAR_USART_WIDX, W
-	subwf VIC_VAR_USART_WLEN, W
-	;; W == 0
-	btfsc STATUS, Z
-	goto _usart_write_bytes_loop_1
-	goto _usart_write_bytes_loop_0
-_usart_write_bytes_loop_1:
-	banksel TXSTA
-	btfss TXSTA, TRMT
-	goto $ - 1
-	banksel VIC_VAR_USART_WIDX
-	clrf VIC_VAR_USART_WIDX
-	clrf VIC_VAR_USART_WLEN
 	endm
 
 m_usart_write_bytetbl macro tblentry, wlen
@@ -370,10 +332,6 @@ _start:
 
 
 
-;;; sending the string 'Hello World!' to UART
-;;;; byte array has length 0x0C
-	m_usart_write_bytetbl _vic_str_00, 0x0C
-
 	;;;; storing an empty string in MYVAR2
 	m_op_nullify_str MYVAR2, VIC_STRSZ_MYVAR2, MYVAR2_IDX
 
@@ -385,8 +343,9 @@ _start:
 	bsf PIE1, RCIE
 ;;; end of interrupt servicing for UART
 
-;;; sending contents of the variable 'MYVAR2' of size 'VIC_STRSZ_MYVAR2' to UART
-	m_usart_write_bytes MYVAR2, VIC_STRSZ_MYVAR2
+;;; sending the string 'Hello World!' to UART
+;;;; byte array has length 0x0C
+	m_usart_write_bytetbl _vic_str_01, 0x0C
 
 _end_start:
 
@@ -395,7 +354,7 @@ _end_start:
 ;;;; generated code for functions
 	;; not storing an empty string
 	;;storing string 'Hello World!'
-_vic_str_00:
+_vic_str_01:
 	addwf PCL, F
 	dt 0x48,0x65,0x6C,0x6C,0x6F,0x20,0x57,0x6F,0x72,0x6C,0x64,0x21,0x00
 
