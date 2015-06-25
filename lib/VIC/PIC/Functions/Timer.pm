@@ -37,12 +37,16 @@ sub _get_timer_prescaler {
 sub _get_wdt_prescaler {
     my ($self, $period) = @_;
     my $lfintosc = $self->wdt_prescaler->{LFINTOSC};
-    #period is in microseconds
-    my $scale = POSIX::floor(($lfintosc * $period) / 1e6);
+    #period is in microseconds. convert to seconds
+    $period = ($period * 1.0) / 1.0e6;
+    my $scale = POSIX::floor($lfintosc * $period);
     my $wdtps = $self->wdt_prescaler->{WDT};
-    my @psv = sort(keys %$wdtps);
+    my @psv = sort { $a <=> $b } keys %$wdtps;
+    my $minscale = $psv[0];
     foreach (@psv) {
-        if ($scale <= $_) {
+        ## if the scale is 25% above the level, just use the lower level instead
+        #of the higher level
+        if ($scale <= ($_ + $_ / 4)) {
             return wantarray ? ($_, $wdtps->{$_}) : $wdtps->{$_};
         }
     }
