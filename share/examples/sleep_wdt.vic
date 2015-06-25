@@ -12,5 +12,5 @@ Simulator {
     log RC0;
     scope RC0;
     stop_after 500ms;
-#    autorun;
+    autorun;
 }
