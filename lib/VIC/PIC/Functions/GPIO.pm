@@ -227,8 +227,8 @@ sub write {
         }
         my ($port, $trisp, $pinbit) = @{$self->output_pins->{$iopin}};
         if ($val =~ /^\d+$/) {
-            return "\tbcf $port, $pinbit\n" if "$val" eq '0';
-            return "\tbsf $port, $pinbit\n" if "$val" eq '1';
+            return "\tbanksel $port\n\tbcf $port, $pinbit\n" if "$val" eq '0';
+            return "\tbanksel $port\n\tbsf $port, $pinbit\n" if "$val" eq '1';
             carp "$val cannot be applied to a pin $outp\n";
             return;
         } elsif (exists $self->pins->{$val}) {

@@ -46,6 +46,7 @@ _start:
 	banksel PORTC
 	bcf PORTC, 0
 
+    banksel PORTC
 	bsf PORTC, 0
 
 _end_start:

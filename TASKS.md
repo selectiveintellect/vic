@@ -94,5 +94,6 @@
 4. Tutorial on motor control
 5. Tutorial on debugging with Oscilloscopes
 6. Tutorial on debugging with Logic Analyzers
+7. Tutorial on playing audio with EEPROM stored WAV file
 
 

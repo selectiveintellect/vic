@@ -147,8 +147,10 @@ _start:
     banksel   PORTC
     bcf PORTC, 0
 _loop_1:
+    banksel PORTC
     bsf PORTC, 0
     call _delay_1s
+    banksel PORTC
     bcf PORTC, 0
     call _delay_1s
     goto _loop_1

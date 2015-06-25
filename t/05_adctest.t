@@ -257,12 +257,12 @@ _loop_1:
 
 	movf DISPLAY, W
 	call _delay_wms
-
+    banksel PORTC
 	bsf PORTC, 0
 
 	movf DISPLAY, W
 	call _delay_wms
-
+    banksel PORTC
 	bcf PORTC, 0
 
 	call _delay_100us
