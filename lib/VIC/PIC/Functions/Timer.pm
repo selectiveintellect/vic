@@ -34,43 +34,79 @@ sub _get_timer_prescaler {
     return $psx;
 }
 
+sub _get_wdt_prescaler {
+    my ($self, $period) = @_;
+    my $lfintosc = $self->wdt_prescaler->{LFINTOSC};
+    #period is in microseconds
+    my $scale = POSIX::floor(($lfintosc * $period) / 1e6);
+    my $wdtps = $self->wdt_prescaler->{WDT};
+    my @psv = sort(keys %$wdtps);
+    foreach (@psv) {
+        if ($scale <= $_) {
+            return wantarray ? ($_, $wdtps->{$_}) : $wdtps->{$_};
+        }
+    }
+    my $maxscale = pop @psv;
+    return wantarray ? ($maxscale, $wdtps->{$maxscale}) : $wdtps->{$maxscale};
+}
+
 sub timer_enable {
     my ($self, $tmr, $freq, %isr) = @_;
     return unless $self->doesroles(qw(Timer Chip));
-    unless (exists $self->timer_pins->{$tmr}) {
-        carp "$tmr is not a timer.";
-        return;
-    }
-    unless (exists $self->registers->{OPTION_REG}) {
-        carp $self->type, " does not have the register OPTION_REG";
-        return;
-    }
-    my $psx = $self->_get_timer_prescaler($freq);
-    my $code = << "...";
+    my ($code, $funcs, $macros) = ('', {}, {});
+    if ($tmr eq 'WDT') {
+        unless (exists $self->registers->{WDTCON}) {
+            carp $self->type, " does not have the register WDTCON";
+            return;
+        }
+        if (defined $self->chip_config->{on_off}) {
+            foreach (keys %{$self->chip_config->{on_off}}) {
+                $self->chip_config->{on_off}->{$_} = 1 if $_ =~ /WDT/;
+            }
+        }
+        my ($wdtps, $wdtpsbits) = $self->_get_wdt_prescaler($freq);
+        $code = << "...";
+;;; Period is $freq us so scale is 1:$wdtps
+\tclrwdt
+\tclrw
+\tbanksel WDTCON
+\tiorlw B'000${wdtpsbits}1'
+\tmovwf WDTCON
+...
+    } else {
+        unless (exists $self->timer_pins->{$tmr}) {
+            carp "$tmr is not a timer.";
+            return;
+        }
+        unless (exists $self->registers->{OPTION_REG}) {
+            carp $self->type, " does not have the register OPTION_REG";
+            return;
+        }
+        my $psx = $self->_get_timer_prescaler($freq);
+        my $th = $self->timer_pins->{$tmr};
+        unless (ref $th eq 'HASH') {
+            carp "$tmr does not have a HASH ref as its value";
+            return;
+        }
+        $code = << "...";
 ;; timer prescaling
 \tbanksel OPTION_REG
 \tclrw
 \tiorlw B'00000$psx'
 \tmovwf OPTION_REG
 ...
-    my $end_code = << "...";
+        my $end_code = << "...";
 ;; clear the timer
 \tbanksel $tmr
 \tclrf $tmr
 ...
-    my $th = $self->timer_pins->{$tmr};
-    unless (ref $th eq 'HASH') {
-        carp "$tmr does not have a HASH ref as its value";
-        return;
-    }
-    if (%isr) {
-        $code .= $self->isr_timer($th);
-    }
-    $code .= "\n$end_code\n";
-    my $funcs = {};
-    my $macros = {};
-    if (%isr) {
-        $funcs->{isr_timer} = $self->isr_timer($th, %isr);
+        if (%isr) {
+            $code .= $self->isr_timer($th);
+        }
+        $code .= "\n$end_code\n";
+        if (%isr) {
+            $funcs->{isr_timer} = $self->isr_timer($th, %isr);
+        }
     }
     return wantarray ? ($code, $funcs, $macros) : $code;
 }

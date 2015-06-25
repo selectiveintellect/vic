@@ -72,6 +72,7 @@ share/examples/reader_port.vic
 share/examples/reversible.vic
 share/examples/rotater.vic
 share/examples/sleep_wakeup.vic
+share/examples/sleep_wdt.vic
 share/examples/timer.vic
 share/examples/uart.vic
 share/examples/uartisr.vic

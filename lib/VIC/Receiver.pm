@@ -1545,6 +1545,8 @@ sub final {
             $sim_setup_code .= $self->simulator->get_autorun_code;
         }
     }
+    # final get of the chip config in case it has been modified
+    $self->ast->{chip_config} = $self->pic->get_chip_config;
     my $pic = <<"...";
 ;;;; generated code for PIC header file
 #include <$ast->{include}>

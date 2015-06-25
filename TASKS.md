@@ -36,6 +36,8 @@
 
 - ASCII conversion of numbers and alphabets - DONE for UART
 - Sleep/Wake-up of processor
+    - DONE using Interrupt-on-change
+    - DONE using WDT (only for PIC16F690)
 - EEPROM read/write and storage of large data blobs such as music files or
   images
 - Verify PWM implementation on Oscilloscope - (example is verified)
@@ -51,7 +53,7 @@
 - SPI
 - USB
 - Ethernet
-- Watchdog Timer
+- Watchdog Timer - DONE for PIC16F690
 - Power management
 - Interrupt on Change for reads (Event based reading) - DONE for P16F690
 

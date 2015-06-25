@@ -46,6 +46,7 @@ sub validate {
     return 1 if exists $self->pins->{$var};
     return 1 if exists $self->registers->{$var};
     return 1 if ($self->doesrole('Timer', 1) and exists $self->timer_pins->{$var});
+    return 1 if ($self->doesrole('Timer', 1) and exists $self->wdt_prescaler->{$var});
     return 1 if ($self->doesrole('USART', 1) and exists $self->usart_pins->{$var});
     return 0;
 }
