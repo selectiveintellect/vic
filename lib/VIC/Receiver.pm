@@ -6,7 +6,7 @@ use POSIX ();
 use List::Util qw(max);
 use List::MoreUtils qw(any firstidx indexes);
 
-our $VERSION = '0.24';
+our $VERSION = '0.25';
 $VERSION = eval $VERSION;
 
 use Pegex::Base;
