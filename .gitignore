@@ -32,3 +32,10 @@ installer/
 TODO
 todo
 gh-pages
+/vic-*
+/.build
+/_build_params
+/Build
+/Build.bat
+!META.json
+!LICENSE
