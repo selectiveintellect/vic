@@ -2,7 +2,7 @@ package VIC::PIC::Functions::Operations;
 use strict;
 use warnings;
 use bigint;
-our $VERSION = '0.25';
+our $VERSION = '0.26';
 $VERSION = eval $VERSION;
 use Carp;
 use POSIX ();

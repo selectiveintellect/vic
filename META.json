@@ -31,7 +31,7 @@
             "File::Spec" : "0",
             "File::Which" : "0",
             "Module::Build" : "0",
-            "Pegex" : "0.6",
+            "Pegex" : "0.60",
             "Test::More" : "0"
          }
       },
@@ -51,11 +51,11 @@
       },
       "runtime" : {
          "recommends" : {
+            "Alien::gputils" : "0.07",
             "App::Prove" : "0",
             "XXX" : "0"
          },
          "requires" : {
-            "Alien::gputils" : "0.07",
             "Capture::Tiny" : "0",
             "File::ShareDir" : "1.00",
             "File::Spec" : "0",
@@ -64,7 +64,7 @@
             "List::MoreUtils" : "0",
             "List::Util" : "0",
             "Moo" : "1.003",
-            "Pegex" : "0.55",
+            "Pegex" : "0.60",
             "namespace::clean" : "0",
             "perl" : "v5.14.0"
          }
@@ -82,7 +82,7 @@
          "web" : "https://github.com/selectiveintellect/vic"
       }
    },
-   "version" : "0.25",
+   "version" : "0.26",
    "x_contributors" : [
       "Ingy döt Net <ingy@ingy.net>"
    ]

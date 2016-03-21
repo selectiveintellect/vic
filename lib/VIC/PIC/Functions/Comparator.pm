@@ -1,7 +1,7 @@
 package VIC::PIC::Functions::Comparator;
 use strict;
 use warnings;
-our $VERSION = '0.25';
+our $VERSION = '0.26';
 $VERSION = eval $VERSION;
 use Carp;
 use POSIX ();
