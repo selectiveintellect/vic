@@ -18,7 +18,7 @@ Vikas N Kumar <vikas@cpan.org>
 
 # COPYRIGHT
 
-Copyright (c) 2014. Vikas N Kumar
+Copyright (c) 2014-2016. Vikas N Kumar
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

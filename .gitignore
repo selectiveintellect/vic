@@ -32,7 +32,7 @@ installer/
 TODO
 todo
 gh-pages
-/vic-*
+/VIC-*
 /.build
 /_build_params
 /Build

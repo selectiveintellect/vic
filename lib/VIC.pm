@@ -33,7 +33,7 @@ our $GPASM;
 our $GPLINK;
 our $GPUTILSDIR;
 
-our $VERSION = '0.27';
+our $VERSION = '0.28';
 $VERSION = eval $VERSION;
 
 sub compile {
@@ -256,7 +256,7 @@ Vikas N Kumar <vikas@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2014. Vikas N Kumar
+Copyright (c) 2014-2016. Vikas N Kumar
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

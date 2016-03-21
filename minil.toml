@@ -1,8 +1,8 @@
 name = "VIC"
 # badges = ["travis"]
-module_maker="ModuleBuildTiny"
+module_maker="ModuleBuild"
 license="perl_5"
 [no_index]
 directory=['t', 'share']
-[release]
-do_not_upload_to_cpan=true
+[FileGatherer]
+exclude_match = ['^doc/*', 'TASKS.md', 'tags']

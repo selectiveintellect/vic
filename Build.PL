@@ -4,9 +4,50 @@
 # =========================================================================
 
 use 5.008_001;
+
 use strict;
+use warnings;
+use utf8;
 
-use Module::Build::Tiny 0.035;
+use Module::Build;
+use File::Basename;
+use File::Spec;
 
-Build_PL();
+my %args = (
+    license              => 'perl_5',
+    dynamic_config       => 0,
+
+    configure_requires => {
+        'Module::Build' => '0.4005',
+    },
+
+    name            => 'VIC',
+    module_name     => 'VIC',
+    allow_pureperl => 0,
+
+    script_files => [glob('script/*'), glob('bin/*')],
+    c_source     => [qw()],
+    PL_files => {},
+
+    test_files           => ((-d '.git' || $ENV{RELEASE_TESTING}) && -d 'xt') ? 't/ xt/' : 't/',
+    recursive_test_files => 1,
+
+
+);
+if (-d 'share') {
+    $args{share_dir} = 'share';
+}
+
+my $builder = Module::Build->subclass(
+    class => 'MyBuilder',
+    code => q{
+        sub ACTION_distmeta {
+            die "Do not run distmeta. Install Minilla and `minil install` instead.\n";
+        }
+        sub ACTION_installdeps {
+            die "Do not run installdeps. Run `cpanm --installdeps .` instead.\n";
+        }
+    }
+)->new(%args);
+$builder->create_build_script();
 
