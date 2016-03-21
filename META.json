@@ -12,17 +12,11 @@
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
       "version" : "2"
    },
-   "name" : "vic",
+   "name" : "VIC",
    "no_index" : {
       "directory" : [
          "t",
-         "xt",
-         "inc",
-         "share",
-         "eg",
-         "examples",
-         "author",
-         "builder"
+         "share"
       ]
    },
    "prereqs" : {
@@ -82,7 +76,7 @@
          "web" : "https://github.com/selectiveintellect/vic"
       }
    },
-   "version" : "0.26",
+   "version" : "0.27",
    "x_contributors" : [
       "Ingy döt Net <ingy@ingy.net>"
    ]

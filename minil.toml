@@ -1,4 +1,8 @@
-name = "vic"
+name = "VIC"
 # badges = ["travis"]
 module_maker="ModuleBuildTiny"
-
+license="perl_5"
+[no_index]
+directory=['t', 'share']
+[release]
+do_not_upload_to_cpan=true

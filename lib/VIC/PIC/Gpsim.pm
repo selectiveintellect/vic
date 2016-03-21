@@ -5,7 +5,7 @@ use bigint;
 use Carp;
 use Pegex::Base; # use this instead of Mo
 
-our $VERSION = '0.26';
+our $VERSION = '0.27';
 $VERSION = eval $VERSION;
 
 has type => 'gpsim';

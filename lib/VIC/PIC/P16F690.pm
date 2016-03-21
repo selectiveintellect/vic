@@ -2,7 +2,7 @@ package VIC::PIC::P16F690;
 use strict;
 use warnings;
 
-our $VERSION = '0.26';
+our $VERSION = '0.27';
 $VERSION = eval $VERSION;
 
 use Carp;
