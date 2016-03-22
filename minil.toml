@@ -1,6 +1,5 @@
 name = "VIC"
-# badges = ["travis"]
-module_maker="ModuleBuild"
+module_maker="ExtUtilsMakeMaker"
 license="perl_5"
 [no_index]
 directory=['t', 'share']

@@ -2,6 +2,10 @@ Revision history for Perl extension vic
 
 {{$NEXT}}
 
+0.29 2016-03-22T03:37:05Z
+
+    - fixing cpantesters failures
+
 0.28 2016-03-21T18:46:03Z
 
     - minor build updates

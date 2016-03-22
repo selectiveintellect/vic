@@ -31,7 +31,7 @@
       },
       "configure" : {
          "requires" : {
-            "Module::Build" : "0.4005"
+            "ExtUtils::MakeMaker" : "6.64"
          }
       },
       "develop" : {
@@ -76,7 +76,7 @@
          "web" : "https://github.com/selectiveintellect/vic"
       }
    },
-   "version" : "0.28",
+   "version" : "0.29",
    "x_contributors" : [
       "Ingy döt Net <ingy@ingy.net>"
    ]
