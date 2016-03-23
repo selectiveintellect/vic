@@ -31,4 +31,6 @@ on develop => sub {
     requires 'Test::PAUSE::Permissions', '0.04';
     requires 'Test::Pod', '1.41';
     requires 'Test::Spellunker', 'v0.2.7';
+    requires 'Module::BumpVersion';
+    requires 'Software::License';
 };

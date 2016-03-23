@@ -1,6 +1,8 @@
-Revision history for Perl extension vic
+Revision history for VIC
 
-{{$NEXT}}
+0.31 2016-03-24
+
+    - getting rid of Minilla and using Module::Build directly
 
 0.30 2016-03-23T05:40:43Z
 

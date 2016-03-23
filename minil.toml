@@ -1,7 +1,0 @@
-name = "VIC"
-module_maker="ExtUtilsMakeMaker"
-license="perl_5"
-[no_index]
-directory=['t', 'share']
-[FileGatherer]
-exclude_match = ['^doc/*', 'TASKS.md', 'tags']
