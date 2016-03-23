@@ -114,6 +114,8 @@ sub done_testing { $Tester->done_testing(); }
 
 sub subtest { $Tester->subtest(@_); }
 
+sub plan { $Tester->plan(@_); }
+
 1;
 
 =encoding utf8

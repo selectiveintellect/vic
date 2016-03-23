@@ -1,5 +1,8 @@
 use t::TestVIC;
 
+unless ($ENV{TEST_GPUTILS}) {
+    t::TestVIC::plan skip_all => "Skipping unless ENV{TEST_GPUTILS} is defined";
+} else {
 my $input = <<'...';
 PIC PIC16F690;
 
@@ -24,3 +27,4 @@ foreach (sort @$chips) {
 }
 
 t::TestVIC::done_testing();
+}
