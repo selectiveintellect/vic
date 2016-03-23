@@ -33,7 +33,7 @@ our $GPASM;
 our $GPLINK;
 our $GPUTILSDIR;
 
-our $VERSION = '0.29';
+our $VERSION = '0.30';
 $VERSION = eval $VERSION;
 
 sub compile {
