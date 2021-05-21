@@ -38,6 +38,7 @@ my $build = Module::Build->new(
         'App::Prove' => 0,
         'Alien::gputils' => 0.08,
     },
+    script_files => ['script/vic'],
     share_dir => 'share',
     dynamic_config => 1,
     add_to_cleanup => [ qw/*.bak/ ],

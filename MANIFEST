@@ -52,6 +52,7 @@ MANIFEST.SKIP
 META.json
 META.yml
 README
+README.md
 script/vic
 share/examples/adctest.vic
 share/examples/blinker.vic
