@@ -19,7 +19,7 @@ my $build = Module::Build->new(
         'Test::More' => 0,
         'File::Spec' => 0,
         'File::Which' => 0,
-        'Pegex' => 0.60, # needed for PL_files to work
+        'Pegex' => 0.75, # needed for PL_files to work
     },
     requires => {
         'perl' => 'v5.10.0',
@@ -27,7 +27,7 @@ my $build = Module::Build->new(
         'Capture::Tiny' => 0,
         'File::Spec' => 0,
         'File::Which' => 0,
-        'Pegex' => 0.60, # needed for PL_files to work
+        'Pegex' => 0.75, # needed for PL_files to work
         'List::Util' => 0,
         'List::MoreUtils' => 0,
         'Moo' => '1.003',
