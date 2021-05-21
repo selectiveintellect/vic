@@ -72,3 +72,5 @@ doc
 gh-pages
 \.log$
 \.lxt$
+todo
+TODO
