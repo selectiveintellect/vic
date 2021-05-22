@@ -74,3 +74,11 @@ gh-pages
 \.lxt$
 todo
 TODO
+\.asm$
+\.cod$
+\.hex$
+\.o$
+\.lst$
+\.stc$
+\.d$
+\.map$
