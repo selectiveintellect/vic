@@ -40,9 +40,9 @@
         <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
         <br/><br/>
         <span class="credits left"><a href="./index.html">Table of Contents</a></span>
-        <span class="credits right"><a href="commandline.html">Prev</a>&nbsp;&nbsp;<a href="simulator.html">Next</a></span>
+        <span class="credits right"><a href="commandline.html">Prev</a>&nbsp;&nbsp;<a href="examples.html">Next</a></span>
         </div>
-<h1 id="functionreference">Function Reference</h1>
+<h1>Function Reference</h1>
 
 <p>There are several in-built functions in VIC&trade; that perform common tasks
 which can be abstracted out fairly between various PIC&reg; MCUs.</p>
@@ -57,7 +57,7 @@ VIC&trade; are released in the future, more and more functions will continue to
 be added. If there is a function that needs to be deprecated, VIC&trade; will be
 very noisy about it and inform the programmer on how to fix their code.</p>
 
-<h2 id="piniofunctions">Pin I/O Functions</h2>
+<h2>Pin I/O Functions</h2>
 
 <ul>
 <li><p><code>digital_output</code></p>
@@ -150,6 +150,7 @@ read RC0, Action {
     }
 };
 
+
 ## Using Interrupt-on-change pin for P16F690 MCU
 digital_input RA0;
 digital_output RC0;
@@ -233,6 +234,7 @@ microseconds and <code>count</code> pragma is 5.</p>
 <pre><code>pragma debounce count = 3;
 pragma debounce delay = 1ms;
 
+
 Main {
     digital_input RA3; # we need the pin to be setup as input
     debounce RA3, Action {
@@ -242,7 +244,7 @@ Main {
 </code></pre></li>
 </ul>
 
-<h2 id="timemanagementfunctions">Time Management Functions</h2>
+<h2>Time Management Functions</h2>
 
 <ul>
 <li><p><code>delay</code></p>
@@ -339,7 +341,7 @@ chip has been restarted or for testing.</p>
 </code></pre></li>
 </ul>
 
-<h2 id="timerandinterruptfunctions">Timer and Interrupt Functions</h2>
+<h2>Timer and Interrupt Functions</h2>
 
 <ul>
 <li><p><code>timer_enable</code></p>
@@ -444,7 +446,7 @@ pre-scale value given in the <code>timer_enable</code> function.</p>
 </code></pre></li>
 </ul>
 
-<h2 id="mathfunctions">Math Functions</h2>
+<h2>Math Functions</h2>
 
 <ul>
 <li><p><code>rol</code></p>
@@ -514,7 +516,7 @@ unlike the <code>ror</code> or <code>rol</code> functions.</p>
 </code></pre></li>
 </ul>
 
-<h2 id="analog-to-digitalconverteradcfunctions">Analog-to-Digital Converter (ADC) Functions</h2>
+<h2>Analog-to-Digital Converter (ADC) Functions</h2>
 
 <ul>
 <li><p><code>adc_enable</code></p>
@@ -567,6 +569,7 @@ is set. The default value is <code>0</code>.</p>
 
 <pre><code>pragma adc right_justify = 1;
 
+
 Main {
     adc_enable; # enable the ADC for the default channel
     # .. or for a specific channel at a fixed frequency of 500kHz
@@ -613,7 +616,7 @@ handle that.</p>
 </code></pre></li>
 </ul>
 
-<h2 id="pulsewidthmodulationpwmfunctions">Pulse Width Modulation (PWM) Functions</h2>
+<h2>Pulse Width Modulation (PWM) Functions</h2>
 
 <ul>
 <li><p><code>pwm_single</code></p>
@@ -651,12 +654,12 @@ internally handle cases specific to the MCU being used.</p>
 </code></pre>
 
 <p>This function outputs the PWM in <em>half-bridge</em> mode and automatically picks
-up the MCU&#8217;s pins if the mode is supported. The period and duty cycle are
+up the MCU's pins if the mode is supported. The period and duty cycle are
 caculated using the frequency and duty cycle arguments which are the same as in
 the <code>pwm_single</code> function. The dead band delay argument is a time argument, generally
 in microseconds, but it is recommended that the user use the <code>us</code> units to be
 specific. This value may be specific to the MCU and it is recommended that the
-user read the MCU&#8217;s data sheet for setting this.</p>
+user read the MCU's data sheet for setting this.</p>
 
 <p>Examples:</p>
 
@@ -714,23 +717,23 @@ earlier and adjusts the handling of the PWM update.</p>
 </code></pre></li>
 </ul>
 
-<h2 id="powermanagementfunctions">Power Management Functions</h2>
+<h2>Power Management Functions</h2>
 
-<h2 id="comparatorfunctions">Comparator Functions</h2>
+<h2>Comparator Functions</h2>
 
-<h2 id="uartfunctions">UART Functions</h2>
+<h2>UART Functions</h2>
 
-<h2 id="isup2supcfunctions">I<sup>2</sup>C Functions</h2>
+<h2>I<sup>2</sup>C Functions</h2>
 
-<h2 id="spifunctions">SPI Functions</h2>
+<h2>SPI Functions</h2>
 
-<h2 id="usbfunctions">USB Functions</h2>
+<h2>USB Functions</h2>
 
-<h2 id="in-circuitserialprogrammingicspfunctions">In-Circuit Serial Programming (ICSP) Functions</h2>
+<h2>In-Circuit Serial Programming (ICSP) Functions</h2>
     <hr>
     <div id="title">
     <span class="credits left"><a href="./index.html">Table of Contents</a></span>
-    <span class="credits right"><a href="commandline.html">Prev</a>&nbsp;&nbsp;<a href="simulator.html">Next</a></span>
+    <span class="credits right"><a href="commandline.html">Prev</a>&nbsp;&nbsp;<a href="examples.html">Next</a></span>
     <br/><br/>
     <p style="font-size:14px;">Vikas N Kumar (<a href="https://github.com/vikasnkumar"
 class="user-mention">@vikasnkumar</a>) is the author of
@@ -743,7 +746,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2015-04-02 16:10:35 -0400.
+        This page was last updated on 2015-04-02 18:14:02 -0400.
     </p>
     </div>
     </section>

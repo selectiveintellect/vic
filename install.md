@@ -11,7 +11,7 @@ FreeBSD, OpenBSD and Apple&reg; Mac OS X.
 For Microsoft Windows&reg;, you can download [Strawberry
 Perl](http://www.strawberryperl.com).
 
-The minimum version of Perl required is 5.8.9. (It may work with earlier Perl
+The minimum version of Perl required is 5.10.0. (It may work with earlier Perl
 versions but there are no guarantees.)
 
 You will also need `git` installed if you're downloading the code from
@@ -29,7 +29,7 @@ well:
       CPAN's [Alien::gputils](https://metacpan.org/pod/Alien::gputils) module as outlined [here](#dependencies).
 - [gpsim](http://gpsim.sourceforge.net/gpsim.html) version `0.27.0` or better for default simulator support
     - For Windows download the pre-built installers from <http://sourceforge.net/projects/gpsim/files/snapshot_builds/gpsim-win32/>.
-- [Piklab](http://piklab.sourceforge.net/) as an IDE
+- [Piklab](http://piklab.sourceforge.net/) as an IDE, if you so desire to use one.
 - [pk2cmd](pk2cmd.html) for command-line programming of the device, if using the [PICKit 2 Starter Kit](http://www.microchip.com/pickit2/)
 - [gtkwave](http://gtkwave.sourceforge.net/) for viewing simulator output
   waveforms.

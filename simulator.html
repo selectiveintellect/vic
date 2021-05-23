@@ -40,13 +40,13 @@
         <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
         <br/><br/>
         <span class="credits left"><a href="./index.html">Table of Contents</a></span>
-        <span class="credits right"><a href="functions.html">Prev</a>&nbsp;&nbsp;<a href="examples.html">Next</a></span>
+        <span class="credits right"><a href="examples.html">Prev</a>&nbsp;&nbsp;<a href="examplessim.html">Next</a></span>
         </div>
-<h1 id="simulatingvictradecode">Simulating VIC&trade; Code</h1>
+<h1>Simulating VIC&trade; Code</h1>
 
 <p>As you have read in the syntax page on the <a href="syntax.html#simulatorblock"><code>Simulator</code>
 block</a>, VIC&trade; provides integration with a
-software simulator for Microchip&#8217;s PIC&reg; MCUs.</p>
+software simulator for Microchip's PIC&reg; MCUs.</p>
 
 <p>One such simulator is <a href="http://gpsim.sourceforge.net/gpsim.html">gpsim</a> which we
 recommend you install on your operating system.</p>
@@ -64,7 +64,7 @@ present and keep the relevance of the testing visible.</p>
 <p>For details on pragmas used by the simulator refer to the section on
 <a href="syntax.html#pragmas">pragmas</a>.</p>
 
-<h2 id="simulatorcontrol">Simulator Control</h2>
+<h2>Simulator Control</h2>
 
 <ul>
 <li><p><code>stop_after</code></p>
@@ -129,7 +129,7 @@ C-style assert statement.</p>
 
 <p>Two types of assert statements are accepted: conditional and unconditional.
 The message string is optional but is useful for the programmer to know why they
-are asserting. The string has to be enclosed in quotes <code>&quot;&quot;</code>.</p>
+are asserting. The string has to be enclosed in quotes <code>""</code>.</p>
 
 <p>The unconditional assert is like a forced break point and is useful for
 debugging applications or stopping simulation once a certain point in the code
@@ -140,8 +140,8 @@ function or even a <code>Simulator</code> block.</p>
 
 <pre><code>Main {
     $var1 = 0xDEADBEEF; # enter a 32-bit value
-    sim_assert $var1 == 0xEF, &quot;32-bit is stored as 8-bit&quot;;
-    sim_assert &quot;*** Stop the simulation ***&quot;;
+    sim_assert $var1 == 0xEF, "32-bit is stored as 8-bit";
+    sim_assert "*** Stop the simulation ***";
 }
 </code></pre></li>
 <li><p><code>autorun</code></p>
@@ -167,7 +167,7 @@ redundant.</p>
 </code></pre></li>
 </ul>
 
-<h2 id="logging">Logging</h2>
+<h2>Logging</h2>
 
 <ul>
 <li><p><code>log</code></p>
@@ -179,7 +179,7 @@ redundant.</p>
 
 <p>This statement will start logging information for the given port or pin on
 the MCU. This is needed if the user wants to view the output of the port or pin
-on the simulator&#8217;s oscilloscope utility or using an external utility like
+on the simulator's oscilloscope utility or using an external utility like
 <a href="http://gtkwave.sourceforge.net/">gtkwave</a>. The function takes any number of
 ports and pins as arguments, with at least one argument at a minimum.</p>
 
@@ -202,13 +202,13 @@ logfile;
 special type of logging for <code>gtkwave</code> called <code>LXT</code> logging that is turned on if
 the file name has an extension <code>.lxt</code>. Otherwise text based logging is done to
 the file. If no filename is provided, the default filename of <code>vicsim.log</code> is
-used. The filename string has to be enclosed in quotes <code>&quot;&quot;</code>.</p>
+used. The filename string has to be enclosed in quotes <code>""</code>.</p>
 
 <p>Examples:</p>
 
 <pre><code>Simulator {
     # .. do something ..
-    logfile &quot;helloworld.lxt&quot;;
+    logfile "helloworld.lxt";
 }
 </code></pre></li>
 <li><p><code>scope</code></p>
@@ -218,7 +218,7 @@ used. The filename string has to be enclosed in quotes <code>&quot;&quot;</code>
 <pre><code>scope &lt;port | pin&gt; [, &lt;port | pin&gt;];
 </code></pre>
 
-<p>This function connects the simulator&#8217;s oscilloscope tool to the list of pins
+<p>This function connects the simulator's oscilloscope tool to the list of pins
 and ports provided as arguments. It takes any number of arguments, with a
 minimum of at least 1. This will turn on the oscilloscope view of the simulator
 if it exists. It <strong>has</strong> to be used in conjunction with the <code>log</code> command.</p>
@@ -233,7 +233,7 @@ if it exists. It <strong>has</strong> to be used in conjunction with the <code>l
 </code></pre></li>
 </ul>
 
-<h2 id="peripheralattachments">Peripheral Attachments</h2>
+<h2>Peripheral Attachments</h2>
 
 <ul>
 <li><p><code>attach_led</code></p>
@@ -299,7 +299,7 @@ look at the <code>share/examples/led7seg.vic</code> file in the source code or i
 </code></pre></li>
 </ul>
 
-<h2 id="wavesimulations">Wave Simulations</h2>
+<h2>Wave Simulations</h2>
 
 <ul>
 <li><p><code>stimulate</code></p>
@@ -346,6 +346,7 @@ Simulator {
     ];
 }
 
+
 ## an analog stimulus
 Simulator {
     #adc stimulus
@@ -360,7 +361,7 @@ Simulator {
     <hr>
     <div id="title">
     <span class="credits left"><a href="./index.html">Table of Contents</a></span>
-    <span class="credits right"><a href="functions.html">Prev</a>&nbsp;&nbsp;<a href="examples.html">Next</a></span>
+    <span class="credits right"><a href="examples.html">Prev</a>&nbsp;&nbsp;<a href="examplessim.html">Next</a></span>
     <br/><br/>
     <p style="font-size:14px;">Vikas N Kumar (<a href="https://github.com/vikasnkumar"
 class="user-mention">@vikasnkumar</a>) is the author of

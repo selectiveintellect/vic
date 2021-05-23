@@ -39,12 +39,12 @@
         <span class="credits left"><a href="./index.html">Table of Contents</a></span>
         <span class="credits right"><a href="inception.html">Prev</a>&nbsp;&nbsp;<a href="hardware.html">Next</a></span>
         </div>
-<h1 id="installation">Installation</h1>
+<h1>Installation</h1>
 
 <p>There are two easy ways to install VIC. One is using CPAN and the other is
 from source.</p>
 
-<h2 id="pre-requisites">Pre-requisites</h2>
+<h2>Pre-requisites</h2>
 
 <p>You will need an operating system that supports Perl, such as Linux&reg;,
 FreeBSD, OpenBSD and Apple&reg; Mac OS X.</p>
@@ -52,38 +52,36 @@ FreeBSD, OpenBSD and Apple&reg; Mac OS X.</p>
 <p>For Microsoft Windows&reg;, you can download <a href="http://www.strawberryperl.com">Strawberry
 Perl</a>.</p>
 
-<p>The minimum version of Perl required is 5.8.9. (It may work with earlier Perl
+<p>The minimum version of Perl required is 5.10.0. (It may work with earlier Perl
 versions but there are no guarantees.)</p>
 
-<p>You will also need <code>git</code> installed if you&#8217;re downloading the code from
+<p>You will also need <code>git</code> installed if you're downloading the code from
 <a href="https://github.com/selectiveintellect/vic">Github</a>.</p>
 
-<h2 id="supportingapplications">Supporting Applications</h2>
+<h2>Supporting Applications</h2>
 
 <p>To make full use of VIC&trade; you need to install the following applications as
 well:</p>
 
 <ul>
 <li><a href="http://gputils.sourceforge.net">gputils</a> version <code>1.3.0</code> or better for compiling VIC&trade; output
-
 <ul>
 <li>For Windows download the pre-built installers from <a href="http://sourceforge.net/projects/gputils/files/latest/download">http://sourceforge.net/projects/gputils/files/latest/download</a>
- and then install CPAN&#8217;s <a href="https://metacpan.org/pod/Alien::gputils">Alien::gputils</a> module as outlined <a href="#dependencies">here</a>.</li>
+and then install CPAN's <a href="https://metacpan.org/pod/Alien::gputils">Alien::gputils</a> module as outlined <a href="#dependencies">here</a>.</li>
 <li>For Linux and Mac OS X, the user can either install it themselves or using
- CPAN&#8217;s <a href="https://metacpan.org/pod/Alien::gputils">Alien::gputils</a> module as outlined <a href="#dependencies">here</a>.</li>
+CPAN's <a href="https://metacpan.org/pod/Alien::gputils">Alien::gputils</a> module as outlined <a href="#dependencies">here</a>.</li>
 </ul></li>
 <li><a href="http://gpsim.sourceforge.net/gpsim.html">gpsim</a> version <code>0.27.0</code> or better for default simulator support
-
 <ul>
 <li>For Windows download the pre-built installers from <a href="http://sourceforge.net/projects/gpsim/files/snapshot_builds/gpsim-win32/">http://sourceforge.net/projects/gpsim/files/snapshot_builds/gpsim-win32/</a>.</li>
 </ul></li>
-<li><a href="http://piklab.sourceforge.net/">Piklab</a> as an IDE</li>
+<li><a href="http://piklab.sourceforge.net/">Piklab</a> as an IDE, if you so desire to use one.</li>
 <li><a href="pk2cmd.html">pk2cmd</a> for command-line programming of the device, if using the <a href="http://www.microchip.com/pickit2/">PICKit 2 Starter Kit</a></li>
 <li><a href="http://gtkwave.sourceforge.net/">gtkwave</a> for viewing simulator output
- waveforms.</li>
+waveforms.</li>
 </ul>
 
-<h2 id="installingfromcpan">Installing from CPAN</h2>
+<h2>Installing from CPAN</h2>
 
 <p>This is the simplest way to install the release versions of VIC into
 <code>/usr/local</code> of your Unix-like system.</p>
@@ -105,7 +103,7 @@ cpan client.</p>
 &gt; cpanm VIC
 </code></pre>
 
-<h2 id="buildingfromsource">Building from source</h2>
+<h2>Building from source</h2>
 
 <p>You may need to install the Perl package dependencies first which are done as
 <a href="#dependencies">below</a>.</p>
@@ -119,7 +117,7 @@ $ ./Build test
 $ sudo ./Build install
 </code></pre>
 
-<h2 id="dependencies">Dependencies</h2>
+<h2>Dependencies</h2>
 
 <p>This module depends on the following:</p>
 
@@ -127,7 +125,7 @@ $ sudo ./Build install
 <li><code>Module::Build</code> (this is needed for building)</li>
 <li><code>Pegex</code> (this is needed for grammar parsing. Needs to be installed from CPAN)</li>
 <li><code>Moo</code> (this is needed for multiple inheritance management. Needs to be
- installed from CPAN)</li>
+installed from CPAN)</li>
 <li><code>Getopt::Long</code> (for handling command line options. Comes with perl itself)</li>
 <li><code>Capture::Tiny</code> (for trapping screen outputs and errors)</li>
 <li><code>File::Which</code> (for finding paths to <code>gpasm</code>, <code>gplink</code> and <code>gpsim</code>)</li>
@@ -157,9 +155,9 @@ $ cpanm Moo
 For Windows, they will need to download the installer from the link given
 <a href="#supportingapplications">earlier</a> and then install <code>Alien::gputils</code>.</p>
 
-<h2 id="testingthemoduledevelopersonly">Testing the Module (Developers Only)</h2>
+<h2>Testing the Module (Developers Only)</h2>
 
-<p>To test you will need to have <code>App::Prove</code> installed if you&#8217;re developing the
+<p>To test you will need to have <code>App::Prove</code> installed if you're developing the
 software</p>
 
 <pre><code>$ prove -lv t
@@ -170,7 +168,7 @@ software</p>
 <pre><code>$ ./Build test
 </code></pre>
 
-<h2 id="vimsyntaxhighlighting">Vim Syntax Highlighting</h2>
+<h2>Vim Syntax Highlighting</h2>
 
 <p>The installation provides syntax highlighting for the <a href="http://www.vim.org">Vim</a>
 editor.</p>
@@ -180,7 +178,7 @@ repository or in the <code>share</code> directory of the installation. You can p
 <code>$HOME/.vim/syntax</code> on Linux, FreeBSD, OpenBSD and OS X, and in <code>$HOME/vimfiles/syntax</code> on Windows
 systems.</p>
 
-<h2 id="compilingexamples">Compiling examples</h2>
+<h2>Compiling examples</h2>
 
 <p>The examples are in <code>share/examples</code> folder. To compile the <a href="examples.html#helloworld"><code>helloworld.vic</code> example</a> you can do the following:</p>
 
@@ -194,12 +192,12 @@ systems.</p>
 
 <p>This will generate the PIC&reg; binary hex file ready to be programmed on to the chip.</p>
 
-<h2 id="placingvicinyourpathformakefiles">Placing <code>vic</code> in your <code>$PATH</code> for Makefiles</h2>
+<h2>Placing <code>vic</code> in your <code>$PATH</code> for Makefiles</h2>
 
 <p>If you are installing VIC in a local directory, you may need to set it in the
 <code>$PATH</code> variable for your system.</p>
 
-<h2 id="testingonpicmicrocontrollersonlinuxandmacosx">Testing on PIC microcontrollers on Linux and Mac OS X</h2>
+<h2>Testing on PIC microcontrollers on Linux and Mac OS X</h2>
 
 <p>The <a href="examples.html#helloworld"><code>helloworld.vic</code></a> test is for the Low Pin Count Demo board from Microchip and
 uses the <a href="http://www.microchip.com/pickit2/">PICKit 2 Starter Kit</a> programmer
@@ -244,7 +242,7 @@ Count Demo board to turn on the LED,</p>
 <p><em>NOTE</em>: All the above have been implemented in a <code>GNUmakefile</code> present under
 <code>share/examples/GNUmakefile</code>.</p>
 
-<h2 id="testingonpicmicrocontrollersonwindows">Testing on PIC microcontrollers on Windows</h2>
+<h2>Testing on PIC microcontrollers on Windows</h2>
 
 <p>For Windows, we currently recommend using the Microchip provided IDE. You can
 use VIC to generate the assembly files which you can then load into the IDE as
@@ -257,7 +255,7 @@ instead.</p>
 do that and let us know if you succeed so we can write instructions for other
 users.</p>
 
-<h2 id="recompilingthegrammar">Recompiling the grammar</h2>
+<h2>Recompiling the grammar</h2>
 
 <p>This is for VIC developers only.</p>
 

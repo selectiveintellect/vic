@@ -640,5 +640,5 @@ earlier and adjusts the handling of the PWM update.
 
 ## In-Circuit Serial Programming (ICSP) Functions
 
-@@NEXT@@ simulator.md @@PREV@@ commandline.md
+@@NEXT@@ examples.md @@PREV@@ commandline.md
 @@HIGHLIGHT@@

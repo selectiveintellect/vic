@@ -1,6 +1,9 @@
 #VIC
 
-VIC&trade; is a nice syntax that compiles to Microchip's PIC&reg; assembly.
+VIC&trade; is a concise domain specific language that compiles directly to
+Microchip's PIC&reg; assembly for a subset of supported microcontrollers.
+
+If you like [CircuitPython](https://circuitpython.org/) you may like VIC&trade; too.
 
 ## Table of Contents
 
@@ -12,10 +15,14 @@ VIC&trade; is a nice syntax that compiles to Microchip's PIC&reg; assembly.
 1. [Language Syntax](syntax.html)
 1. [Commandline Options](commandline.html)
 1. [Function Reference](functions.html)
-1. [Simulating VIC&trade; Code](simulator.html)
 1. [Examples](examples.html)
+1. [Simulating VIC&trade; Code](simulator.html)
+1. [Examples with Simulation](examplessim.html)
 
-## Presentation Slides
+
+## For VIC&trade; developers
+
+### Presentation Slides from the old days
 
 Slides for the most recent demo of VIC&trade; are available
 [here](presentations/index.html).
@@ -34,17 +41,17 @@ Microsoft Internet Explorer or Apple Safari to view the slides.
 - Selective Intellect [@selectiveintellect](https://github.com/selectiveintellect/)
 - Vikas N Kumar [@vikasnkumar](https://github.com/vikasnkumar/)
 
-## Contributors
+## Initial Contributors
 
 - Ingy [@ingydotnet](https://github.com/ingydotnet/)
 
 ## Copyright
 
-&copy; 2014. Selective Intellect LLC. All Rights Reserved.
+&copy; 2014-2021. Selective Intellect LLC. All Rights Reserved.
 
 ## License
 
-VIC&trade; is licensed under the [license terms of
-Perl](http://dev.perl.org/licenses/).
+VIC&trade; is dual licensed under the license terms of
+[Perl](http://dev.perl.org/licenses/) and the [GNU GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
 @@NEXT@@ faq.md @@PREV@@ index.md

@@ -734,5 +734,5 @@ modes.
 
 This brings us to the end of the list of examples.
 
-@@NEXT@@ simulator.md @@PREV@@ functions.md
+@@NEXT@@ index.md @@PREV@@ simulator.md
 @@HIGHLIGHT@@

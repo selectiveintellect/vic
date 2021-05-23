@@ -295,5 +295,5 @@ to simulate a debouncing switch in `gpsim`. For analog stimulus refer the
             ];
         }
 
-@@NEXT@@ examples.md @@PREV@@ functions.md
+@@NEXT@@ examplessim.md @@PREV@@ examples.md
 @@HIGHLIGHT@@

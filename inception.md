@@ -1,4 +1,4 @@
-#The Inception of VIC&trade;
+#The Inception of VIC&trade; circa 2014
 
 VIC&trade; originated from finding difficulty in writing generic code that
 would run on any micro-controller of [Microchip's](http://www.microchip.com) 
@@ -8,7 +8,7 @@ such as any PIC&reg; of the PIC12, PIC16 family or the PIC18 family.
 There were various options such as using C or PICBASIC&trade; with [Microchip's compilers](http://www.microchip.com/compilers/) or
 using [Just Another Language (JAL)](http://justanotherlanguage.org/) which is an interesting high level language
 that also helps users to program PIC&reg; microcontrollers with ease and
-provides a variety of libraries.
+provides a variety of libraries. In 2014, [CircuitPython](https://circuitpython.org) did not exist.
 
 However, the JAL syntax did not seem interesting since it was based off of
 Pascal. Their simulator webpage links also did not work. Using Microchip's PICBASIC&trade;
@@ -27,8 +27,10 @@ specific language such as VIC&trade; which would make it easy for the developer 
 write code representing the [Do What I Mean
 (DWIM)](https://en.wikipedia.org/wiki/DWIM) philosophy and allowing for
 code re-use without having to deal with issues arising from copy-pasting code
-from earlier projects. The other necessity was that if we wanted to swap out one
-microcontroller for another, we should not have to read the data sheet and make
+from earlier projects. 
+
+The other *necessity* was that if we wanted to swap out one
+microcontroller for another, we should **not** have to read the data sheet and make
 sure that the code would work, or have to make changes to register names for the
 code to be usable. We just wanted the compiler to do this for us. Hence, today
 VIC&trade; does that for you. VIC&trade; also would then allow for custom optimizations
