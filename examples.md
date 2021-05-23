@@ -10,16 +10,13 @@ very readable.
 ## Hello World!
 
 This example lights up an LED and can be found in the file
-`share/examples/helloworld.vic`. We also demonstrate how to verify everything
-with a simulator `sim_assert` statement and other statements to visually display
-the lighting up of the LED in the simulator interface.
+`share/examples/helloworld.vic`.
 
     PIC P16F690;
 
     Main {
         digital_output RC0; # mark pin RC0 as output
         write RC0, 0x1; # write the value 1 to RC0
-        sim_assert RC0 == 0x1, "Pin RC0 should be 1";
     }
 
 ## Synchronous Time Delays
@@ -32,8 +29,10 @@ handy. The code is available in the file `share/examples/delay.vic`.
     PIC P16F690;
 
     Main {
-        delay 1ms;
-        sim_assert "*** EARLY STOP ***";
+        # delay 1 second before turning on LED
+        delay 1s;
+        digital_output RC0; # mark pin RC0 as output
+        write RC0, 0x1; # write the value 1 to RC0
     }
 
 ## Blinking an LED
@@ -65,7 +64,6 @@ to 4 LEDs. It can be found in the file `share/examples/rotater.vic`.
     Main {
         digital_output PORTC;
         $display = 0x08; # create a 8-bit register by checking size
-        sim_assert $display == 0x08, "$display should be 0x08";
         Loop {
             write PORTC, $display;
             delay 100ms;
@@ -119,25 +117,19 @@ The simulator code is left as an exercise for the reader.
         Loop {
             if ($var1 != FALSE && $var2 != FALSE) {
                 $var1 = !$var2;
-                sim_assert $var1 == FALSE, "$var1 == FALSE. block 1";
                 write PORTC, 1;
-                sim_assert "pause. block 1";
             } else if $var1 || $var2 {
                 $var2 = $var1;
                 write PORTC, 2;
-                sim_assert "pause. block 2";
             } else if !$var1 {
                 $var2 = !$var1;
                 write PORTC, 4;
-                sim_assert "pause. block 3";
             } else if $var2 {
                 $var2 = !$var1;
                 write PORTC, 4;
-                sim_assert "pause. block 4";
             } else {
                 write PORTC, 8;
                 $var1 = !$var2;
-                sim_assert "pause. block 5";
                 break;
             };
             $var3 = 0xFF;
@@ -145,7 +137,6 @@ The simulator code is left as an exercise for the reader.
                 $var3 >>= 1;
             }
         }
-        sim_assert "pause. end of main";
     }
 
 
@@ -165,18 +156,15 @@ exercise to the reader. The code is available in the file
             while $dummy != 0 {
                 $dummy >>= 1;
                 write PORTC, 1;
-                sim_assert $dummy > 0x0F, "dummy is > 0x0F";
                 if $dummy <= 0x0F {
                     break;
                 }
             }
-            sim_assert $dummy == 0x0F, "dummy is 0x0F";
             while $dummy > 1 {
                 $dummy >>= 1;
                 write PORTC, 3;
                 continue;
             }
-            sim_assert $dummy == 1, "dummy is 1";
             if $dummy == TRUE {
                 write PORTC, 2;
                 break;
@@ -185,7 +173,6 @@ exercise to the reader. The code is available in the file
                 continue;
             }
         }
-        sim_assert "we have exited the infinite loop 1";
         # we have broken from the loop
         while TRUE {
             write PORTC, 0xFF;
@@ -196,8 +183,7 @@ exercise to the reader. The code is available in the file
 ## Mathematical Operations
 
 This code demonstrates the various mathematical operations supported by
-VIC&trade; along with verifying them using the simulator's [`sim_assert`
-function](simulator.html#simulatorcontrol). All the mathematics is done in 8-bit
+VIC&trade;. All the mathematics is done in 8-bit
 mode and the code is available in the file `share/examples/math8bit.vic`.
 
     PIC P16F690;
@@ -207,62 +193,35 @@ mode and the code is available in the file `share/examples/math8bit.vic`.
 
     Main {
         $var1 = 12345;
-        sim_assert $var1 == 57, "12345 was placed as 57 due to 8-bit mode";
         $var2 = 113;
         $var3 = $var2 + $var1;
-        sim_assert $var3 == 170, "57 + 113 = 170";
         $var3 = $var2 - $var1;
-        sim_assert $var3 == 56, "113 - 57 = 56";
         $var3 = $var2 * $var1;
-        sim_assert $var3 == 41, "113 * 57 = 41";
         $var2 = $var2 * 5;
-        sim_assert $var2 == 53, "113 * 5 = 565 => 53 in 8-bit mode";
         $var3 = $var2 / $var1;
-        sim_assert $var3 == 0, "53 / 57 = 0 in integer mathematics";
         $var3 = $var2 % $var1;
-        sim_assert $var3 == 53, "53 % 57 = 53";
         --$var3;
-        sim_assert $var3 == 52, "--53 = 52";
         ++$var3;
-        sim_assert $var3 == 53, "++52 = 53";
         $var4 = 64;
         $var4 -= $var1;
-        sim_assert $var4 == 7, "64 - 57 = 7";
         $var3 *= 3;
-        sim_assert $var3 == 159, "53 * 3 = 159";
         $var2 /= 5;
-        sim_assert $var2 == 10, "53 / 5 = 10";
         $var4 %= $var2;
-        sim_assert $var4 == 7, "7 % 10 = 7";
         $var4 = 64;
         $var4 ^= 0xFF;
-        sim_assert $var4 == 0xBF, "64 ^ 0xFF = 0xBF";
         $var4 |= 0x80;
-        sim_assert $var4 == 0xBF, "0xBF | 0x80 = 0xBF";
         $var4 &= 0xAA;
-        sim_assert $var4 == 0xAA, "0xBF & 0xAA = 0xAA";
         $var4 = $var4 << 1;
-        sim_assert $var4 == 84, "0xAA << 1 = 340 which is 84 in 8-bit mode";
         $var4 = $var4 >> 1;
-        sim_assert $var4 == 42, "84 >> 1 = 42";
         $var4 <<= 1;
-        sim_assert $var4 == 84, "42 << 1 = 84";
         $var4 >>= 1;
-        sim_assert $var4 == 42, "84 >> 1 = 42";
         $var5 = $var1 - $var2 + $var3 * ($var4 + 8) / $var1;
-        sim_assert $var5 == 47, "57 - 10 + ((159 * (42 + 8)) & 0xFF) / 57";
         $var7 = 13;
         $var5 = ($var1 + (($var3 * ($var4 + $var7) + 5) + $var2));
-        sim_assert $var5 == 113,
-            "57 + (((159 * (42 + 13)) & 0xFF + 5) + 10) = 113";
         $var6 = 19;
         $var8 = ($var1 + $var2) - ($var3 * $var4) / ($var5 % $var6);
-        sim_assert $var8 == 66, "(57 + 10) - ((159 * 42) & 0xFF) / (113 % 19)";
         # sqrt is a modifier
         $var3 = sqrt $var4;
-        sim_assert $var3 == 6,
-            "sqrt(42) = 6.4807 which is 6 in integer mathematics";
-        sim_assert "*** Completed the simulation ***";
     }
 
 ## Debouncing a Switch
@@ -491,7 +450,6 @@ The wave stimulus can be seen in the simulator's scope as well.
             $value = shift;
             write RC1, $value;
         };
-        sim_assert $value == 1;
     }
 
 ### Interrupt-on-Change Read
