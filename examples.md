@@ -16,21 +16,10 @@ the lighting up of the LED in the simulator interface.
 
     PIC P16F690;
 
-    # enable gpsim as a simulator
-    pragma simulator gpsim;
-
     Main {
         digital_output RC0; # mark pin RC0 as output
         write RC0, 0x1; # write the value 1 to RC0
         sim_assert RC0 == 0x1, "Pin RC0 should be 1";
-    }
-
-    Simulator {
-        attach_led RC0;
-        stop_after 1s;
-        logfile "helloworld.lxt";
-        log RC0;
-        scope RC0;
     }
 
 ## Synchronous Time Delays
@@ -47,10 +36,6 @@ handy. The code is available in the file `share/examples/delay.vic`.
         sim_assert "*** EARLY STOP ***";
     }
 
-    Simulator {
-        stopwatch 1ms;
-    }
-
 ## Blinking an LED
 
 This example blinks an LED and can be found in the file
@@ -58,9 +43,6 @@ This example blinks an LED and can be found in the file
 
 
     PIC P16F690;
-
-    # enable gpsim as a simulator
-    pragma simulator gpsim;
 
     Main {
          digital_output RC0;
@@ -72,13 +54,6 @@ This example blinks an LED and can be found in the file
          }
     }
 
-    Simulator {
-        attach_led RC0, 1, 'green';
-        stop_after 30s;
-        logfile;
-        log RC0;
-    }
-
 ## Rotating over LEDs
 
 This example rotates the lighting up of an LED in a loop with a port connected
@@ -86,9 +61,6 @@ to 4 LEDs. It can be found in the file `share/examples/rotater.vic`.
 
 
     PIC P16F690;
-
-    # enable gpsim as a simulator
-    pragma simulator gpsim;
 
     Main {
         digital_output PORTC;
@@ -103,13 +75,6 @@ to 4 LEDs. It can be found in the file `share/examples/rotater.vic`.
         }
     }
 
-    Simulator {
-        attach_led PORTC, 4; # attach 4 LEDs to PORTC on RC0-RC7;
-        stop_after 60s;
-        logfile "rotater.lxt";
-        log PORTC;
-        scope PORTC;
-    }
 
 ## Using a 7-segment LED
 
@@ -122,8 +87,6 @@ found in the source code as the file `share/examples/led7seg.vic`.
     PIC p16f690;
 
     pragma variable export;
-    # enable gpsim as a simulator
-    pragma simulator gpsim;
 
     Main {
         $led7 = table [ 0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D,
@@ -140,10 +103,6 @@ found in the source code as the file `share/examples/led7seg.vic`.
         }
     }
 
-    Simulator {
-        attach_led7seg RA0, PORTC;
-        stop_after 5s;
-    }
 
 ## Conditional Loops
 
@@ -189,10 +148,6 @@ The simulator code is left as an exercise for the reader.
         sim_assert "pause. end of main";
     }
 
-    Simulator {
-        attach_led PORTC, 8;
-        stop_after 5s;
-    }
 
 ## Breaking Out of Nested Loops
 
@@ -237,10 +192,6 @@ exercise to the reader. The code is available in the file
         }
     }
 
-    Simulator {
-        attach_led PORTC, 8;
-        stop_after 3s;
-    }
 
 ## Mathematical Operations
 
@@ -339,24 +290,6 @@ statement](simulator.html#wavesimulations). The example can be found in
         }
     }
 
-    Simulator {
-        attach_led PORTC, 4, 'red';
-        logfile "debouncer.lxt";
-        log RA3;
-        scope RA3;
-        # stimulus should reflect the debounce delay to be viable
-        stimulate RA3, every 5s, wave [
-            300, 1, 1300, 0,
-            1400, 1, 2400, 0,
-            2500, 1, 3500, 0,
-            3600, 1, 4600, 0,
-            4700, 1, 5700, 0,
-            5800, 1, 6800, 0,
-            6900, 1, 8000, 0
-        ];
-        stop_after 30s;
-        autorun;
-    }
 
 ## Analog-to-Digital Converter (ADC) Test
 
@@ -390,18 +323,6 @@ analog.
         }
     }
 
-    Simulator {
-        attach_led RC0;
-        stop_after 10s;
-        log RC0;
-        scope RC0;
-        #adc stimulus
-        stimulate AN0, every 3s, wave [
-            500000, 2.85, 1000000, 3.6,
-            1500000, 4.5, 2000000, 3.2,
-            2500000, 1.8
-        ];
-    }
 
 ## Variable Rotation of LEDs
 
@@ -430,18 +351,6 @@ LEDs](#rotatingoverleds) example. This example can be found in `share/examples/v
         }
     }
 
-    Simulator {
-        attach_led PORTC, 4, 'red';
-        #adc stimulus
-        stimulate AN0, every 3s, wave [
-            500000, 2.85, 1000000, 3.6,
-            1500000, 4.5, 2000000, 3.2,
-            2500000, 1.8
-        ];
-        scope AN0;
-        log AN0;
-        stop_after 10s;
-    }
 
 ## Reversing LEDs on Switch Press
 
@@ -453,8 +362,7 @@ and that the analog channel/pin `AN0` is connected to a variable potentiometer.
 When the user presses a switch the direction of lighting up the 4 LEDs changes
 from left to right and back. When the user rotates the potentiometer, the speed
 of blinking of the 4 LEDs changes accordingly. This example can be found in
-`share/examples/reversible.vic`. Here we see both the digital and analog
-stimulus being applied in the `Simulator` block.
+`share/examples/reversible.vic`. 
 
     PIC P16F690;
 
@@ -485,30 +393,6 @@ stimulus being applied in the `Simulator` block.
         }
     }
 
-    Simulator {
-        attach_led PORTC, 4, 'red';
-        logfile "reversible.lxt";
-        log RA3, AN0;
-        scope RA3, AN0;
-        # stimulus should reflect the debounce delay to be viable
-        stimulate RA3, every 5s, wave [
-            300, 1, 1300, 0,
-            1400, 1, 2400, 0,
-            2500, 1, 3500, 0,
-            3600, 1, 4600, 0,
-            4700, 1, 5700, 0,
-            5800, 1, 6800, 0,
-            6900, 1, 8000, 0
-        ];
-        #adc stimulus
-        stimulate AN0, every 3s, wave [
-            500000, 2.85, 1000000, 3.6,
-            1500000, 4.5, 2000000, 3.2,
-            2500000, 1.8
-        ];
-        stop_after 30s;
-        autorun;
-    }
 
 ## Timer Usage
 
@@ -537,11 +421,6 @@ the user does not have to create any fake stimuli for it.
         }
     }
 
-    Simulator {
-        attach_led PORTC, 8, 'red';
-        stop_after 1s;
-        autorun;
-    }
 
 ## Interrupt Service Routine Usage
 
@@ -587,30 +466,6 @@ added by the user.
         }
     }
 
-    Simulator {
-        attach_led PORTC, 4, 'red';
-        log RA3, AN0;
-        scope RA3, AN0;
-        # stimulus should reflect the debounce delay to be viable
-        stimulate RA3, every 5s, wave [
-            300, 1, 1300, 0,
-            1400, 1, 2400, 0,
-            2500, 1, 3500, 0,
-            3600, 1, 4600, 0,
-            4700, 1, 5700, 0,
-            5800, 1, 6800, 0,
-            6900, 1, 8000, 0
-        ];
-        #adc stimulus
-        stimulate AN0, every 3s, wave [
-            500000, 2.85, 1000000, 3.6,
-            1500000, 4.5, 2000000, 3.2,
-            2500000, 1.8
-        ];
-        stop_after 30s;
-        autorun;
-    }
-
 
 ## Reading From Pins
 
@@ -639,18 +494,6 @@ The wave stimulus can be seen in the simulator's scope as well.
         sim_assert $value == 1;
     }
 
-    Simulator {
-        attach_led RC1;
-        log RC1, RC0;
-        scope RC1, RC0;
-        # a simple 100us high
-        stimulate RC0, wave [
-            1, 1, 101, 0
-        ];
-        stop_after 100ms;
-        autorun;
-    }
-
 ### Interrupt-on-Change Read
 
 This example demonstrates using the interrupt-on-change feature of MCU P16F690's
@@ -671,17 +514,6 @@ similar example is in `share/examples/reader_port.vic`.
         };
     }
 
-    Simulator {
-        attach_led RC0;
-        log RA0, RC0;
-        scope RA0, RC0;
-        # a simple 100us high
-        stimulate RA0, wave [
-            100, 1, 2000, 0
-        ];
-        stop_after 10ms;
-        autorun;
-    }
 
 ## Pulse Width Modulation (PWM)
 
@@ -701,12 +533,6 @@ attach an LED and/or a scope to view the output.
         pwm_update 1220Hz, 30%; # update duty cycle
         delay 5s;
     }
-    Simulator {
-        attach_led CCP1;
-        log CCP1;
-        scope CCP1;
-        autorun;
-    }
 
 ### Half-bridge and Full-bridge Modes
 
@@ -724,13 +550,6 @@ modes.
         #pwm_fullbridge 'reverse', 1220Hz, 20%;
     }
 
-    Simulator {
-        attach_led CCP1;
-        stop_after 100ms;
-        log CCP1;
-        scope CCP1;
-        autorun;
-    }
 
 This brings us to the end of the list of examples.
 

@@ -68,14 +68,6 @@ Main {
     write RC0, 0x1; # write the value 1 to RC0
     sim_assert RC0 == 0x1, "Pin RC0 should be 1";
 }
-
-Simulator {
-    attach_led RC0;
-    stop_after 1s;
-    logfile "helloworld.lxt";
-    log RC0;
-    scope RC0;
-}
 </code></pre>
 
 <h2>Synchronous Time Delays</h2>
@@ -90,10 +82,6 @@ handy. The code is available in the file <code>share/examples/delay.vic</code>.<
 Main {
     delay 1ms;
     sim_assert "*** EARLY STOP ***";
-}
-
-Simulator {
-    stopwatch 1ms;
 }
 </code></pre>
 
@@ -115,13 +103,6 @@ Main {
          write RC0, 0;
          delay 1s;
      }
-}
-
-Simulator {
-    attach_led RC0, 1, 'green';
-    stop_after 30s;
-    logfile;
-    log RC0;
 }
 </code></pre>
 
@@ -146,14 +127,6 @@ Main {
         # circular rotate right by 1 bit
         ror $display, 1;
     }
-}
-
-Simulator {
-    attach_led PORTC, 4; # attach 4 LEDs to PORTC on RC0-RC7;
-    stop_after 60s;
-    logfile "rotater.lxt";
-    log PORTC;
-    scope PORTC;
 }
 </code></pre>
 
@@ -184,11 +157,6 @@ Main {
         $digit++;
         $digit &amp;= 0x0F; # bounds check
     }
-}
-
-Simulator {
-    attach_led7seg RA0, PORTC;
-    stop_after 5s;
 }
 </code></pre>
 
@@ -235,11 +203,6 @@ Main {
     }
     sim_assert "pause. end of main";
 }
-
-Simulator {
-    attach_led PORTC, 8;
-    stop_after 5s;
-}
 </code></pre>
 
 <h2>Breaking Out of Nested Loops</h2>
@@ -283,11 +246,6 @@ Main {
     while TRUE {
         write PORTC, 0xFF;
     }
-}
-
-Simulator {
-    attach_led PORTC, 8;
-    stop_after 3s;
 }
 </code></pre>
 
@@ -388,25 +346,6 @@ Main {
         };
     }
 }
-
-Simulator {
-    attach_led PORTC, 4, 'red';
-    logfile "debouncer.lxt";
-    log RA3;
-    scope RA3;
-    # stimulus should reflect the debounce delay to be viable
-    stimulate RA3, every 5s, wave [
-        300, 1, 1300, 0,
-        1400, 1, 2400, 0,
-        2500, 1, 3500, 0,
-        3600, 1, 4600, 0,
-        4700, 1, 5700, 0,
-        5800, 1, 6800, 0,
-        6900, 1, 8000, 0
-    ];
-    stop_after 30s;
-    autorun;
-}
 </code></pre>
 
 <h2>Analog-to-Digital Converter (ADC) Test</h2>
@@ -439,19 +378,6 @@ Main {
         delay 100us;
     }
 }
-
-Simulator {
-    attach_led RC0;
-    stop_after 10s;
-    log RC0;
-    scope RC0;
-    #adc stimulus
-    stimulate AN0, every 3s, wave [
-        500000, 2.85, 1000000, 3.6,
-        1500000, 4.5, 2000000, 3.2,
-        2500000, 1.8
-    ];
-}
 </code></pre>
 
 <h2>Variable Rotation of LEDs</h2>
@@ -480,19 +406,6 @@ Main {
         ror $display, 1;
     }
 }
-
-Simulator {
-    attach_led PORTC, 4, 'red';
-    #adc stimulus
-    stimulate AN0, every 3s, wave [
-        500000, 2.85, 1000000, 3.6,
-        1500000, 4.5, 2000000, 3.2,
-        2500000, 1.8
-    ];
-    scope AN0;
-    log AN0;
-    stop_after 10s;
-}
 </code></pre>
 
 <h2>Reversing LEDs on Switch Press</h2>
@@ -505,8 +418,7 @@ and that the analog channel/pin <code>AN0</code> is connected to a variable pote
 <p>When the user presses a switch the direction of lighting up the 4 LEDs changes
 from left to right and back. When the user rotates the potentiometer, the speed
 of blinking of the 4 LEDs changes accordingly. This example can be found in
-<code>share/examples/reversible.vic</code>. Here we see both the digital and analog
-stimulus being applied in the <code>Simulator</code> block.</p>
+<code>share/examples/reversible.vic</code>. </p>
 
 <pre><code>PIC P16F690;
 
@@ -536,31 +448,6 @@ Main {
         };
     }
 }
-
-Simulator {
-    attach_led PORTC, 4, 'red';
-    logfile "reversible.lxt";
-    log RA3, AN0;
-    scope RA3, AN0;
-    # stimulus should reflect the debounce delay to be viable
-    stimulate RA3, every 5s, wave [
-        300, 1, 1300, 0,
-        1400, 1, 2400, 0,
-        2500, 1, 3500, 0,
-        3600, 1, 4600, 0,
-        4700, 1, 5700, 0,
-        5800, 1, 6800, 0,
-        6900, 1, 8000, 0
-    ];
-    #adc stimulus
-    stimulate AN0, every 3s, wave [
-        500000, 2.85, 1000000, 3.6,
-        1500000, 4.5, 2000000, 3.2,
-        2500000, 1.8
-    ];
-    stop_after 30s;
-    autorun;
-}
 </code></pre>
 
 <h2>Timer Usage</h2>
@@ -588,12 +475,6 @@ Main {
             write PORTC, $display;
         };
     }
-}
-
-Simulator {
-    attach_led PORTC, 8, 'red';
-    stop_after 1s;
-    autorun;
 }
 </code></pre>
 
@@ -640,30 +521,6 @@ Main {
         };
     }
 }
-
-Simulator {
-    attach_led PORTC, 4, 'red';
-    log RA3, AN0;
-    scope RA3, AN0;
-    # stimulus should reflect the debounce delay to be viable
-    stimulate RA3, every 5s, wave [
-        300, 1, 1300, 0,
-        1400, 1, 2400, 0,
-        2500, 1, 3500, 0,
-        3600, 1, 4600, 0,
-        4700, 1, 5700, 0,
-        5800, 1, 6800, 0,
-        6900, 1, 8000, 0
-    ];
-    #adc stimulus
-    stimulate AN0, every 3s, wave [
-        500000, 2.85, 1000000, 3.6,
-        1500000, 4.5, 2000000, 3.2,
-        2500000, 1.8
-    ];
-    stop_after 30s;
-    autorun;
-}
 </code></pre>
 
 <h2>Reading From Pins</h2>
@@ -692,18 +549,6 @@ Main {
     };
     sim_assert $value == 1;
 }
-
-Simulator {
-    attach_led RC1;
-    log RC1, RC0;
-    scope RC1, RC0;
-    # a simple 100us high
-    stimulate RC0, wave [
-        1, 1, 101, 0
-    ];
-    stop_after 100ms;
-    autorun;
-}
 </code></pre>
 
 <h3>Interrupt-on-Change Read</h3>
@@ -723,18 +568,6 @@ Main {
         $value = shift;
         write RC0, $value;
     };
-}
-
-Simulator {
-    attach_led RC0;
-    log RA0, RC0;
-    scope RA0, RC0;
-    # a simple 100us high
-    stimulate RA0, wave [
-        100, 1, 2000, 0
-    ];
-    stop_after 10ms;
-    autorun;
 }
 </code></pre>
 
@@ -756,12 +589,6 @@ Main {
     pwm_update 1220Hz, 30%; # update duty cycle
     delay 5s;
 }
-Simulator {
-    attach_led CCP1;
-    log CCP1;
-    scope CCP1;
-    autorun;
-}
 </code></pre>
 
 <h3>Half-bridge and Full-bridge Modes</h3>
@@ -778,14 +605,6 @@ Main {
     pwm_halfbridge 1220Hz, 20%, 4us;
     #pwm_fullbridge 'forward', 1220Hz, 20%;
     #pwm_fullbridge 'reverse', 1220Hz, 20%;
-}
-
-Simulator {
-    attach_led CCP1;
-    stop_after 100ms;
-    log CCP1;
-    scope CCP1;
-    autorun;
 }
 </code></pre>
 
@@ -806,7 +625,7 @@ Intellect LLC.</p>
     href="http://selectiveintellect.com">Selective Intellect LLC.</a>
     </p>
     <p style="font-size:11px;">
-        This page was last updated on 2015-04-02 16:10:35 -0400.
+        This page was last updated on 2021-05-22 20:47:20 -0400.
     </p>
     </div>
     </section>
