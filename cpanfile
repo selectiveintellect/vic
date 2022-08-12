@@ -24,6 +24,7 @@ on build => sub {
     requires 'Pegex', '0.75';
     requires 'Test::More';
     requires 'Test::Lib';
+    requires 'B::Hooks::EndOfScope';
 };
 
 on develop => sub {

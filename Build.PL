@@ -21,6 +21,7 @@ my $build = Module::Build->new(
         'File::Which' => 0,
         'Pegex' => 0.75, # needed for PL_files to work
         'Test::Lib' => 0,
+        'B::Hooks::EndOfScope' => 0,
     },
     requires => {
         'perl' => 'v5.10.0',

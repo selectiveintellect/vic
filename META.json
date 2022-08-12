@@ -27,6 +27,7 @@
    "prereqs" : {
       "build" : {
          "requires" : {
+            "B::Hooks::EndOfScope" : "0",
             "File::Spec" : "0",
             "File::Which" : "0",
             "Module::Build" : "0",
